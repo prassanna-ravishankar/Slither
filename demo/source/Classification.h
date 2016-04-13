@@ -25,16 +25,23 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     virtual F CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node)=0;
   };
 
-  class LinearFeatureFactory: public IFeatureResponseFactory<LinearFeatureResponse2d>
+  class LinearFeatureFactory: public IFeatureResponseFactory<LinearFeatureResponse>
   {
   public:
-    LinearFeatureResponse2d CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+      LinearFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, bool root_node);
   };
+
 
   class AxisAlignedFeatureResponseFactory : public IFeatureResponseFactory<AxisAlignedFeatureResponse>
   {
   public:
-    AxisAlignedFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+      AxisAlignedFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, bool root_node);
+  };
+
+  class LinearFeatureSVMFactory: public IFeatureResponseFactory<LinearFeatureResponseSVM>
+  {
+  public:
+      LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
   };
 
   template<class F>

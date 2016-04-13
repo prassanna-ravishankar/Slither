@@ -6,8 +6,11 @@
 #include <memory>
 
 #include <opencv2/opencv.hpp>
+#include <opencv2/ml.hpp>
 
 #include "Sherwood.h"
+
+namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -157,6 +160,19 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     const cv::Mat GetDataPoint(int i) const
     {
       return dataMat.row(i);
+    }
+
+
+    cv::Ptr<cvml::TrainData> getTrainData()
+    {
+
+      return cvml::TrainData::create(dataMat, cvml::ROW_SAMPLE, cv::Mat(labels_));
+
+    }
+
+    cv::Ptr<cvml::TrainData> getTrainDataWithMask(std::vector<int> mask_values)
+    {
+      return cvml::TrainData::create(dataMat, cvml::ROW_SAMPLE, cv::Mat(labels_), mask_values);
     }
 
 

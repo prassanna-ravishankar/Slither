@@ -6,8 +6,13 @@
 // contiguously in a linear array.
 
 #include <string>
+#include <opencv2/opencv.hpp>
+#include <opencv2/ml.hpp>
+
 
 #include "Sherwood.h"
+
+namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -105,6 +110,96 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     float GetResponse(const IDataPointCollection& data, unsigned int index) const;
 
     std::string ToString()  const;
+  };
+
+
+  class LinearFeatureResponse
+  {
+  protected:
+      std::vector<float> vWeights_;
+      int		dimensions_;
+      float	bias_;
+      int		nIndex_;
+
+
+  public:
+      //std::string ;
+      LinearFeatureResponse():
+              dimensions_(-1),
+              bias_(0.0f)
+      {
+
+      }
+
+      /// <summary>
+      /// Create a LinearFeatureResponse instance for the specified direction vector.
+      /// </summary>
+      /// <param name="dx">The first element of the direction vector.</param>
+      /// <param name="dx">The second element of the direction vector.</param>
+      LinearFeatureResponse(float* pWeights, const int dimensions)
+      {
+
+        vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
+        dimensions_ = dimensions;
+      }
+
+      /// <summary>
+      /// Create a LinearFeatureResponse2d instance with a random direction vector.
+      /// </summary>
+      /// <param name="randomNumberGenerator">A random number generator.</param>
+      /// <returns>A new LinearFeatureResponse2d instance.</returns>
+      static LinearFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+
+      // IFeatureResponse implementation
+      float GetResponse(const IDataPointCollection& data, unsigned int index) const;
+
+      std::string ToString()  const;
+  };
+
+
+  class LinearFeatureResponseSVM
+  {
+  protected:
+      std::vector<int> vIndex_;
+      std::vector<float> vWeights_;
+      int		dimensions_;
+      float	bias_;
+      int		nIndex_;
+      cv::Ptr<cvml::SVM> svm;
+
+  public:
+      LinearFeatureResponseSVM():
+              dimensions_(-1),
+              bias_(0.0f)
+      {
+        //m_param_filename = "/home/prassanna/Development/Code3/Parameters/parametersTaskManager2.ini";
+          svm = cvml::SVM::create();
+          svm->setType(cvml::SVM::C_SVC);
+          svm->setKernel(cvml::SVM::LINEAR);
+          svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
+          svm->setC(0.5);
+      }
+
+      /// <summary>
+      /// Create a LinearFeatureResponse instance for the specified direction vector.
+      /// </summary>
+      /// <param name="dx">The first element of the direction vector.</param>
+      /// <param name="dx">The second element of the direction vector.</param>
+      LinearFeatureResponseSVM(float* pWeights, const int dimensions)
+      {
+
+        vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
+        dimensions_ = dimensions;
+      }
+      static LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node=false);
+      static void GenerateMask(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskFisher(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskLBP(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskHypercolumn(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+
+
+      float GetResponse(const IDataPointCollection &data, unsigned int index) const;
+      std::string ToString()  const;
   };
 
 

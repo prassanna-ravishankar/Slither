@@ -115,9 +115,9 @@ int main(int argc, char* argv[])
                                                                     data_dimensions,
                                                                     DataDescriptor::HasClassLabels ) );
 
-    LinearFeatureFactory linearFeatureFactory;
-    std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > forest
-            = ClassificationDemo<LinearFeatureResponse2d>::Train(*trainingData,
+    LinearFeatureSVMFactory linearFeatureFactory;
+    std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest
+            = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
                                                                   &linearFeatureFactory,
                                                                   trainingParameters);
 
@@ -139,12 +139,12 @@ int main(int argc, char* argv[])
                                                                     data_dimensions,
                                                                     DataDescriptor::HasClassLabels ) );
 
-    std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > trained_forest
-            = Forest<LinearFeatureResponse2d, HistogramAggregator>::Deserialize(forest_loc);
+    std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
+            = Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
 
 
     std::vector<HistogramAggregator> distbns;
-    ClassificationDemo<LinearFeatureResponse2d>::Test(*trained_forest.get(),
+    ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest.get(),
                                                        *testdata.get(),
                                                        distbns);
 
