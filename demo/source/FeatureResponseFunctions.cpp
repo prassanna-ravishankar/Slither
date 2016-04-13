@@ -43,7 +43,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
     cv::Mat rowMat = concreteData.GetDataPoint((int) index);
-    std::cout<<rowMat<<std::endl;
+    //std::cout<<rowMat<<" ";
+    //float bla = dx_ * rowMat.at<float>(0) + dy_ * rowMat.at<float>(1);
+    //std::cout<<bla<<std::endl;
     //return dx_ * concreteData.GetDataPoint((int)index)[0] + dy_ * concreteData.GetDataPoint((int)index)[1];
     return dx_ * rowMat.at<float>(0) + dy_ * rowMat.at<float>(1);
   }

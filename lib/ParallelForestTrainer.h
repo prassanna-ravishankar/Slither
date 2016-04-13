@@ -89,7 +89,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         for (unsigned int i = 0; i < parameters.NumberOfCandidateThresholdsPerFeature + 1; i++)
           partitionStatistics_[i] = trainingContext_.GetStatisticsAggregator();
 
-        responses_.resize(data.Count());
+        responses_.resize(data.Count(),0);
         // thresholds_ will be resized() in ChooseCandidateThresholds()
       }
 
@@ -124,12 +124,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         indices_[i] = i;
 
       threadLocalData_.resize(maxThreads_);
+      responses_.resize(data.Count(), 0);
       for (int threadIndex = 0; threadIndex < maxThreads_; threadIndex++)
         // Note use of placement new operator to initialize already-allocated memory
         new (&threadLocalData_[threadIndex]) ThreadLocalData(random, trainingContext_, parameters_, data_);
     }
 
-    void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth)
+    void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth, const IDataPointCollection& data, bool is_parent=false)
     {
       assert(nodeIndex < nodes.size());
       progress_[Verbose] << Tree<F, S>::GetPrettyPrintPrefix(nodeIndex) << i1 - i0 << ": ";
@@ -237,14 +238,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // to terminate training of this branch.
       leftChildStatistics_.Clear();
       rightChildStatistics_.Clear();
-        std::cout<<"After Parallel"<<std::endl;
+      //DEBUG - std::cout<<"After Parallel"<<std::endl;
       for (DataPointIndex i = i0; i < i1; i++)
       {
-        responses_[i] = bestFeature.GetResponse(data_, indices_[i]);
+        responses_[i] = bestFeature.GetResponse(data, indices_[i]);
+          //= bla;
         if (responses_[i] < bestThreshold)
-          leftChildStatistics_.Aggregate(data_, indices_[i]);
+          leftChildStatistics_.Aggregate(data, indices_[i]);
         else
-          rightChildStatistics_.Aggregate(data_, indices_[i]);
+          rightChildStatistics_.Aggregate(data, indices_[i]);
       }
 
       if (trainingContext_.ShouldTerminate(parentStatistics_, leftChildStatistics_, rightChildStatistics_, maxGain))
@@ -264,8 +266,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       progress_[Verbose] << " (threshold = " << bestThreshold << ", gain = "<< maxGain << ")." << std::endl;
 
-      TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii, recurseDepth + 1);
-      TrainNodesRecurse(nodes, nodeIndex * 2 + 2, ii, i1, recurseDepth + 1);
+      TrainNodesRecurse(nodes, nodeIndex * 2 + 1, i0, ii, recurseDepth + 1, data, false);
+      TrainNodesRecurse(nodes, nodeIndex * 2 + 2, ii, i1, recurseDepth + 1,data, false);
     }
 
   private:
@@ -350,7 +352,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       (*progress)[Verbose] << std::endl;
 
-      trainingOperation.TrainNodesRecurse(tree->GetNodes(), 0, 0, data.Count(), 0);  // will recurse until termination criterion is met
+      trainingOperation.TrainNodesRecurse(tree->GetNodes(), 0, 0, data.Count(), 0, data, true);  // will recurse until termination criterion is met
 
       (*progress)[Verbose] << std::endl;
 
@@ -395,7 +397,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       {
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
-        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, 1, progress);
+        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, 4, progress);
         forest->AddTree(tree);
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;
