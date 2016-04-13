@@ -207,13 +207,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
 
-    sx_ += concreteData.GetDataPoint((int)index)[0];
-    sy_ += concreteData.GetDataPoint((int)index)[1];
+    sx_ += concreteData.GetDataPoint((int) index).at<float>(0);
+    sy_ += concreteData.GetDataPoint((int) index).at<float>(1);
 
-    sxx_ += pow((double)(concreteData.GetDataPoint((int)index)[0]), 2.0);
-    syy_ += pow((double)(concreteData.GetDataPoint((int)index)[1]), 2.0);
+    sxx_ += pow((double) concreteData.GetDataPoint((int) index).at<float>(0), 2.0);
+    syy_ += pow((double) concreteData.GetDataPoint((int) index).at<float>(1), 2.0);
 
-    sxy_ += concreteData.GetDataPoint((int)index)[0] * concreteData.GetDataPoint((int)index)[1];
+    sxy_ += concreteData.GetDataPoint((int) index).at<float>(0) * concreteData.GetDataPoint((int) index).at<float>(1);
 
     sampleCount_ += 1;
   }

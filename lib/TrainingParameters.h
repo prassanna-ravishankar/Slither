@@ -24,6 +24,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       NumberOfCandidateThresholdsPerFeature = 10;
       MaxDecisionLevels = 5;
       Verbose = false;
+      svm_c = 0.5;
     }
 
     int NumberOfTrees;
@@ -31,5 +32,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     unsigned int NumberOfCandidateThresholdsPerFeature;
     int MaxDecisionLevels;
     bool Verbose;
+      float svm_c;
   };
 } } }

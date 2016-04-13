@@ -17,7 +17,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   float AxisAlignedFeatureResponse::GetResponse(const IDataPointCollection& data, unsigned int sampleIndex) const
   {
     const DataPointCollection& concreteData = (DataPointCollection&)(data);
-    return concreteData.GetDataPoint((int)sampleIndex)[axis_];
+    return concreteData.GetDataPoint((int) sampleIndex).at<float>(axis_);
   }
 
   std::string AxisAlignedFeatureResponse::ToString() const
@@ -42,7 +42,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   float LinearFeatureResponse2d::GetResponse(const IDataPointCollection& data, unsigned int index) const
   {
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
-    return dx_ * concreteData.GetDataPoint((int)index)[0] + dy_ * concreteData.GetDataPoint((int)index)[1];
+    //return dx_ * concreteData.GetDataPoint((int)index)[0] + dy_ * concreteData.GetDataPoint((int)index)[1];
+    return dx_ * concreteData.GetDataPoint((int) index).at<float>(0) + dy_ * concreteData.GetDataPoint((int) index).at<float>(1);
   }
 
   std::string LinearFeatureResponse2d::ToString() const

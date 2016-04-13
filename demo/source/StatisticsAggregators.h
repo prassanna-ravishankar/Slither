@@ -245,15 +245,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       const DataPointCollection& concreteData = (const DataPointCollection&)(data);
 
-      const float* datum = concreteData.GetDataPoint((int)index);
+      //const float* datum = concreteData.GetDataPoint((int)index);
+      cv::Mat datumMat = concreteData.GetDataPoint((int) index);
       float target = concreteData.GetTarget((int)index);
 
-      XT_X_11_ += datum[0] * datum[0];
-      XT_X_12_ += datum[0];
-      XT_X_21_ += datum[0];
+      XT_X_11_ += datumMat.at<float>(0) * datumMat.at<float>(0);
+      XT_X_12_ += datumMat.at<float>(0);
+      XT_X_21_ += datumMat.at<float>(0);
       XT_X_22_ += 1.0;
 
-      XT_Y_1_ += datum[0] * target;
+      XT_Y_1_ += datumMat.at<float>(0) * target;
       XT_Y_2_ += target;
 
       Y2_ += target * target;

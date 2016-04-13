@@ -13,369 +13,329 @@
 
 #include "CumulativeNormalDistribution.h"
 
-#include "CommandLineParser.h"
 #include "DataPointCollection.h"
 
 #include "Classification.h"
 #include "DensityEstimation.h"
 #include "SemiSupervisedClassification.h"
 #include "Regression.h"
+#include <boost/program_options.hpp>
 
 using namespace MicrosoftResearch::Cambridge::Sherwood;
+namespace po = boost::program_options;
 
-void DisplayHelp();
+void parseArguments(po::variables_map& vm);
 
 void DisplayTextFiles(const std::string& relativePath);
 
-std::auto_ptr<DataPointCollection> LoadTrainingData(
-  const std::string& filename,
-  const std::string& alternativePath,
-  int dimension,
-  DataDescriptor::e descriptor);
 
-// Store (Linux-friendly) relative paths to training data
-const std::string CLAS_DATA_PATH = "/data/supervised classification";
-const std::string SSCLAS_DATA_PATH = "/data/semi-supervised classification";
-const std::string REGRESSION_DATA_PATH = "/data/regression";
-const std::string DENSITY_DATA_PATH = "/data/density estimation";
+int discoverDims(std::string filename);
+
+std::auto_ptr<DataPointCollection> LoadTrainingData(
+        const std::string& filename,
+        const std::string& alternativePath,
+        int dimension,
+        DataDescriptor::e descriptor);
+
+
+
+//HARDCODING DEFAULTS - get from boost argparse
+int data_dimensions = 3;
+TrainingParameters trainingParameters;
+std::string dummy = "";
+std::string train_filename = "../demo/data/sclf/sample_train.txt";
+std::string test_filename = "../demo/data/sclf/sample_test.txt";
+std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
+//float svm_c = 0.5;
+std::string mode = "Standard";
+bool train_flag = false;
+bool test_flag = false;
+std::string forest_loc ="forest.out";
+
 
 int main(int argc, char* argv[])
 {
-  if(argc<2 || std::string(argv[1])=="/?" || toLower(argv[1])=="help")
-  {
-    DisplayHelp();
-    return 0;
+
+  //Defaults
+  trainingParameters.MaxDecisionLevels = 10;
+  trainingParameters.NumberOfCandidateFeatures = 10;
+  trainingParameters.NumberOfCandidateThresholdsPerFeature = 10;
+  trainingParameters.NumberOfTrees = 10;
+  trainingParameters.Verbose = true;
+  //trainingParameters.igType =  ig_shannon;
+
+
+
+  po::options_description desc("Allowed Options");
+  desc.add_options()
+          ("help,h", "produce help message")
+          ("data_train",po::value<std::string>()->default_value(train_filename), "Training Data file (CSV TAB DELIMITED)")
+          ("data_test",po::value<std::string>()->default_value(test_filename), "Testing Data file")
+          ("data_predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
+          ("forest_loc",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
+          ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
+          ("trees",po::value<int>()->default_value(50), "Number of Trees in the forest")
+          ("dlevels",po::value<int>()->default_value(10), "Number of Decision Levels")
+          ("candidate_feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
+          ("candidate_thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
+          ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
+          ("verbose",po::value<bool>()->default_value(true), "Display output")
+          ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
+          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
+          ;
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+  if ( (vm.count("help"))) {
+    std::cout << desc << "\n";
+    return 1;
   }
 
-  std::string mode = toLower(argv[1]); //  argv[0] is name of exe, argv[1] defines command line mode
+  parseArguments(vm);
 
-  // These command line parameters are reused over several command line modes...
-  StringParameter trainingDataPath("path", "Path of file containing training data.");
-  StringParameter forestOutputPath("forest", "Path of file containing forest.");
-  StringParameter forestPath("forest", "Path of file containing forest.");
-  StringParameter testDataPath("data", "Path of file containing test data.");
-  StringParameter outputPath("output", "Path of file containing output.");
-  NaturalParameter T("t", "No. of trees in the forest (default = {0}).", 10);
-  NaturalParameter D("d", "Maximum tree levels (default = {0}).", 10, 20);
-  NaturalParameter F("f", "No. of candidate feature response functions per split node (default = {0}).", 10);
-  NaturalParameter L("l", "No. of candidate thresholds per feature response function (default = {0}).", 1);
-  SingleParameter a("a", "The number of 'effective' prior observations (default = {0}).", true, false, 10.0f);
-  SingleParameter b("b", "The variance of the effective observations (default = {0}).", true, true, 400.0f);
-  SimpleSwitchParameter verboseSwitch("Enables verbose progress indication.");
-  SingleParameter plotPaddingX("padx", "Pad plot horizontally (default = {0}).", true, false, 0.1f);
-  SingleParameter plotPaddingY("pady", "Pad plot vertically (default = {0}).", true, false, 0.1f);
 
-  EnumParameter split(
-    "s",
-    "Specify what kind of split function to use (default = {0}).",
-    "axis;linear",
-    "axis-aligned split;linear split",
-    "axis");
 
-  // Behaviour depends on command line mode...
-  if (mode == "clas" || mode == "class")
+
+
+
+
+
+/*
+  if (trainingData.get()==0)
+       return 0; // LoadTrainingData() generates its own progress/error messages
+    */
+
+  if(train_flag)
   {
-    // Supervised classification
-    CommandLineParser parser;
-    parser.SetCommand("SW CLAS");
+    data_dimensions = discoverDims (train_filename);
+    std::auto_ptr<DataPointCollection> trainingData
+            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(train_filename,
+                                                                    dummy,
+                                                                    data_dimensions,
+                                                                    DataDescriptor::HasClassLabels ) );
 
-    parser.AddArgument(trainingDataPath);
-    parser.AddSwitch("T", T);
-    parser.AddSwitch("D", D);
-    parser.AddSwitch("F", F);
-    parser.AddSwitch("L", L);
+    LinearFeatureFactory linearFeatureFactory;
+    std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > forest
+            = ClassificationDemo<LinearFeatureResponse2d>::Train(*trainingData,
+                                                                  &linearFeatureFactory,
+                                                                  trainingParameters);
 
-    parser.AddSwitch("split", split);
+    //Testing out regression
+    //std::auto_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
+    //      *trainingData.get(), trainingParameters);
 
-    parser.AddSwitch("PADX", plotPaddingX);
-    parser.AddSwitch("PADY",  plotPaddingY);
-    parser.AddSwitch("VERBOSE", verboseSwitch);
-
-    if (argc == 2)
-    {
-      parser.PrintHelp();
-      DisplayTextFiles(CLAS_DATA_PATH);
-      return 0;
-    }
-
-    if (parser.Parse(argc, argv, 2) == false)
-      return 0;
-
-    TrainingParameters trainingParameters;
-    trainingParameters.MaxDecisionLevels = D.Value-1;
-    trainingParameters.NumberOfCandidateFeatures = F.Value;
-    trainingParameters.NumberOfCandidateThresholdsPerFeature = L.Value;
-    trainingParameters.NumberOfTrees = T.Value;
-    trainingParameters.Verbose = verboseSwitch.Used();
-
-    PointF plotDilation(plotPaddingX.Value, plotPaddingY.Value);
-
-    // Load training data for a 2D density estimation problem.
-    std::auto_ptr<DataPointCollection> trainingData = std::auto_ptr<DataPointCollection> ( LoadTrainingData(
-      trainingDataPath.Value,
-      CLAS_DATA_PATH + "/" + trainingDataPath.Value,
-      2,
-      DataDescriptor::HasClassLabels ) );
-
-    if (trainingData.get()==0)
-      return 0; // LoadTrainingData() generates its own progress/error messages
-
-    if (split.Value == "linear")
-    {
-      LinearFeatureFactory linearFeatureFactory;
-      std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > forest = ClassificationDemo<LinearFeatureResponse2d>::Train(
-        *trainingData,
-        &linearFeatureFactory,
-        trainingParameters);
-
-      std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(
-        ClassificationDemo<LinearFeatureResponse2d>::Visualize(*forest, *trainingData, Size(300, 300), plotDilation));
-
-      std::cout << "\nSaving output image to result.dib" << std::endl;
-      result->Save("result.dib");
-    }
-    else if (split.Value == "axis")
-    {
-      AxisAlignedFeatureResponseFactory axisAlignedFeatureFactory;
-      std::auto_ptr<Forest<AxisAlignedFeatureResponse, HistogramAggregator> > forest = ClassificationDemo<AxisAlignedFeatureResponse>::Train (
-        *trainingData,
-        &axisAlignedFeatureFactory,
-        trainingParameters );
-
-      std::auto_ptr<Bitmap <PixelBgr> > result = std::auto_ptr<Bitmap <PixelBgr> >(
-        ClassificationDemo<AxisAlignedFeatureResponse>::Visualize(*forest, *trainingData, Size(300, 300), plotDilation));
-
-      std::cout << "\nSaving output image to result.dib" << std::endl;
-      result->Save("result.dib");
-    }
+    forest->Serialize(forest_loc);
+    forest.release();
   }
-  else if (mode == "density")
+
+
+  if(test_flag)
   {
-    // Density Estimation
-    CommandLineParser parser;
+    data_dimensions = discoverDims (test_filename);
+    std::auto_ptr<DataPointCollection> testdata
+            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(test_filename,
+                                                                    dummy,
+                                                                    data_dimensions,
+                                                                    DataDescriptor::HasClassLabels ) );
 
-    parser.SetCommand("SW " + toUpper(mode));
+    std::auto_ptr<Forest<LinearFeatureResponse2d, HistogramAggregator> > trained_forest
+            = Forest<LinearFeatureResponse2d, HistogramAggregator>::Deserialize(forest_loc);
 
-    parser.AddArgument(trainingDataPath);
-    parser.AddSwitch("T", T);
-    parser.AddSwitch("D", D);
-    parser.AddSwitch("F", F);
-    parser.AddSwitch("L", L);
 
-    parser.AddSwitch("split", split);
+    std::vector<HistogramAggregator> distbns;
+    ClassificationDemo<LinearFeatureResponse2d>::Test(*trained_forest.get(),
+                                                       *testdata.get(),
+                                                       distbns);
 
-    // For density estimation (and semi-supervised learning) we add 
-    // a command line option to set the hyperparameters of the prior.
-    parser.AddSwitch("a", a);
-    parser.AddSwitch("b", b);
-
-    parser.AddSwitch("PADX", plotPaddingX);
-    parser.AddSwitch("PADY",  plotPaddingY);
-    parser.AddSwitch("VERBOSE", verboseSwitch);
-
-    // We also override default values for command line options
-    T.Value = 1;
-    D.Value = 3;
-    F.Value = 5;
-    L.Value = 1;
-    a.Value = 0;
-    b.Value = 900;
-
-    if (argc == 2)
-    {
-      parser.PrintHelp();
-      DisplayTextFiles(DENSITY_DATA_PATH);
-      return 0;
-    }
-
-    if (parser.Parse(argc, argv, 2) == false)
-      return 0;
-
-    TrainingParameters parameters;
-    parameters.MaxDecisionLevels = D.Value-1;
-    parameters.NumberOfCandidateFeatures = F.Value;
-    parameters.NumberOfCandidateThresholdsPerFeature = L.Value;
-    parameters.NumberOfTrees = T.Value;
-    parameters.Verbose = verboseSwitch.Used();
-
-    // Load training data for a 2D density estimation problem.
-    std::auto_ptr<DataPointCollection> trainingData = std::auto_ptr<DataPointCollection>(LoadTrainingData(
-      trainingDataPath.Value,
-      DENSITY_DATA_PATH + "/" + trainingDataPath.Value,
-      2,
-      DataDescriptor::Unadorned ) );
-
-    if (trainingData.get()==0)
-      return 0; // LoadTrainingData() generates its own progress/error messages
-
-    std::auto_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> > forest = std::auto_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> >(
-      DensityEstimationExample::Train(*trainingData, parameters, a.Value, b.Value) );
-
-    PointF plotDilation(plotPaddingX.Value, plotPaddingY.Value);
-
-    std::auto_ptr<Bitmap <PixelBgr> > result = std::auto_ptr<Bitmap <PixelBgr> >(DensityEstimationExample::Visualize(*(forest.get()), *trainingData, Size(300,300), plotDilation));
-
-    std::cout << "\nSaving output image to result.dib" << std::endl;
-    result->Save("result.dib");
+    std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
+    //writePredData (predict_filename, distbns);
+    trained_forest.release();
+    distbns.clear();
   }
-  else if (mode == "ssclas" || mode=="ssclass")
-  {
-    // Semi-supervised classification
-    CommandLineParser parser;
 
-    parser.SetCommand(toUpper(mode));
-
-    parser.AddArgument(trainingDataPath);
-    parser.AddSwitch("T", T);
-    parser.AddSwitch("D", D);
-    parser.AddSwitch("F", F);
-    parser.AddSwitch("L", L);
-
-    parser.AddSwitch("split", split);
-
-    EnumParameter plotMode(
-      "plot",
-      "Determines what to plot",
-      "density;labels",
-      "plot recovered density estimate;plot class likelihood",
-      "labels");
-    parser.AddSwitch("plot", plotMode);
-
-    parser.AddSwitch("a", a);
-    parser.AddSwitch("b", b);
-
-    parser.AddSwitch("PADX", plotPaddingX);
-    parser.AddSwitch("PADY",  plotPaddingY);
-    parser.AddSwitch("VERBOSE", verboseSwitch);
-
-    // Override default values for command line options
-    T.Value = 10;
-    D.Value = 12-1;
-    F.Value = 30;
-    L.Value = 1;
-
-    if (argc == 2)
-    {
-      parser.PrintHelp();
-      DisplayTextFiles(SSCLAS_DATA_PATH);
-      return 0;
-    }
-
-    if (parser.Parse(argc, argv, 2) == false)
-      return 0;
-
-    // Load training data for a 2D density estimation problem.
-    std::auto_ptr<DataPointCollection> trainingData = std::auto_ptr<DataPointCollection>(LoadTrainingData(
-      trainingDataPath.Value,
-      SSCLAS_DATA_PATH + "/" + trainingDataPath.Value,
-      2,
-      DataDescriptor::HasClassLabels ) );
-
-    if (trainingData.get()==0)
-      return 0; // LoadTrainingData() generates its own progress/error messages
-
-    TrainingParameters parameters;
-    parameters.MaxDecisionLevels = D.Value-1;
-    parameters.NumberOfCandidateFeatures = F.Value;
-    parameters.NumberOfCandidateThresholdsPerFeature = L.Value;
-    parameters.NumberOfTrees = T.Value;
-    parameters.Verbose = verboseSwitch.Used();
-
-    std::auto_ptr<Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator> > forest
-      = SemiSupervisedClassificationExample::Train(*trainingData, parameters, a.Value, b.Value );
-
-    PointF plotPadding(plotPaddingX.Value, plotPaddingY.Value);
-
-    if(plotMode.Value=="labels")
-    {
-      std::auto_ptr<Bitmap<PixelBgr> > result = SemiSupervisedClassificationExample::VisualizeLabels(*forest, *trainingData, Size(300,300), plotPadding);
-
-      std::cout << "\nSaving output image to result.dib" << std::endl;
-      result->Save("result.dib");
-    }
-    else if(plotMode.Value=="density")
-    {
-      std::auto_ptr<Bitmap<PixelBgr> > result = SemiSupervisedClassificationExample::VisualizeDensity(*forest, *trainingData, Size(300,300), plotPadding);
-
-      std::cout << "\nSaving output image to result.dib" << std::endl;
-      result->Save("result.dib");
-    }
-  }
-  else if (mode == "regression")
-  {
-    // Regression
-    CommandLineParser parser;
-
-    parser.SetCommand("SW " + toUpper(mode));
-
-    parser.AddArgument(trainingDataPath);
-    parser.AddSwitch("T", T);
-    parser.AddSwitch("D", D);
-    parser.AddSwitch("F", F);
-    parser.AddSwitch("L", L);
-
-    parser.AddSwitch("PADX", plotPaddingX);
-    parser.AddSwitch("PADY",  plotPaddingY);
-    parser.AddSwitch("VERBOSE", verboseSwitch);
-
-    // Override defaults
-    T.Value = 10;
-    D.Value = 2;
-    a.Value = 0;
-    b.Value = 900;
-
-    if (argc == 2)
-    {
-      parser.PrintHelp();
-      DisplayTextFiles(REGRESSION_DATA_PATH);
-      return 0;
-    }
-
-    if (parser.Parse(argc, argv, 2) == false)
-      return 0;
-
-    TrainingParameters parameters;
-    parameters.MaxDecisionLevels = D.Value-1;
-    parameters.NumberOfCandidateFeatures = F.Value;
-    parameters.NumberOfCandidateThresholdsPerFeature = L.Value;
-    parameters.NumberOfTrees = T.Value;
-    parameters.Verbose = verboseSwitch.Used();
-
-    // Load training data for a 2D density estimation problem.
-    std::auto_ptr<DataPointCollection> trainingData = std::auto_ptr<DataPointCollection>(LoadTrainingData(
-      trainingDataPath.Value,
-      REGRESSION_DATA_PATH + "/" + trainingDataPath.Value,
-      1,
-      DataDescriptor::HasTargetValues ) );
-
-    if (trainingData.get()==0)
-      return 0; // LoadTrainingData() generates its own progress/error messages
-
-    std::auto_ptr<Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d> > forest = RegressionExample::Train(
-      *trainingData.get(), parameters);
-
-    PointF plotDilation(plotPaddingX.Value, plotPaddingY.Value);
-    std::auto_ptr<Bitmap<PixelBgr> > result = RegressionExample::Visualize(*forest.get(), *trainingData.get(), Size(300,300), plotDilation);
-
-    std::cout << "\nSaving output image to result.dib" << std::endl;
-    result->Save("result.dib");
-  }
-  else
-  {
-    std::cout << "Unrecognized command line argument, try SW HELP." << std::endl;
-    return 0;
-  }
 
   return 0;
+
 }
 
+
+
+int discoverDims(std::string filename)
+{
+  std::ifstream FILE(filename);
+  std::string line;
+  if(!FILE.is_open ())
+    return -1;
+
+
+  //FILE>>line;
+  getline (FILE,line);
+  std::vector<char> data(line.begin(), line.end());
+  int count =  std::count(data.begin (),data.end (), '\t');
+  getline (FILE,line);
+  data = std::vector<char> (line.begin(), line.end());
+  int count2 =  std::count(data.begin (),data.end (), '\t');
+  FILE.close ();
+
+  std::cout<<"Discovered Dimensions are : "<<count * (count==count2)<<std::endl;
+  return count * (count==count2);
+}
+
+
+
+
+void parseArguments(po::variables_map& vm)
+{
+
+  std::cout<<"[PARSING ARGUMENTS] "<<std::endl;
+
+  //Data_Train
+  std::cout<<"2. [Training Data]";
+  if (vm.count("Training Data"))
+    std::cout << "\t Training data source was set to ";
+  else
+    std::cout << "\t Training Data source was not set. Using Default...";
+  train_filename = vm["data_train"].as<std::string>();
+  std::cout<<"<"<<train_filename<<">"<<std::endl;
+
+
+  std::cout<<"2. [Testing Data]";
+  if (vm.count("data_test"))
+    std::cout << "\t Testing data source was set to ";
+  else
+    std::cout << "\t Testing Data source was not set. Using Default...";
+  test_filename = vm["data_test"].as<std::string>();
+  std::cout<<"<"<<test_filename<<">"<<std::endl;
+
+  std::cout << "3. [Predicted output]";
+  if (vm.count ("data_predict"))
+    std::cout << "\t Predicted output filename was set to ";
+  else
+    std::cout << "\t Predicted output filename  was not set. Using Default...";
+  predict_filename = vm["data_predict"].as<std::string> ();
+  std::cout << "<" << predict_filename << ">" << std::endl;
+
+  std::cout<<"4. [Forest Location]";
+  if (vm.count("forest_loc"))
+    std::cout << "\t Forest Location source was set to ";
+  else
+    std::cout << "\t Forest Location source was not set. Using Default...";
+  forest_loc = vm["forest_loc"].as<std::string>();
+  std::cout<<"<"<<forest_loc<<">"<<std::endl;
+
+
+  std::cout<<"5. [Dimensionality of the data]";
+  if (vm.count("dims"))
+    std::cout << "\t Number of Dimensions of data is set to ";
+  else
+    std::cout << "\t Number of Dimensions of data was not set. Using Default...";
+  data_dimensions = vm["dims"].as<int>();
+  std::cout<<"<"<<data_dimensions<<">"<<std::endl;
+
+
+  std::cout<<"6. [Number of Trees]";
+  if (vm.count("trees"))
+    std::cout << "\t Number of Trees is set to ";
+  else
+    std::cout << "\t Number of Trees was not set. Using Default...";
+  trainingParameters.NumberOfTrees = vm["trees"].as<int>();
+  std::cout<<"<"<<trainingParameters.NumberOfTrees<<">"<<std::endl;
+
+  std::cout<<"7. [Decision Levels]";
+  if (vm.count("dlevels"))
+    std::cout << "\t Number of Decision levels is set to ";
+  else
+    std::cout << "\t Number of Decision levels not set. Using Default...";
+  trainingParameters.MaxDecisionLevels = vm["dlevels"].as<int>();
+  std::cout<<"<"<<trainingParameters.MaxDecisionLevels<<">"<<std::endl;
+
+  std::cout<<"8. [Candidate Features]";
+  if (vm.count("candidate_feats"))
+    std::cout << "\t Number of Canidate Features is set to ";
+  else
+    std::cout << "\t Number of Canidate Features was not set. Using Default...";
+  trainingParameters.NumberOfCandidateFeatures = vm["candidate_feats"].as<int>();
+  std::cout<<"<"<<trainingParameters.NumberOfCandidateFeatures<<">"<<std::endl;
+
+  std::cout<<"9. [Candidate Thresholds]";
+  if (vm.count("candidate_thresh"))
+    std::cout << "\t Number of Canidate Thresholds is set to ";
+  else
+    std::cout << "\t Number of Canidate Thresholds was not set. Using Default...";
+  trainingParameters.NumberOfCandidateThresholdsPerFeature = vm["candidate_thresh"].as<int>();
+  std::cout<<"<"<<trainingParameters.NumberOfCandidateThresholdsPerFeature<<">"<<std::endl;
+
+  std::cout<<"10. [SVM_C]";
+  if (vm.count("svm_c"))
+    std::cout << "\t C Param of SVM is set to ";
+  else
+    std::cout << "\t C Param of SVM was not set. Using Default...";
+  trainingParameters.svm_c = vm["svm_c"].as<float>();
+  std::cout<<"<"<<trainingParameters.svm_c<<">"<<std::endl;
+
+
+  std::cout<<"11. [Verbosity]";
+  if (vm.count("verbose"))
+    std::cout << "\t Verbosity is set to ";
+  else
+    std::cout << "\t Verbosity was not set. Using Default...";
+  trainingParameters.Verbose = vm["verbose"].as<bool>();
+  std::cout<<"<"<<trainingParameters.Verbose<<">"<<std::endl;
+
+
+  std::cout<<"12. [Computing Mode ]";
+  if (vm.count("mode"))
+    std::cout << "\t Mode is set to ";
+  else
+    std::cout << "\t Mode was not set. Using Default...";
+  mode = vm["mode"].as<std::string>();
+  std::cout<<"<"<<mode<<">"<<std::endl;
+
+  std::cout<<"13. [Operating Mode ]";
+  if (vm.count("op_mode"))
+    std::cout << "\t Operating  Mode is set to ";
+  else
+    std::cout << "\t Operating  Mode was not set. Using Default...";
+  std::string op_mode = vm["op_mode"].as<std::string>();
+
+  if(op_mode.compare("train")==0) {
+    train_flag = true;
+    std::cout<<"<TRAIN>"<<std::endl;
+  }
+
+  else if(op_mode.compare("test")==0) {
+    test_flag = true;
+    std::cout << "<TEST>" << std::endl;
+  }
+  else if(op_mode.compare("tr-te")==0)
+  {
+    train_flag=true;
+    test_flag = true;
+    std::cout<<"<TRAIN-TEST>"<<std::endl;
+  }
+  else
+    std::cout<<"Couldn't parse train-test mode. Doing both"<<std::endl;
+
+  std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
+
+
+}
+
+
 std::auto_ptr<DataPointCollection> LoadTrainingData(
-  const std::string& filename,
-  const std::string& alternativePath,
-  int dimension,
-  DataDescriptor::e descriptor)
+        const std::string& filename,
+        const std::string& alternativePath,
+        int dimension,
+        DataDescriptor::e descriptor)
 {
   std::ifstream r;
+
+  r.open(filename.c_str());
+  int dims = 0;
+  std::string line;
+  r>>line;
+  r.close ();
 
   r.open(filename.c_str());
 
@@ -408,9 +368,9 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
   try
   {
     trainingData = DataPointCollection::Load (
-      r,
-      dimension,
-      descriptor );
+            r,
+            dimension,
+            descriptor );
   }
   catch (std::runtime_error& e)
   {
@@ -464,25 +424,3 @@ void DisplayTextFiles(const std::string& relativePath)
   }
 }
 
-void DisplayHelp()
-{
-  // Create a dummy command line parser so we can display command line
-  // help in the usual format.
-  EnumParameter mode(
-    "mode",
-    "Select mode of operation.",
-    "clas;density;regression;ssclas",
-    "Supervised 2D classfication;2D density estimation;1D to 1D regression;Semi-supervised 2D classification");
-
-  StringParameter args("args...", "Other mode-specific arguments");
-
-  CommandLineParser parser;
-  parser.SetCommand("SW");
-  parser.AddArgument(mode);
-  parser.AddArgument(args);
-
-  std::cout << "Sherwood decision forest library demos." << std::endl << std::endl;
-  parser.PrintHelp();
-
-  std::cout << "To get more help on a particular mode of operation, omit the arguments, e.g.\nsw density" << std::endl;
-}

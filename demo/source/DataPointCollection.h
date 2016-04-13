@@ -5,6 +5,8 @@
 #include <map>
 #include <memory>
 
+#include <opencv2/opencv.hpp>
+
 #include "Sherwood.h"
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
@@ -30,7 +32,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   /// </summary>
   class DataPointCollection: public IDataPointCollection
   {
-    std::vector<float> data_;
+    //std::vector<float> data_;
+      cv::Mat dataMat;
     int dimension_;
 
     // only for classified data...
@@ -111,7 +114,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <returns>The number of data points</returns>
     unsigned int Count() const
     {
-      return data_.size()/dimension_;
+      return dataMat.rows;
     }
 
     /// <summary>
@@ -141,10 +144,22 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="i">Zero-based data point index.</param>
     /// <returns>Pointer to the first element of the data point.</returns>
-    const float* GetDataPoint(int i) const
+    /*const float* GetDataPoint(int i) const
     {
       return &data_[i*dimension_];
+    }*/
+
+    /// <summary>
+    /// Get the specified data point.
+    /// </summary>
+    /// <param name="i">Zero-based data point index.</param>
+    /// <returns>Row values of the first element of the data point.</returns>
+    const cv::Mat GetDataPoint(int i) const
+    {
+      return dataMat.row(i);
     }
+
+
 
     /// <summary>
     /// Get the class label for the specified data point (or raise an

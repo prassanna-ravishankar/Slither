@@ -39,6 +39,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
     result->dimension_ = dataDimension;
 
+
     unsigned int elementsPerLine = (bHasClassLabels ? 1 : 0) + dataDimension + (bHasTargetValues ? 1 : 0);
 
     std::string line;
@@ -74,10 +75,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         }
       }
 
+      cv::Mat rowMat = cv::Mat(1,dataDimension,CV_32FC1);
+
       for (int i = 0; i < dataDimension; i++)
       {
+
         float x = to_float(elements[index++]);
-        result->data_.push_back(x);
+        rowMat.at<float>(0,i) =x;
+//        result->data_.push_back(x);
       }
 
       if (bHasTargetValues)
@@ -85,13 +90,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         float t = to_float(elements[index++]);
         result->targets_.push_back(t);
       }
+
+      result->dataMat.push_back(rowMat);
     }
+
 
     return result;
   }
 
   /// <summary>
-  /// Generate a 2D dataset with data points distributed in a grid pattern.
+  /// NOTWORKING : Generate a 2D dataset with data points distributed in a grid pattern.
   /// Intended for generating visualization images.
   /// </summary>
   /// <param name="rangeX">x-axis range</param>
@@ -120,15 +128,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     for (int j = 0; j < nStepsY; j++)
       for (int i = 0; i < nStepsX; i++)
       {
-        result->data_.push_back(rangeX.first + i * stepX);
-        result->data_.push_back(rangeY.first + j * stepY);
+        //RPG-Removed
+        //result->data_.push_back(rangeX.first + i * stepX);
+        //result->data_.push_back(rangeY.first + j * stepY);
       }
 
       return result;
   }
 
   /// <summary>
-  /// Generate a 1D dataset containing a given number of data points
+  /// NOTWORKING - Generate a 1D dataset containing a given number of data points
   /// distributed at regular intervals within a given range. Intended for
   /// generating visualization images.
   /// </summary>
@@ -147,8 +156,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     float step = (range.second - range.first) / nSteps;
 
     for (int i = 0; i < nSteps; i++)
-      result->data_.push_back(range.first + i * step);
-
+    {
+      //REMOVED - RPG
+      //result->data_.push_back(range.first + i * step);
+    }
     return result;
   }
 
@@ -166,7 +177,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     if (dimension < 0 || dimension>dimension_)
       throw std::runtime_error("Insufficient data to compute range.");
 
-    float min = data_[0 + dimension], max = data_[0 + dimension];
+/*    float min = data_[0 + dimension], max = data_[0 + dimension];
 
     for (int i = 0; i < (int)(data_.size())/dimension_; i++)
     {
@@ -175,8 +186,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       else if (data_[i*dimension_ +  dimension] > max)
         max = data_[i*dimension_ +  dimension];
     }
+*/
 
-    return std::pair<float, float>(min, max);
+
+    cv::Mat viewMat = dataMat.colRange(0, dimension);
+    double min, max;
+    cv::minMaxLoc(viewMat, &min, &max);
+    return std::pair<float, float>((float)min, (float)max);
   }
 
   /// <summary>
@@ -193,7 +209,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     float min = targets_[0], max = targets_[0];
 
-    for (int i = 0; i < (int)(data_.size())/dimension_; i++)
+    for (int i = 0; i < dataMat.cols; i++)
     {
       if (targets_[i] < min)
         min = targets_[i];
