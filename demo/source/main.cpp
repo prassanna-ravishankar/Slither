@@ -43,8 +43,8 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "../demo/data/sclf/sample_train.txt";
-std::string test_filename = "../demo/data/sclf/sample_test.txt";
+std::string train_filename = "../demo/data/sclf/exp1_n2.txt";
+std::string test_filename = "../demo/data/sclf/exp1_n2.txt";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
+          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
           ;
 
   po::variables_map vm;

@@ -42,8 +42,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   float LinearFeatureResponse2d::GetResponse(const IDataPointCollection& data, unsigned int index) const
   {
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
+    cv::Mat rowMat = concreteData.GetDataPoint((int) index);
+    std::cout<<rowMat<<std::endl;
     //return dx_ * concreteData.GetDataPoint((int)index)[0] + dy_ * concreteData.GetDataPoint((int)index)[1];
-    return dx_ * concreteData.GetDataPoint((int) index).at<float>(0) + dy_ * concreteData.GetDataPoint((int) index).at<float>(1);
+    return dx_ * rowMat.at<float>(0) + dy_ * rowMat.at<float>(1);
   }
 
   std::string LinearFeatureResponse2d::ToString() const

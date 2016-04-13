@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <vector>
+#include <set>
 
 #include "Sherwood.h"
 
@@ -19,13 +20,19 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   struct HistogramAggregator
   {
   private:
-    unsigned short bins_[4];
+    std::set<int> uniqueBins_;
+    std::vector<short> bins_;
+    //unsigned short bins_[4];
     int binCount_;
 
     unsigned int sampleCount_;
 
   public:
-    double Entropy() const;
+      double Entropy() const;
+      double EntropyGINI() const;
+      double Entropy(const unsigned short *priorBins, const unsigned int priorSampleCount) const;
+      double Entropy(const std::vector<short> priorBins, const unsigned int priorSampleCount) const;
+
 
     HistogramAggregator();
 
@@ -34,6 +41,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     float GetProbability(int classIndex) const;
 
     int BinCount() const {return binCount_; }
+
+    std::vector<short> GetBins() const {return bins_;}
 
     unsigned int SampleCount() const { return sampleCount_; }
 

@@ -237,7 +237,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // to terminate training of this branch.
       leftChildStatistics_.Clear();
       rightChildStatistics_.Clear();
-
+        std::cout<<"After Parallel"<<std::endl;
       for (DataPointIndex i = i0; i < i1; i++)
       {
         responses_[i] = bestFeature.GetResponse(data_, indices_[i]);
@@ -336,8 +336,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       Random& random,
       ITrainingContext<F, S>& context,
       const TrainingParameters& parameters,
-      int maxThreads,
       const IDataPointCollection& data,
+      int maxThreads=4,
       ProgressStream* progress=0)
     {
       ProgressStream defaultProgress(std::cout, parameters.Verbose? Verbose:Interest);
@@ -395,7 +395,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       {
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
-        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
+        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, 1, progress);
         forest->AddTree(tree);
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;

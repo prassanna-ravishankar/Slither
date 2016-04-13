@@ -42,8 +42,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
   private:
     int nClasses_;
+    IGType igType;
 
-    IFeatureResponseFactory<F>* featureFactory_;
+
+      IFeatureResponseFactory<F>* featureFactory_;
 
   public:
     ClassificationTrainingContext(int nClasses, IFeatureResponseFactory<F>* featureFactory)
@@ -64,19 +66,55 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return HistogramAggregator(nClasses_);
     }
 
-    double ComputeInformationGain(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
-    {
-      double entropyBefore = allStatistics.Entropy();
+      double ComputeInformationGain(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+      {
+        switch(igType)
+        {
+          case ig_shannon:
+            return ComputeInformationGainShannon(allStatistics, leftStatistics, rightStatistics);
+                break;
+          case ig_gini:
+            return ComputeInformationGainGINI(allStatistics, leftStatistics, rightStatistics);
+                break;
+          default:
+            printf("ERROR: Unknown IG type\n");
+                exit(0);
+        };
+      }
 
-      unsigned int nTotalSamples = leftStatistics.SampleCount() + rightStatistics.SampleCount();
+      double ComputeInformationGainShannon(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+      {
+        unsigned int nTotalSamples = leftStatistics.SampleCount() + rightStatistics.SampleCount();
+        if (nTotalSamples <= 1)
+          return 0.0;
 
-      if (nTotalSamples <= 1)
-        return 0.0;
+        double entropyBefore = allStatistics.Entropy();
+        double entropyAfter = (leftStatistics.SampleCount() * leftStatistics.Entropy() + rightStatistics.SampleCount() * rightStatistics.Entropy()) / nTotalSamples;
+        return entropyBefore - entropyAfter;
+      }
 
-      double entropyAfter = (leftStatistics.SampleCount() * leftStatistics.Entropy() + rightStatistics.SampleCount() * rightStatistics.Entropy()) / nTotalSamples;
+      double ComputeInformationGainGINI(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+      {
+        unsigned int nTotalSamples = leftStatistics.SampleCount() + rightStatistics.SampleCount();
+        if (nTotalSamples <= 1)
+          return 0.0;
 
-      return entropyBefore - entropyAfter;
-    }
+        double entropyBefore = allStatistics.EntropyGINI();
+        double entropyAfter = (leftStatistics.SampleCount() * leftStatistics.EntropyGINI() + rightStatistics.SampleCount() * rightStatistics.EntropyGINI()) / nTotalSamples;
+        return entropyBefore - entropyAfter;
+      }
+
+      double ComputeInformationGainReweighted(const HistogramAggregator& global, const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
+      {
+        // TODO: Bad!!!!
+        unsigned int nTotalSamples = leftStatistics.SampleCount() + rightStatistics.SampleCount();
+        if (nTotalSamples <= 1)
+          return 0.0;
+
+        double entropyBefore = allStatistics.Entropy(global.GetBins(), global.SampleCount());
+        double entropyAfter = (leftStatistics.SampleCount() * leftStatistics.Entropy(global.GetBins(), global.SampleCount()) + rightStatistics.SampleCount() * rightStatistics.Entropy(global.GetBins(), global.SampleCount())) / nTotalSamples;
+        return entropyBefore - entropyAfter;
+      }
 
     bool ShouldTerminate(const HistogramAggregator& parent, const HistogramAggregator& leftChild, const HistogramAggregator& rightChild, double gain)
     {
@@ -107,7 +145,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
 
       std::auto_ptr<Forest<F, HistogramAggregator> > forest 
-        = ForestTrainer<F, HistogramAggregator>::TrainForest (
+        = ParallelForestTrainer<F, HistogramAggregator>::TrainForest (
         random, TrainingParameters, classificationContext, trainingData );
 
       return forest;
@@ -138,6 +176,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         {
           int leafIndex = leafIndicesPerTree[t][i];
           result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
+          std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<std::endl;
         }
       }
 

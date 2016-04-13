@@ -11,6 +11,10 @@
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
+  enum IGType { ig_unknown=-1, ig_shannon, ig_reweighted, ig_gini };
+
+
+
   /// <summary>
   /// Decision tree training parameters.
   /// </summary>
@@ -25,6 +29,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       MaxDecisionLevels = 5;
       Verbose = false;
       svm_c = 0.5;
+      igType = IGType ::ig_gini;
     }
 
     int NumberOfTrees;
@@ -32,6 +37,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     unsigned int NumberOfCandidateThresholdsPerFeature;
     int MaxDecisionLevels;
     bool Verbose;
-      float svm_c;
+    float svm_c;
+    IGType  igType;
+
   };
 } } }

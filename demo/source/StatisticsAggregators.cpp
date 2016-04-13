@@ -20,12 +20,68 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     return result;
   }
+  double HistogramAggregator::EntropyGINI() const
+  {
+    if (sampleCount_ == 0)
+      return 0.0;
+
+    //double result = 1.0;
+    //for (int b = 0; b < BinCount(); b++)
+    //{
+    //  double p = (double)bins_[b] / (double)sampleCount_;
+    //  result -= p * p/2.0;
+    //}
+
+    double result = 1.0;
+    for (int b = 0; b < BinCount(); b++)
+    {
+      double p = (double)bins_[b] / (double)sampleCount_;
+      result -= p * p;
+    }
+
+    return result/2.0;
+  }
+
+  double HistogramAggregator::Entropy(const unsigned short *priorBins, const unsigned int priorSampleCount) const
+  {
+    if (sampleCount_ == 0)
+      return 0.0;
+
+    double result = 0.0;
+    for (int b = 0; b < BinCount(); b++)
+    {
+      double invPriorP = (double)priorSampleCount/(double)priorBins[b];
+      double p = (double)bins_[b] / (double)sampleCount_;
+      result -= p == 0.0 ? 0.0 : invPriorP*p * log(p)/log(2.0);
+    }
+
+    return result;
+  }
+
+  double HistogramAggregator::Entropy(const std::vector<short> priorBins, const unsigned int priorSampleCount) const
+  {
+    if (sampleCount_ == 0)
+      return 0.0;
+
+    double result = 0.0;
+    for (int b = 0; b < BinCount(); b++)
+    {
+      double invPriorP = (double)priorSampleCount/(double)priorBins[b];
+      double p = (double)bins_[b] / (double)sampleCount_;
+      result -= p == 0.0 ? 0.0 : invPriorP*p * log(p)/log(2.0);
+    }
+
+    return result;
+  }
 
   HistogramAggregator::HistogramAggregator()
   {
-    binCount_ = 0;
-    for(int b=0; b<binCount_; b++)
+    binCount_ = 2;
+    bins_.resize(binCount_,0);
+
+    /*for(int b=0; b<binCount_; b++)
       bins_[b] = 0;
+      */
     sampleCount_ = 0;
   }
 
@@ -34,8 +90,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     if(nClasses>4)
       throw std::runtime_error("HistogramAggregator supports a maximum of four classes.");
     binCount_ = nClasses;
-    for(int b=0; b<binCount_; b++)
-      bins_[b] = 0;
+    /*for(int b=0; b<binCount_; b++)
+      bins_[b] = 0;*/
+    bins_.resize(binCount_,0);
     sampleCount_ = 0;
   }
 
@@ -233,7 +290,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   GaussianAggregator2d GaussianAggregator2d::DeepClone() const
   {
-    GaussianAggregator2d result(a_, b_); 
+    GaussianAggregator2d result(a_, b_);
 
     result.sx_ = sx_;
     result.sy_ = sy_;
