@@ -9,7 +9,7 @@
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
-  AxisAlignedFeatureResponse AxisAlignedFeatureResponse ::CreateRandom(Random& random)
+  AxisAlignedFeatureResponse AxisAlignedFeatureResponse ::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node)
   {
     return AxisAlignedFeatureResponse(random.Next(0, 2));
   }
@@ -29,7 +29,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   }
 
   /// <returns>A new LinearFeatureResponse2d instance.</returns>
-  LinearFeatureResponse2d LinearFeatureResponse2d::CreateRandom(Random& random)
+  LinearFeatureResponse2d LinearFeatureResponse2d::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node)
   {
     double dx = 2.0 * random.NextDouble() - 1.0;
     double dy = 2.0 * random.NextDouble() - 1.0;

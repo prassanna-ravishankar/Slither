@@ -13,6 +13,21 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   class Random;
 
+  #define WITH_FISHER true
+  #define FISHER_CLUSTERS 16
+  #define HYPER_MACHINE_DIM 64
+  #define HYPER_LBP_DIM 59
+  #define HYPER_LOCATION_DIM 2
+  #define HYPER_MACHINE_PAIRS (HYPER_MACHINE_DIM*FISHER_CLUSTERS) //64*16 ->1024
+  #define HYPER_LBP_PAIRS (HYPER_LBP_DIM*FISHER_CLUSTERS) //59*64 -> 3776
+  #define HYPERFISHER_MACHINE_DIM (2*HYPER_MACHINE_PAIRS) //2*1024  --> 2048
+  #define HYPERFISHER_LBP_DIM (2*HYPER_LBP_PAIRS) //2*3776 -->
+  #define HYPER_FISHER_DIM (HYPER_MACHINE_DIM+HYPER_LBP_DIM+HYPER_LOCATION_DIM) //2048 + 2*3776
+  #define BLOK_SIZE_SUPERPIXEL 2
+  #define NN_DIM 64
+  #define SUPERPIXEL_STATISTICS 2
+  #define NN_FULL_DIMS (NN_DIM*SUPERPIXEL_STATISTICS)
+
   /// <summary>
   /// A feature that orders data points using one of their coordinates,
   /// i.e. by projecting them onto a coordinate axis.
@@ -41,7 +56,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="randomNumberGenerator">A random number generator.</param>
     /// <returns>A new AxisAlignedFeatureResponse instance.</returns>
-    static AxisAlignedFeatureResponse CreateRandom(Random& random);
+    static AxisAlignedFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
 
     int Axis() const
     {
@@ -84,11 +99,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="randomNumberGenerator">A random number generator.</param>
     /// <returns>A new LinearFeatureResponse2d instance.</returns>
-    static LinearFeatureResponse2d CreateRandom(Random& random);
+    static LinearFeatureResponse2d CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
 
     // IFeatureResponse implementation
     float GetResponse(const IDataPointCollection& data, unsigned int index) const;
 
     std::string ToString()  const;
-  };	
+  };
+
+
+
 } } }

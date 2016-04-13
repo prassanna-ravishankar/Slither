@@ -79,7 +79,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         partitionStatistics_[i] = trainingContext_.GetStatisticsAggregator();
     }
 
-    void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth)
+    void TrainNodesRecurse(std::vector<Node<F, S> >& nodes, NodeIndex nodeIndex, DataPointIndex i0, DataPointIndex i1, int recurseDepth, bool is_parent=false)
     {
       assert(nodeIndex < nodes.size());
       progress_[Verbose] << Tree<F, S>::GetPrettyPrintPrefix(nodeIndex) << i1 - i0 << ": ";
@@ -104,7 +104,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::vector<float> thresholds;
       for (int f = 0; f < parameters_.NumberOfCandidateFeatures; f++)
       {
-        F feature = trainingContext_.GetRandomFeature(random_);
+        F feature = trainingContext_.GetRandomFeature(random_, data_, &indices_[0], (unsigned int)i0, (unsigned int)i1,parameters_.svm_c, is_parent);
 
         for (unsigned int b = 0; b < parameters_.NumberOfCandidateThresholdsPerFeature + 1; b++)
           partitionStatistics_[b].Clear(); // reset statistics

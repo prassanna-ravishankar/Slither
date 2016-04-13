@@ -38,7 +38,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
     // Implementation of ITrainingContext
-    AxisAlignedFeatureResponse GetRandomFeature(Random& random)
+    AxisAlignedFeatureResponse GetRandomFeature(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node=false)
     {
       return AxisAlignedFeatureResponse(random.Next(0, 2));
     }
