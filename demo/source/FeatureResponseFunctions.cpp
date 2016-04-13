@@ -217,7 +217,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     lr.svm->train(tdata);
 
-    cv::Mat svs = lr.svm->getSupportVectors();
+    lr.nWeights_ = lr.vIndex_.size();
+    //cv::Mat svs = lr.svm->getSupportVectors();
     //svm->getDecisionFunction(0,alpha,svs);
     //std::cout<<"[DEBUG : FeatureResponseSVM]"<<svs<<"|"<<svs.rows<<" "<<svs.cols<<std::endl;
 
@@ -234,6 +235,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
 
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
+    cv::Mat rowMat = concreteData.GetDataPoint(index);
+    cv::Mat feature_Mat  = cv::Mat(1, nWeights_, CV_32FC1);
+    for (int i = 0;i<nWeights_;i++)
+    {
+        feature_Mat.at<float>(i) = rowMat.at<float>(vIndex_[i]);
+    }
+    float response = svm->predict(feature_Mat, cv::noArray(), cvml::SVM::RAW_OUTPUT);
     //std::vector<float> rowData = concreteData.GetDataPointRange(index);
 
 
@@ -244,10 +252,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     for(int j=0;j<vWeights_.size();j++) {
         response+=rowData[vIndex_[j]]*vWeights_[j];
         //std::cout<<"[DEBUG FEATURERESPONSE - printing online response | step] : "<<response<<"   "<<j<<std::endl;
+        //aUTOMATIC WAY
+    float response = 0;
     }*/
 
-    //aUTOMATIC WAY
-    float response = 0;
+
     return response;
   }
 

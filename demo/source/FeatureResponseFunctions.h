@@ -166,6 +166,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       float	bias_;
       int		nIndex_;
       cv::Ptr<cvml::SVM> svm;
+      int nWeights_;
 
   public:
       LinearFeatureResponseSVM():
