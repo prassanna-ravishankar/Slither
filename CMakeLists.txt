@@ -16,13 +16,14 @@ if (OPENMP_FOUND)
 endif()
 
 #Boost
-FIND_PACKAGE(Boost COMPONENTS program_options)
-#find_package(BoostNumPy REQUIRED)
+find_package(Boost COMPONENTS program_options python)
+find_package(PythonLibs REQUIRED)
+find_package(BoostNumPy REQUIRED)
 message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
 message("Libs of boost: " ${Boost_LIBRARIES} )
 
 #Python
-#find_package(PythonLibs REQUIRED)
+#
 #message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
 

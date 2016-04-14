@@ -30,6 +30,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       Verbose = false;
       svm_c = 0.5;
       igType = IGType ::ig_gini;
+      featureMask = FeatureMaskType ::standard;
+      maxThreads = 4;
     }
 
     int NumberOfTrees;
@@ -40,6 +42,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     float svm_c;
     IGType  igType;
     FeatureMaskType featureMask;
+      int maxThreads;
 
   };
 } } }

@@ -70,20 +70,21 @@ int main(int argc, char* argv[])
   po::options_description desc("Allowed Options");
   desc.add_options()
           ("help,h", "produce help message")
-          ("data_train",po::value<std::string>()->default_value(train_filename), "Training Data file (CSV TAB DELIMITED)")
-          ("data_test",po::value<std::string>()->default_value(test_filename), "Testing Data file")
-          ("data_predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
-          ("forest_loc",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
+          ("train",po::value<std::string>()->default_value(train_filename), "Training Data file (CSV TAB DELIMITED)")
+          ("test",po::value<std::string>()->default_value(test_filename), "Testing Data file")
+          ("predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
+          ("model",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
           ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
           ("trees",po::value<int>()->default_value(50), "Number of Trees in the forest")
-          ("dlevels",po::value<int>()->default_value(10), "Number of Decision Levels")
-          ("candidate_feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
-          ("candidate_thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
+          ("depth",po::value<int>()->default_value(10), "Number of Decision Levels")
+          ("feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
+          ("thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
           ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(0), "standard=0, hypercolumn=1, lbp=2, fisher=3")
+          ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
           ;
 
   po::variables_map vm;
@@ -194,36 +195,36 @@ void parseArguments(po::variables_map& vm)
 
   //Data_Train
   std::cout<<"2. [Training Data]";
-  if (vm.count("Training Data"))
+  if (vm.count("train"))
     std::cout << "\t Training data source was set to ";
   else
     std::cout << "\t Training Data source was not set. Using Default...";
-  train_filename = vm["data_train"].as<std::string>();
+  train_filename = vm["train"].as<std::string>();
   std::cout<<"<"<<train_filename<<">"<<std::endl;
 
 
   std::cout<<"2. [Testing Data]";
-  if (vm.count("data_test"))
+  if (vm.count("test"))
     std::cout << "\t Testing data source was set to ";
   else
     std::cout << "\t Testing Data source was not set. Using Default...";
-  test_filename = vm["data_test"].as<std::string>();
+  test_filename = vm["test"].as<std::string>();
   std::cout<<"<"<<test_filename<<">"<<std::endl;
 
   std::cout << "3. [Predicted output]";
-  if (vm.count ("data_predict"))
+  if (vm.count ("predict"))
     std::cout << "\t Predicted output filename was set to ";
   else
     std::cout << "\t Predicted output filename  was not set. Using Default...";
-  predict_filename = vm["data_predict"].as<std::string> ();
+  predict_filename = vm["predict"].as<std::string> ();
   std::cout << "<" << predict_filename << ">" << std::endl;
 
   std::cout<<"4. [Forest Location]";
-  if (vm.count("forest_loc"))
+  if (vm.count("model"))
     std::cout << "\t Forest Location source was set to ";
   else
     std::cout << "\t Forest Location source was not set. Using Default...";
-  forest_loc = vm["forest_loc"].as<std::string>();
+  forest_loc = vm["model"].as<std::string>();
   std::cout<<"<"<<forest_loc<<">"<<std::endl;
 
 
@@ -245,27 +246,27 @@ void parseArguments(po::variables_map& vm)
   std::cout<<"<"<<trainingParameters.NumberOfTrees<<">"<<std::endl;
 
   std::cout<<"7. [Decision Levels]";
-  if (vm.count("dlevels"))
+  if (vm.count("depth"))
     std::cout << "\t Number of Decision levels is set to ";
   else
     std::cout << "\t Number of Decision levels not set. Using Default...";
-  trainingParameters.MaxDecisionLevels = vm["dlevels"].as<int>();
+  trainingParameters.MaxDecisionLevels = vm["depth"].as<int>();
   std::cout<<"<"<<trainingParameters.MaxDecisionLevels<<">"<<std::endl;
 
   std::cout<<"8. [Candidate Features]";
-  if (vm.count("candidate_feats"))
+  if (vm.count("feats"))
     std::cout << "\t Number of Canidate Features is set to ";
   else
     std::cout << "\t Number of Canidate Features was not set. Using Default...";
-  trainingParameters.NumberOfCandidateFeatures = vm["candidate_feats"].as<int>();
+  trainingParameters.NumberOfCandidateFeatures = vm["feats"].as<int>();
   std::cout<<"<"<<trainingParameters.NumberOfCandidateFeatures<<">"<<std::endl;
 
   std::cout<<"9. [Candidate Thresholds]";
-  if (vm.count("candidate_thresh"))
+  if (vm.count("thresh"))
     std::cout << "\t Number of Canidate Thresholds is set to ";
   else
     std::cout << "\t Number of Canidate Thresholds was not set. Using Default...";
-  trainingParameters.NumberOfCandidateThresholdsPerFeature = vm["candidate_thresh"].as<int>();
+  trainingParameters.NumberOfCandidateThresholdsPerFeature = vm["thresh"].as<int>();
   std::cout<<"<"<<trainingParameters.NumberOfCandidateThresholdsPerFeature<<">"<<std::endl;
 
   std::cout<<"10. [SVM_C]";
@@ -323,9 +324,18 @@ void parseArguments(po::variables_map& vm)
   if (vm.count("mask_type"))
     std::cout << "\t Mask type was set to ";
   else
-    std::cout << "\t Operating  Mode was not set. Using Default...";
+    std::cout << "\t Mask type was not set. Using Default..."<<std::endl;
   int mask_type = vm["mask_type"].as<int>();
   trainingParameters.featureMask = static_cast<FeatureMaskType >(mask_type);
+
+
+  std::cout<<"14. [Max Threads ]";
+  if (vm.count("threads"))
+    std::cout << "\t Max Threads was set to : ";
+  else
+    std::cout << "\t Max Threads was not set. Using Default..."<<std::endl;
+  int maxThreads = vm["threads"].as<int>();
+  trainingParameters.maxThreads = maxThreads;
 
   std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
 
