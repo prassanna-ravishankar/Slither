@@ -41,7 +41,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
     // Implementation of ITrainingContext
-    LinearFeatureResponse2d GetRandomFeature(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node=false)
+    LinearFeatureResponse2d GetRandomFeature(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node=false)
     {
       return LinearFeatureResponse2d((float)(2.0*random.NextDouble()-1.0), (float)(2.0*random.NextDouble()-1.0));
     }

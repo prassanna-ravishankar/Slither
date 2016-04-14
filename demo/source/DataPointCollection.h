@@ -170,9 +170,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     }
 
-    cv::Ptr<cvml::TrainData> getTrainDataWithMask(std::vector<int> mask_values)
+    cv::Ptr<cvml::TrainData> getTrainDataWithMask(std::vector<int> mask_values, int start_row, int end_row)
     {
-      return cvml::TrainData::create(dataMat, cvml::ROW_SAMPLE, cv::Mat(labels_), mask_values);
+      cv::Mat colMat = dataMat.rowRange(start_row,end_row);
+      //std::cout<<"--->"<<dataMat.rows<<std::endl;
+      cv::Mat labelsMat = cv::Mat(labels_);
+      cv::Mat reducedLabels = labelsMat.rowRange(start_row,end_row);
+      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
     }
 
 

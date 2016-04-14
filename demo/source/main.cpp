@@ -62,7 +62,8 @@ int main(int argc, char* argv[])
   trainingParameters.NumberOfCandidateThresholdsPerFeature = 10;
   trainingParameters.NumberOfTrees = 10;
   trainingParameters.Verbose = true;
-  //trainingParameters.igType =  ig_shannon;
+  trainingParameters.igType =  ig_shannon;
+  trainingParameters.featureMask = FeatureMaskType::hypercolumn;
 
 
 
@@ -82,6 +83,7 @@ int main(int argc, char* argv[])
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
           ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
+          ("mask_type",po::value<int>()->default_value(0), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ;
 
   po::variables_map vm;
@@ -316,6 +318,14 @@ void parseArguments(po::variables_map& vm)
   }
   else
     std::cout<<"Couldn't parse train-test mode. Doing both"<<std::endl;
+
+  std::cout<<"14. [Mask Type ]";
+  if (vm.count("mask_type"))
+    std::cout << "\t Mask type was set to ";
+  else
+    std::cout << "\t Operating  Mode was not set. Using Default...";
+  int mask_type = vm["mask_type"].as<int>();
+  trainingParameters.featureMask = static_cast<FeatureMaskType >(mask_type);
 
   std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
 

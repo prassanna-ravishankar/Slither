@@ -39,6 +39,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     bool Verbose;
     float svm_c;
     IGType  igType;
+    FeatureMaskType featureMask;
 
   };
 } } }

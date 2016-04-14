@@ -4,9 +4,9 @@
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
-    AxisAlignedFeatureResponse AxisAlignedFeatureResponseFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c,bool root_node)
+    AxisAlignedFeatureResponse AxisAlignedFeatureResponseFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
     {
-      return AxisAlignedFeatureResponse::CreateRandom(random, data, dataIndices,i0,i1,svm_c, root_node);
+      return AxisAlignedFeatureResponse::CreateRandom(random, data, dataIndices,i0,i1,svm_c,featureMask, root_node);
     }
 
     /*
@@ -15,14 +15,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return LinearFeatureResponse2d::CreateRandom(random);
     }*/
 
-    LinearFeatureResponse LinearFeatureFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c,bool root_node)
+    LinearFeatureResponse LinearFeatureFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
     {
-      return LinearFeatureResponse::CreateRandom(random, data, dataIndices,i0,i1,svm_c, root_node);
+      return LinearFeatureResponse::CreateRandom(random, data, dataIndices,i0,i1,svm_c, featureMask, root_node);
     }
 
-    LinearFeatureResponseSVM LinearFeatureSVMFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c,bool root_node)
+    LinearFeatureResponseSVM LinearFeatureSVMFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
     {
-      return LinearFeatureResponseSVM::CreateRandom(random, data, dataIndices,i0,i1,svm_c, root_node);
+      return LinearFeatureResponseSVM::CreateRandom(random, data, dataIndices,i0,i1,svm_c,featureMask, root_node);
     }
 } } }
 

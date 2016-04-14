@@ -104,7 +104,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::vector<float> thresholds;
       for (int f = 0; f < parameters_.NumberOfCandidateFeatures; f++)
       {
-        F feature = trainingContext_.GetRandomFeature(random_, data_, &indices_[0], (unsigned int)i0, (unsigned int)i1,parameters_.svm_c, is_parent);
+        //Fixing, but receive from outside
+        F feature = trainingContext_.GetRandomFeature(random_, data_, &indices_[0], (unsigned int)i0, (unsigned int)i1,parameters_.svm_c,parameters_.featureMask, is_parent);
 
         for (unsigned int b = 0; b < parameters_.NumberOfCandidateThresholdsPerFeature + 1; b++)
           partitionStatistics_[b].Clear(); // reset statistics

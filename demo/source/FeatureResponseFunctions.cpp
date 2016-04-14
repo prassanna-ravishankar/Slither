@@ -9,7 +9,7 @@
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
-  AxisAlignedFeatureResponse AxisAlignedFeatureResponse ::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node)
+  AxisAlignedFeatureResponse AxisAlignedFeatureResponse ::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
     return AxisAlignedFeatureResponse(random.Next(0, 2));
   }
@@ -29,7 +29,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   }
 
   /// <returns>A new LinearFeatureResponse2d instance.</returns>
-  LinearFeatureResponse2d LinearFeatureResponse2d::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node)
+  LinearFeatureResponse2d LinearFeatureResponse2d::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
     double dx = 2.0 * random.NextDouble() - 1.0;
     double dy = 2.0 * random.NextDouble() - 1.0;
@@ -60,7 +60,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
   /// <returns>A new LinearFeatureResponse instance.</returns>
-  LinearFeatureResponse LinearFeatureResponse::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, bool root_node=false)
+  LinearFeatureResponse LinearFeatureResponse::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
     LinearFeatureResponse lr;
     //lr.dimensions_ = data.GetDimension();
@@ -202,18 +202,32 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   }
 
 
-  LinearFeatureResponseSVM LinearFeatureResponseSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, bool root_node)
+  LinearFeatureResponseSVM LinearFeatureResponseSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
     LinearFeatureResponseSVM lr;
     DataPointCollection& concreteData = (DataPointCollection&)(data);
     //this->dimensions_ =  concreteData.Dimensions();
     lr.dimensions_ = concreteData.Dimensions();
 
-    GenerateMask (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+    switch(featureMask)
+    {
+      case fisher:GenerateMaskFisher (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+        break;
+      case lbp:GenerateMaskLBP (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+        break;
+      case hypercolumn: GenerateMaskHypercolumn (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+        break;
+      case standard:GenerateMask (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+        break;
+      default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
+    }
+
+
 
     lr.svm->setC(svm_c);
 
-    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_);
+    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
+    //std::cout<<"[DEBUG]"<<i0<<" -->"<<i1<<"    "<<tdata->getNSamples()<<std::endl;
 
     lr.svm->train(tdata);
 

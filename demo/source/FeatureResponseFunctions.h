@@ -18,7 +18,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   class Random;
 
-  #define WITH_FISHER true
+
+#define WITH_FISHER true
   #define FISHER_CLUSTERS 16
   #define HYPER_MACHINE_DIM 64
   #define HYPER_LBP_DIM 59
@@ -61,7 +62,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="randomNumberGenerator">A random number generator.</param>
     /// <returns>A new AxisAlignedFeatureResponse instance.</returns>
-    static AxisAlignedFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+    static AxisAlignedFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
 
     int Axis() const
     {
@@ -104,7 +105,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="randomNumberGenerator">A random number generator.</param>
     /// <returns>A new LinearFeatureResponse2d instance.</returns>
-    static LinearFeatureResponse2d CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+    static LinearFeatureResponse2d CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
 
     // IFeatureResponse implementation
     float GetResponse(const IDataPointCollection& data, unsigned int index) const;
@@ -148,7 +149,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       /// </summary>
       /// <param name="randomNumberGenerator">A random number generator.</param>
       /// <returns>A new LinearFeatureResponse2d instance.</returns>
-      static LinearFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node);
+      static LinearFeatureResponse CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
 
       // IFeatureResponse implementation
       float GetResponse(const IDataPointCollection& data, unsigned int index) const;
@@ -192,7 +193,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         //vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
         dimensions_ = dimensions;
       }
-      static LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node=false);
+      static LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
       static void GenerateMask(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskFisher(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskLBP(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
