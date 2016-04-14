@@ -161,17 +161,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
   protected:
       std::vector<int> vIndex_;
-      std::vector<float> vWeights_;
+      //std::vector<float> vWeights_;
       int		dimensions_;
-      float	bias_;
-      int		nIndex_;
+      //float	bias_;
+      //int		nIndex_;
       cv::Ptr<cvml::SVM> svm;
       int nWeights_;
 
   public:
       LinearFeatureResponseSVM():
-              dimensions_(-1),
-              bias_(0.0f)
+              dimensions_(-1)//,
+              //bias_(0.0f)
       {
         //m_param_filename = "/home/prassanna/Development/Code3/Parameters/parametersTaskManager2.ini";
           svm = cvml::SVM::create();
@@ -189,7 +189,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       LinearFeatureResponseSVM(float* pWeights, const int dimensions)
       {
 
-        vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
+        //vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
         dimensions_ = dimensions;
       }
       static LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1, float svm_c, bool root_node=false);
