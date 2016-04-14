@@ -240,3 +240,22 @@ BOOST_PYTHON_MODULE(Rfsvm)
     bp::def("setSVM_C",setSVM_C);
 
 }
+
+
+int main(int argc, char **argv)
+{
+    // This line makes our module available to the embedded Python intepreter.
+# if PY_VERSION_HEX >= 0x03000000
+    PyImport_AppendInittab("Rfsvm", &PyInit_example);
+# else
+    PyImport_AppendInittab("Rfsvm", &initexample);
+# endif
+    // Initialize the Python runtime.
+    Py_Initialize();
+
+    PyRun_SimpleString(
+            "import Rfsvm\n"
+                    "import numpy\n"
+                    );
+    Py_Finalize();
+}

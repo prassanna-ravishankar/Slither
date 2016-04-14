@@ -399,7 +399,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       {
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
-        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, 4, progress);
+        std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, parameters.maxThreads, progress);
         forest->AddTree(tree);
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;

@@ -82,7 +82,7 @@ add_library(rflib ${SOURCE_FILES})
 target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
 
-
+#[[
 ##PyWrapper
 include_directories(
         ${PYTHON_INCLUDE_DIRS}
@@ -98,6 +98,7 @@ set_target_properties(Rfsvm PROPERTIES PREFIX "")
 if(WIN32)
     set_target_properties(Rfsvm PROPERTIES SUFFIX ".pyd")
 endif(WIN32)
-target_link_libraries(Rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
+target_link_libraries(Rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)]]
+
 
 
