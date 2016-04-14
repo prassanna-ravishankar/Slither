@@ -4,8 +4,11 @@ project(cpp)
 #Defaults
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fPIC") #No Warnings while compiling
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 
 
 #Openmp flags
@@ -74,6 +77,27 @@ add_executable(rf ${SOURCE_FILES})
 target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
 
+##PyWrapper preps
+add_library(rflib ${SOURCE_FILES})
+target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
+
+
+##PyWrapper
+include_directories(
+        ${PYTHON_INCLUDE_DIRS}
+        ${BOOST_PYTHON_INCLUDE_DIR}
+        ${BOOST_NUMPY_INCLUDE_DIR}
+)
+include_directories("${CMAKE_SOURCE_DIR}/pyWrapper")
+set(PYWRAPPER_FILES
+        pyWrapper/wrapper.cpp)
+add_library(Rfsvm SHARED ${PYWRAPPER_FILES})
+# Ensure the output binary is called TestModule.so on Linux (not libTestModule.so)
+set_target_properties(Rfsvm PROPERTIES PREFIX "")
+if(WIN32)
+    set_target_properties(Rfsvm PROPERTIES SUFFIX ".pyd")
+endif(WIN32)
+target_link_libraries(Rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
 
 

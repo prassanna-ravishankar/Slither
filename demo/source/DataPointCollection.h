@@ -50,6 +50,19 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   public:
     static const int UnknownClassLabel = -1;
 
+    bool reserve(int H, int W)
+    {
+      dataMat = cv::Mat(H,W,CV_32FC1);
+      dimension_ = W;
+      labels_.resize(H,0);
+    }
+
+    bool putValue(float value,int label, int h,int w)
+    {
+      dataMat.at<float>(h,w) = value;
+      labels_[h] = label;
+    }
+
     /// <summary>
     /// Load a collection of data from a tab-delimited file with one data point
     /// per line. The data may optionally have associated with class labels
