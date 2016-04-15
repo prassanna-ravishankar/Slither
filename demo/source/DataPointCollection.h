@@ -9,7 +9,7 @@
 #include <opencv2/ml.hpp>
 
 #include "Sherwood.h"
-
+#include <set>
 namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
@@ -36,10 +36,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   class DataPointCollection: public IDataPointCollection
   {
     //std::vector<float> data_;
-      cv::Mat dataMat;
+    cv::Mat dataMat;
     int dimension_;
+    std::set<int> uniqueClasses_;
 
-    // only for classified data...
+
+      // only for classified data...
     std::vector<int> labels_;
 
     std::map<std::string, int> labelIndices_; // map string labels to integers
@@ -61,6 +63,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       dataMat.at<float>(h,w) = value;
       labels_[h] = label;
+      uniqueClasses_.insert(label);
     }
 
     /// <summary>
@@ -113,7 +116,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       if (!HasLabels())
         throw std::runtime_error("Unlabelled data.");
-      return labelIndices_.size();
+
+      //return labelIndices_.size();
+      return uniqueClasses_.size();
     }
 
     /// <summary>
@@ -204,7 +209,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       if (!HasLabels())
         throw std::runtime_error("Data have no associated class labels.");
-
       return labels_[i]; // may throw an exception if index is out of range
     }
 

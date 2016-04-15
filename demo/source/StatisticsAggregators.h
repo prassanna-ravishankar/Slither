@@ -40,7 +40,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     float GetProbability(int classIndex) const;
 
-    int BinCount() const {return binCount_; }
+    int BinCount() const {
+      return binCount_; }
 
     std::vector<short> GetBins() const {return bins_;}
 

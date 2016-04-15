@@ -49,12 +49,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
   private:
     int nClasses_;
-    IGType igType;
+
 
 
       IFeatureResponseFactory<F>* featureFactory_;
 
   public:
+      IGType igType;
     ClassificationTrainingContext(int nClasses, IFeatureResponseFactory<F>* featureFactory)
     {
       nClasses_ = nClasses;
@@ -75,6 +76,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       double ComputeInformationGain(const HistogramAggregator& allStatistics, const HistogramAggregator& leftStatistics, const HistogramAggregator& rightStatistics)
       {
+        //std::cout<<"Selected IG : "<<igType<<std::endl;
         switch(igType)
         {
           case ig_shannon:
@@ -138,7 +140,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     static std::auto_ptr<Forest<F, HistogramAggregator> > Train (
       const DataPointCollection& trainingData,
       IFeatureResponseFactory<F>* featureFactory,
-      const TrainingParameters& TrainingParameters ) // where F : IFeatureResponse
+      const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
     {
       if (trainingData.HasLabels() == false)
         throw std::runtime_error("Training data points must be labelled.");
@@ -150,10 +152,37 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       Random random;
 
       ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
+      classificationContext.igType = trainingParameters.igType;
+
 
       std::auto_ptr<Forest<F, HistogramAggregator> > forest 
         = ParallelForestTrainer<F, HistogramAggregator>::TrainForest (
-        random, TrainingParameters, classificationContext, trainingData );
+        random, trainingParameters, classificationContext, trainingData );
+
+      return forest;
+    }
+
+
+    static std::auto_ptr<Forest<F, HistogramAggregator> > TrainSingle (
+            const DataPointCollection& trainingData,
+            IFeatureResponseFactory<F>* featureFactory,
+            const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
+    {
+      if (trainingData.HasLabels() == false)
+        throw std::runtime_error("Training data points must be labelled.");
+      if (trainingData.HasTargetValues() == true)
+        throw std::runtime_error("Training data points should not have target values.");
+
+      std::cout << "Running training..." << std::endl;
+
+      Random random;
+
+      ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
+      classificationContext.igType = trainingParameters.igType;
+
+      std::auto_ptr<Forest<F, HistogramAggregator> > forest
+              = ForestTrainer<F, HistogramAggregator>::TrainForest (
+                      random, trainingParameters, classificationContext, trainingData );
 
       return forest;
     }
@@ -190,6 +219,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       }
 
       std::cout<<" Score : "<<correctCount<<" / "<<testData.Count()<<std::endl;
+
+      distributions  = result;
 
       //return result;
     }

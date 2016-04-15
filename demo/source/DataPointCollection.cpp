@@ -66,11 +66,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             result->labelIndices_.insert(std::pair<std::string, int>(elements[index], result->labelIndices_.size()));
 
           result->labels_.push_back(result->labelIndices_[elements[index++]]);
+          result->uniqueClasses_.insert(result->labelIndices_[elements[index]]); //TODO : CHECK in c++
         }
         else
         {
           // cast necessary in g++ because std::vector<int>::push_back() takes a reference
           result->labels_.push_back((int)(DataPointCollection::UnknownClassLabel));
+          result->uniqueClasses_.insert((int)(DataPointCollection::UnknownClassLabel)); //TODO:Check in c++
           index++;
         }
       }

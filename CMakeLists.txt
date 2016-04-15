@@ -19,7 +19,7 @@ if (OPENMP_FOUND)
 endif()
 
 #Boost
-find_package(Boost COMPONENTS program_options)
+find_package(Boost COMPONENTS program_options python)
 message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
 message("Libs of boost: " ${Boost_LIBRARIES} )
 
@@ -74,71 +74,27 @@ add_executable(rf ${SOURCE_FILES})
 #target_link_libraries(sw ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} svmlib svm)
 target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
+add_library(rflib ${SOURCE_FILES})
+target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
-##PyWrapper preps
-#add_library(rflib ${SOURCE_FILES})
-#target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
+##PYWRAPPER - BOOST TEST
 
-
-
-##PyWrapper -TRIAL
-set(EXAMPLE_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling the example library")
-
-#include(CheckCXXCompilerFlag)
-
-
-
-
-
-# Try to autodetect Python (can be overridden manually if needed)
 find_package(PythonLibs 2.7 REQUIRED)
-
-# The above sometimes returns version numbers like "3.4.3+"; the "+" must be removed for the next lines to work
-#string(REPLACE "+" "" PYTHONLIBS_VERSION_STRING "+${PYTHONLIBS_VERSION_STRING}")
-
-# Uncomment the following line if you will also require a matching Python interpreter
 find_package(PythonInterp 2.7 REQUIRED)
+find_package(BoostNumPy REQUIRED)
+find_package(OpenMP)
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${BOOST_PYTHON_INCLUDE_DIR})
+include_directories(${BOOST_NUMPY_INCLUDE_DIR})
 
 
-# Include path for Python header files
-include_directories(${PYTHON_INCLUDE_DIR})
+add_library(rfsvm SHARED pyWrapper/wrapper.cpp)
 
-# Include path for pybind11 header files -- this may need to be changed depending on your setup
-#include_directories(${PROJECT_SOURCE_DIR}/pybind11/include)
-
-# Create the binding library
-add_library(rfsvm SHARED
-        pyWrapper/wrapper.cpp
-        # ... extra files go here ...
-        )
-
-# Don't add a 'lib' prefix to the shared library
+# Ensure the output binary is called TestModule.so on Linux (not libTestModule.so)
 set_target_properties(rfsvm PROPERTIES PREFIX "")
-
-
-
-# It's quite common to have multiple copies of the same Python version
-# installed on one's system. E.g.: one copy from the OS and another copy
-# that's statically linked into an application like Blender or Maya.
-# If we link our plugin library against the OS Python here and import it
-# into Blender or Maya later on, this will cause segfaults when multiple
-# conflicting Python instances are active at the same time (even when they
-# are of the same version).
-
-# Windows is not affected by this issue since it handles DLL imports
-# differently. The solution for Linux and Mac OS is simple: we just don't
-# link against the Python library. The resulting shared library will have
-# missing symbols, but that's perfectly fine -- they will be resolved at
-# import time.
-
-# .SO file extension on Linux/Mac OS
-set_target_properties(rfsvm PROPERTIES SUFFIX ".so")
-
-# Strip unnecessary sections of the binary on Linux/Mac OS
-
-if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
-    add_custom_command(TARGET rfsvm POST_BUILD COMMAND strip ${PROJECT_BINARY_DIR}/rfsvm.so)
-endif()
-
-
-
+if(WIN32)
+    # Ensure the output binary is called TestModule.pyd on Windows (not TestModule.dll)
+    set_target_properties(rfsvm PROPERTIES SUFFIX ".pyd")
+endif(WIN32)
+target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
