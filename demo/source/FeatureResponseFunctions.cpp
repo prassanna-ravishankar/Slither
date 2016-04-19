@@ -115,7 +115,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   void LinearFeatureResponseSVM::GenerateMask(Random &random, std::vector<int>& vIndex, int dims, bool root_node)
   {
 
-    int numBloks = random.Next(1, dims+1);
+    int numBloks = random.Next(dims/2, dims+1);
 
     for(int i=0;i<numBloks;i++)
     {
@@ -129,6 +129,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     int maxBloks = 12;
     int feature_length = 59;
+    int minBloks = 10;
 
     int numBloks = random.Next(1,maxBloks+1);
 
@@ -209,6 +210,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     //this->dimensions_ =  concreteData.Dimensions();
     lr.dimensions_ = concreteData.Dimensions();
 
+
     switch(featureMask)
     {
       case fisher:GenerateMaskFisher (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
@@ -222,19 +224,41 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
     }
 
+    cv::Ptr<cvml::SVM> svm;
+    svm = cvml::SVM::create();
+    svm->setType(cvml::SVM::C_SVC);
+    svm->setKernel(cvml::SVM::LINEAR);
+    svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
 
 
-    lr.svm->setC(svm_c);
+    svm->setC(svm_c);
 
     cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
-    //std::cout<<"[DEBUG]"<<i0<<" -->"<<i1<<"    "<<tdata->getNSamples()<<std::endl;
 
-    lr.svm->train(tdata);
+
+    svm->train(tdata);
 
     lr.nWeights_ = lr.vIndex_.size();
+    lr.vWeights_.resize(lr.vIndex_.size(),1); //Initializing weights as unit vector
+    lr.bias_ = 0; // 0 ->bias
+
+
+    if(svm->isTrained())
+    {
+      cv::Mat alpha, wts;
+
+      lr.bias_ = -1 * (float)svm->getDecisionFunction(0, alpha, wts);
+      cv::Mat svs = svm->getSupportVectors();
+      for(int j=0;j<svs.cols;j++)
+        lr.vWeights_[j]=(svs.at<float>(j));
+    }
+
+    //lr.vWeights_.resize()
+
     //cv::Mat svs = lr.svm->getSupportVectors();
     //svm->getDecisionFunction(0,alpha,svs);
-    //std::cout<<"[DEBUG : FeatureResponseSVM]"<<svs<<"|"<<svs.rows<<" "<<svs.cols<<std::endl;
+    //std::cout<<"[DEBUG : "<<i0<<" -->"<<i1<<"]    "<<tdata->getNSamples()<<std::endl;
+    //std::cout<<"[DEBUG : FeatureResponseSVM / isTrained?]"<<lr.nWeights_<<" "<<lr.svm->isTrained()<<std::endl;
 
 
 
@@ -247,31 +271,18 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   float LinearFeatureResponseSVM::GetResponse(const IDataPointCollection& data, unsigned int index) const
   {
+    //std::cout<<"At feature response 1"<<std::endl;
 
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
     cv::Mat rowMat = concreteData.GetDataPoint(index);
-    cv::Mat feature_Mat  = cv::Mat(1, nWeights_, CV_32FC1);
+    std::vector<float> rowVector;
+
     for (int i = 0;i<nWeights_;i++)
-    {
-        feature_Mat.at<float>(i) = rowMat.at<float>(vIndex_[i]);
-    }
-    float response = svm->predict(feature_Mat, cv::noArray(), cvml::SVM::RAW_OUTPUT);
-    //std::vector<float> rowData = concreteData.GetDataPointRange(index);
+       rowVector.push_back(rowMat.at<float>(vIndex_[i]));
 
+    double response = std::inner_product(rowVector.begin(), rowVector.end(), vWeights_.begin(), bias_);
 
-    /*//MANUAL WAY
-      //std::vector<float> vFeatures;
-      //std::cout<<"[Debug At getresponse weight size]"<<vWeights_.size ()<<std::endl;
-      float response = bias_;
-    for(int j=0;j<vWeights_.size();j++) {
-        response+=rowData[vIndex_[j]]*vWeights_[j];
-        //std::cout<<"[DEBUG FEATURERESPONSE - printing online response | step] : "<<response<<"   "<<j<<std::endl;
-        //aUTOMATIC WAY
-    float response = 0;
-    }*/
-
-
-    return response;
+    return (float)response;
   }
 
   std::string LinearFeatureResponseSVM::ToString() const

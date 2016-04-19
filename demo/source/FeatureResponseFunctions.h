@@ -162,11 +162,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
   protected:
       std::vector<int> vIndex_;
-      //std::vector<float> vWeights_;
+      std::vector<float> vWeights_;
       int		dimensions_;
-      //float	bias_;
+      float	bias_;
       //int		nIndex_;
-      cv::Ptr<cvml::SVM> svm;
+      //cv::Ptr<cvml::SVM> svm;
       int nWeights_;
 
   public:
@@ -175,11 +175,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
               //bias_(0.0f)
       {
         //m_param_filename = "/home/prassanna/Development/Code3/Parameters/parametersTaskManager2.ini";
-          svm = cvml::SVM::create();
-          svm->setType(cvml::SVM::C_SVC);
-          svm->setKernel(cvml::SVM::LINEAR);
-          svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
-          svm->setC(0.5);
+          //svm = cvml::SVM::create();
+          //svm->setType(cvml::SVM::C_SVC);
+          //svm->setKernel(cvml::SVM::LINEAR);
+          //svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
+
       }
 
       /// <summary>
@@ -202,6 +202,71 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       float GetResponse(const IDataPointCollection &data, unsigned int index) const;
       std::string ToString()  const;
+
+      static void Serialize(LinearFeatureResponseSVM lr, std::ostream& o)
+      {
+          o.write((const char*)(&lr.dimensions_), sizeof(lr.dimensions_));
+          o.write((const char*)(&lr.nWeights_), sizeof(lr.nWeights_));
+          o.write((const char*)(&lr.vIndex_), sizeof(int)*lr.vIndex_.size());
+          o.write(reinterpret_cast<const char*>(&lr.vIndex_[0]), lr.vIndex_.size()*sizeof(int));
+          o.write(reinterpret_cast<const char*>(&lr.vWeights_[0]), lr.vWeights_.size()*sizeof(float));
+
+      }
+
+      static LinearFeatureResponseSVM Deserialize(std::istream& i)
+      {
+          LinearFeatureResponseSVM lr;
+          i.read((char*)(&lr.dimensions_), sizeof(lr.dimensions_));
+          i.read((char*)(&lr.nWeights_), sizeof(lr.nWeights_));
+          i.read((char*)(&lr.vIndex_), sizeof(lr.vIndex_));
+          i.read(reinterpret_cast<char*>(&lr.vIndex_[0]), lr.nWeights_*sizeof(int));
+          i.read(reinterpret_cast<char*>(&lr.vWeights_[0]), lr.nWeights_*sizeof(float));
+
+
+          return lr;
+
+
+      }
+
+
+
+      /*void write(cv::FileStorage& fs) const                        //Write serialization for this class
+      {
+          cv::Mat_<int> indexMat (vIndex_,true);
+          fs<<"fr_Index"<<indexMat;
+          //std::cout<<indexMat.rows<<"  "<<indexMat.cols<<std::endl;
+          std::string str = svm->isTrained()?"True":"False";
+          fs<<"fr_svm_trained"<<(int)svm->isTrained();
+          if(svm->isTrained())
+          {
+              fs<<"fr_svm"<<"[";
+              this->svm->write(fs);
+              fs<<"]";
+          }
+          fs<<"fr_dimensions" << dimensions_;
+
+      }*/
+
+
+      /*void read(cv::FileNode& fs)
+      {
+          cv::Mat_<int> indexMat;
+          fs["fr_Index"]>>indexMat;
+          vIndex_.clear();
+          if(indexMat.cols>0)
+              vIndex_.resize(indexMat.cols,0);
+          for(int i = 0;i<indexMat.cols;i++)
+              vIndex_[i] =indexMat(0,i);
+
+          int trained = (int)fs["fr_svm_trained"];
+          if(trained) {
+              cv::FileNode fn = fs["fr_svm"];
+              this->svm->read(fn);
+
+          }
+
+          fs["fr_dimensions"]>>dimensions_;
+      }*/
   };
 
 
