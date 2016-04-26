@@ -224,6 +224,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
     }
 
+    std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
+
     cv::Ptr<cvml::SVM> svm;
     svm = cvml::SVM::create();
     svm->setType(cvml::SVM::C_SVC);
@@ -252,6 +254,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       for(int j=0;j<svs.cols;j++)
         lr.vWeights_[j]=(svs.at<float>(j));
     }
+    svm.release();
 
     //lr.vWeights_.resize()
 

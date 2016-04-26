@@ -43,8 +43,8 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "../demo/data/sclf/exp1_n2.txt";
-std::string test_filename = "../demo/data/sclf/exp1_n2.txt";
+std::string train_filename = "trainfile.txt";
+std::string test_filename = "testfile.txt";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
@@ -120,7 +120,7 @@ int main(int argc, char* argv[])
 
     LinearFeatureSVMFactory linearFeatureFactory;
     std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest
-            = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
+            = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*trainingData,
                                                                   &linearFeatureFactory,
                                                                   trainingParameters);
 

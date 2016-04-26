@@ -96,6 +96,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       result->dataMat.push_back(rowMat);
     }
 
+    //std::cout<<result->dataMat<<std::endl;
+
 
     return result;
   }
