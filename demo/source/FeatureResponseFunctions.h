@@ -11,6 +11,7 @@
 
 
 #include "Sherwood.h"
+#include <boost/serialization/serialization.hpp>
 
 namespace cvml = cv::ml;
 
@@ -160,6 +161,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   class LinearFeatureResponseSVM
   {
+      friend class boost::serialization::access;
   protected:
       std::vector<int> vIndex_;
       std::vector<float> vWeights_;
@@ -226,6 +228,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
           return lr;
 
 
+      }
+
+      //FOR BOOST SERIALIZATION
+      template<class Archive>
+      void serialize(Archive & ar, const unsigned int version)
+      {
+          ar & vIndex_;
+          ar & vWeights_;
+          ar & dimensions_;
+          ar & bias_;
+          ar & nWeights_;
       }
 
 

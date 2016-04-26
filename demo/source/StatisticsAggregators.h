@@ -14,6 +14,8 @@
 #include "Sherwood.h"
 
 #include "DataPointCollection.h"
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -33,6 +35,30 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       double Entropy(const unsigned short *priorBins, const unsigned int priorSampleCount) const;
       double Entropy(const std::vector<short> priorBins, const unsigned int priorSampleCount) const;
 
+
+
+      template<class Archive>
+      void save(Archive & ar, const unsigned int version) const
+      {
+        std::vector<int> binsVector;
+        std::copy(uniqueBins_.begin(), uniqueBins_.end(), std::back_inserter(binsVector));
+        ar & binsVector;
+        ar & bins_;
+        ar & binCount_;
+        ar & sampleCount_;
+      }
+
+      template<class Archive>
+      void load(Archive & ar, const unsigned int version)
+      {
+        std::vector<int> binsVector;
+        ar & binsVector;
+        std::copy( binsVector.begin(), binsVector.end(), std::inserter( uniqueBins_, uniqueBins_.end() ) );
+        ar & bins_;
+        ar & binCount_;
+        ar & sampleCount_;
+      }
+      BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     HistogramAggregator();
 

@@ -14,6 +14,10 @@
 
 #include "Interfaces.h"
 #include "Tree.h"
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -53,6 +57,65 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     /// <param name="path">The file path.</param>
     /// <returns>The forest.</returns>
+    static std::auto_ptr<Forest<F, S> > DeserializeBoost(const std::string& path)
+    {
+      std::ifstream i(path.c_str(), std::ios_base::binary);
+
+      std::auto_ptr<Forest<F, S> > forest = std::auto_ptr<Forest<F, S> >(new Forest<F,S>());
+
+      int treecount;
+      boost::archive::text_iarchive ar(i);
+      ar & treecount;
+      std::auto_ptr<Tree<F,S> > tree;
+      for(int t=0; t<treecount; t++)
+      {
+        tree =  Tree<F, S>::deserializeTree(ar);
+
+        forest->trees_.push_back(tree.release());
+      }
+      return forest;
+
+
+      /*std::ofstream o(path.c_str(), std::ios_base::binary);
+      boost::archive::text_oarchive ar(o);
+      int treeCount = TreeCount();
+
+      //First tree counts
+      ar & treeCount;
+
+      //Then Tree & decision levels
+      for(int t=0; t<TreeCount(); t++)
+      {
+        ar & GetTree(t);
+      }
+      o.close();*/
+
+    }
+
+
+    /// <summary>
+    /// Serialize the forest to file.
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    void SerializeBoost(const std::string& path)
+    {
+      std::ofstream o(path.c_str(), std::ios_base::binary);
+      boost::archive::text_oarchive ar(o);
+      int treeCount = TreeCount();
+
+      //First tree counts
+      ar & treeCount;
+
+      //Then Tree & decision levels
+      for(int t=0; t<TreeCount(); t++)
+      {
+        GetTree(t).serializeTree(ar);
+      }
+      o.close();
+
+    }
+
+
     static std::auto_ptr<Forest<F, S> > Deserialize(const std::string& path)
     { 
       std::ifstream i(path.c_str(), std::ios_base::binary);
@@ -98,10 +161,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return forest;
     }
 
-    /// <summary>
-    /// Serialize the forest to file.
-    /// </summary>
-    /// <param name="path">The file path.</param>
+
+
+
+
     void Serialize(const std::string& path)
     {
       std::ofstream o(path.c_str(), std::ios_base::binary);
@@ -131,6 +194,21 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       for(int t=0; t<TreeCount(); t++)
         GetTree((t)).Serialize(stream);
 
+      /*std::ofstream o("Trees.h");
+      boost::archive::text_oarchive ar(o);
+      for(int t=0; t<TreeCount(); t++)
+        ar & GetTree((t)) ;
+      o.close();*/
+
+
+      /*std::ifstream inp("Trees.h");
+      boost::archive::text_iarchive ar2(inp);
+      Tree<F,S> ts;
+      for(int t=0; t<TreeCount(); t++)
+        ar2 & ts;
+        */
+
+
       if(stream.bad())
         throw std::runtime_error("Forest serialization failed.");
     }
@@ -154,6 +232,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       return *trees_[index];
     }
+
 
     /// <summary>
     /// How many trees in the forest?

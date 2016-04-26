@@ -2,7 +2,7 @@
 
 // This file defines the Node data structure, which is used to represent one node
 // in a DecisionTree.
-
+#include <boost/serialization/serialization.hpp>
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   // Default serialization functions used for serializing Feature and
@@ -98,6 +98,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       Deserialize_(i, Feature);
       Deserialize_(i, Threshold);
       Deserialize_(i, TrainingDataStatistics);
+    }
+
+    //FOR BOOST SERIALIZATION
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+      ar & bIsLeaf_;
+      ar & bIsSplit_;
+      ar & Threshold;
+      ar & TrainingDataStatistics;
+      ar & Feature;
     }
 
     /// <summary>

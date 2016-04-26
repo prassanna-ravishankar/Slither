@@ -19,7 +19,7 @@ if (OPENMP_FOUND)
 endif()
 
 #Boost
-find_package(Boost COMPONENTS program_options python)
+find_package(Boost COMPONENTS program_options python serialization)
 message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
 message("Libs of boost: " ${Boost_LIBRARIES} )
 

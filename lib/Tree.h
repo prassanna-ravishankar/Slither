@@ -12,6 +12,12 @@
 
 #include "Interfaces.h"
 #include "Node.h"
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -24,6 +30,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   template<class F, class S> 
   class Tree // where F:IFeatureResponse where S:IStatisticsAggregator<S>
   {
+    friend class boost::serialization::access;
+
     static const char* binaryFileHeader_;
 
     typedef typename std::vector<unsigned int>::size_type DataPointIndex;
@@ -33,6 +41,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     std::vector<Node<F,S> > nodes_;
 
   public:
+      Tree()
+      {
+
+      }
     // Implementation only
     Tree(int decisionLevels):decisionLevels_(decisionLevels)
     {
@@ -128,6 +140,63 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       return tree;
     }
+
+
+
+    //FOR BOOST SERIALIZATION
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+      ar & decisionLevels_;
+      for(int n=0; n<NodeCount(); n++)
+        ar & nodes_[n];
+    }
+
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+      std::auto_ptr<Tree<F,S> > tree;
+
+      ar & decisionLevels_;
+      nodes_.resize((1 << (decisionLevels_ + 1)) - 1);
+
+      for(int n=0; n<NodeCount(); n++)
+        ar & nodes_[n];
+
+      CheckValid();
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+      template<class Archive>
+      static std::auto_ptr<Tree<F,S> >  deserializeTree(Archive & ar)
+      {
+        int dl;
+        ar & dl;
+        std::auto_ptr<Tree<F,S> > tree = std::auto_ptr<Tree<F,S> >(new Tree<F, S>(dl));
+
+        for(int n=0; n<tree->NodeCount(); n++)
+          ar & tree->nodes_[n];
+
+        tree->CheckValid();
+
+        return tree;
+      }
+
+      template<class Archive>
+      void  serializeTree(Archive & ar)
+      {
+
+        ar & decisionLevels_;
+
+        for(int n=0; n<NodeCount(); n++)
+          ar & nodes_[n];
+
+        CheckValid();
+
+      }
+
+    //END BOOST SERIALIZATION
 
     /// <summary>
     /// The number of nodes in the tree, including decision, leaf, and null nodes.
@@ -238,6 +307,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
   public:
+      int DecisionLevels()
+      {
+        return decisionLevels_;
+      }
     static std::string GetPrettyPrintPrefix(int nodeIndex)
     {
       std::string prefix = nodeIndex > 0 ? (nodeIndex % 2 == 1 ? "|-o " : "+-o ") : "o ";
@@ -279,7 +352,13 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       ApplyNode(nodeIndex * 2 + 1, data, dataIndices, i0, ii, leafNodeIndices, responses_);
       ApplyNode(nodeIndex * 2 + 2, data, dataIndices, ii, i1, leafNodeIndices, responses_);
     }
+
+
+
   };
+
+
+
 
   template<class F, class S>
   const char* Tree<F,S>::binaryFileHeader_ = "MicrosoftResearch.Cambridge.Sherwood.Tree";
