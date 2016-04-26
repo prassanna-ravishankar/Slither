@@ -44,13 +44,56 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // only for classified data...
     std::vector<int> labels_;
 
-    std::map<std::string, int> labelIndices_; // map string labels to integers
+    //std::map<std::string, int> labelIndices_; // map string labels to integers
 
     // only for regression problems...
     std::vector<float> targets_;
 
   public:
     static const int UnknownClassLabel = -1;
+
+    cv::Mat scaleRow(cv::Mat& rowMat, float& bias, float& factor )
+    {
+      double min, max;
+      cv::minMaxLoc(rowMat, &min, &max);
+
+      if(max == 0)
+        return rowMat.clone();
+      bias = min;
+      factor = max;
+      cv::Mat m = ((rowMat-min)/max -0.5)*2;
+      return m.clone();
+    }
+
+    void scaleData(std::vector<float>& biases, std::vector<float>&divisors)
+    {
+      cv::Mat target_mat(this->dataMat.size(),CV_32FC1);
+      biases = std::vector<float> (this->dataMat.cols, 0);
+      divisors = std::vector<float> (this->dataMat.cols,1);
+      for(int i=0;i<this->dataMat.cols;i++)
+      {
+        cv::Mat colmat = this->dataMat.col(i);
+        cv::Mat processedMat = scaleRow(colmat,biases[i],divisors[i]);
+        processedMat.copyTo(target_mat.col(i));
+      }
+
+      this->dataMat =  target_mat.clone();
+    }
+
+    void doScaleData(const cv::Mat& biases, const cv::Mat& divisors)
+    {
+      cv::Mat target_mat(this->dataMat.size(),CV_32FC1);
+
+      for(int i=0;i<this->dataMat.cols;i++)
+      {
+        cv::Mat colmat = this->dataMat.col(i);
+        cv::Mat processedMat = (colmat-biases.at<float>(i))/ divisors.at<float>(i);
+        processedMat.copyTo(target_mat.col(i));
+      }
+
+      this->dataMat =  target_mat.clone();
+
+    }
 
     bool reserve(int H, int W)
     {
@@ -75,7 +118,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="bHasClassLabels">Are the data associated with class labels?</param>
     /// <param name="dataDimension">Dimension of the data (excluding class labels and target values).</param>
     /// <param name="bHasTargetValues">Are the data associated with target values.</param>
-    static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
+    //static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
+
+     static  std::auto_ptr<DataPointCollection> Load(const std::string &filename);
 
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.
@@ -136,6 +181,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     unsigned int Count() const
     {
       return dataMat.rows;
+    }
+
+    void showMat()
+    {
+      std::cout<<dataMat<<std::endl;
+      std::cout<<dataMat.size()<<std::endl;
     }
 
     /// <summary>

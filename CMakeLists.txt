@@ -74,7 +74,7 @@ add_executable(rf ${SOURCE_FILES})
 #target_link_libraries(sw ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} svmlib svm)
 target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
-add_library(rflib ${SOURCE_FILES})
+#[[add_library(rflib ${SOURCE_FILES})
 target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
 ##PYWRAPPER - BOOST TEST
@@ -97,4 +97,4 @@ if(WIN32)
     # Ensure the output binary is called TestModule.pyd on Windows (not TestModule.dll)
     set_target_properties(rfsvm PROPERTIES SUFFIX ".pyd")
 endif(WIN32)
-target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
+target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib) ]]

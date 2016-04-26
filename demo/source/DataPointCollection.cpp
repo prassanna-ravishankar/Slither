@@ -30,6 +30,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
     return in;
   }
+            /*
 
   std::auto_ptr<DataPointCollection> DataPointCollection::Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor)
   {
@@ -96,10 +97,52 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       result->dataMat.push_back(rowMat);
     }
 
-    //std::cout<<result->dataMat<<std::endl;
+    for(int i = 0;i<result->labels_.size();i++)
+      std::cout<<result->labels_[i]<<" ";
+    std::cout<<std::endl<<result->labels_.size();
 
 
     return result;
+  }*/
+
+  std::auto_ptr<DataPointCollection> DataPointCollection::Load(const std::string &filename)
+  {
+    std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+
+    cv::Ptr<cv::ml::TrainData> all_data;
+
+    const cv::String bla = cv::String();
+    try
+    {
+      all_data = cv::ml::TrainData::loadFromCSV(filename,0,0,-1,bla,'\t','?');
+    }
+    catch (cv::Exception & e)
+    {
+      std::cout<<"An Exception while reading has occurred: "<<e.what()<<std::endl;
+    }
+
+
+    cv::Mat responses = all_data->getResponses().t();
+
+    const float* p = responses.ptr<float>(0);
+    result->labels_ = std::vector<int> (p, p + responses.cols);
+    result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
+
+
+
+    result->dataMat = cv::Mat(all_data->getSamples());
+    result->dimension_ = all_data->getNVars();
+    result->targets_.clear();
+
+
+    all_data.release();
+
+
+    return result;
+
+
+
+
   }
 
   /// <summary>
