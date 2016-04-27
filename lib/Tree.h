@@ -143,40 +143,19 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
 
-    //FOR BOOST SERIALIZATION
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-      ar & decisionLevels_;
-      for(int n=0; n<NodeCount(); n++)
-        ar & nodes_[n];
-    }
-
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
-      std::auto_ptr<Tree<F,S> > tree;
-
-      ar & decisionLevels_;
-      nodes_.resize((1 << (decisionLevels_ + 1)) - 1);
-
-      for(int n=0; n<NodeCount(); n++)
-        ar & nodes_[n];
-
-      CheckValid();
-    }
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
       template<class Archive>
-      static std::auto_ptr<Tree<F,S> >  deserializeTree(Archive & ar)
+      static std::auto_ptr<Tree<F,S> >  deserializeTree(Archive& ar)
       {
         int dl;
         ar & dl;
         std::auto_ptr<Tree<F,S> > tree = std::auto_ptr<Tree<F,S> >(new Tree<F, S>(dl));
 
-        for(int n=0; n<tree->NodeCount(); n++)
-          ar & tree->nodes_[n];
+        for(int n=0; n<tree->NodeCount(); n++) {
+          tree->nodes_[n].deserializeBoost(ar);
+          std::cout << n<<" ";
+        }
+
 
         tree->CheckValid();
 
@@ -184,15 +163,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       }
 
       template<class Archive>
-      void  serializeTree(Archive & ar)
+      void  serializeTree(Archive& ar)
       {
 
         ar & decisionLevels_;
 
-        for(int n=0; n<NodeCount(); n++)
-          ar & nodes_[n];
+        for(int n=0; n<NodeCount(); n++) {
+          nodes_[n].serializeBoost(ar);
+          std::cout << n<<" ";
+        }
 
-        CheckValid();
+        //CheckValid();
 
       }
 

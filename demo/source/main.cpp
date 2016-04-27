@@ -31,8 +31,8 @@ void DisplayTextFiles(const std::string& relativePath);
 
 int discoverDims(std::string filename);
 
-std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
-std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
+std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
+std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  const std::string& model_name, cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
 
 
 
@@ -41,14 +41,14 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "sample_train.txt";
-std::string test_filename = "sample_test.txt";
+std::string train_filename = "_400traindata.csv";
+std::string test_filename = "_400traindata.csv";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
 bool train_flag = false;
 bool test_flag = false;
-std::string forest_loc ="forest.out";
+std::string forest_loc ="forest_400.out";
 
 
 int main(int argc, char* argv[])
@@ -73,15 +73,15 @@ int main(int argc, char* argv[])
           ("predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
           ("model",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
           ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
-          ("trees",po::value<int>()->default_value(50), "Number of Trees in the forest")
+          ("trees",po::value<int>()->default_value(2), "Number of Trees in the forest")
           ("depth",po::value<int>()->default_value(15), "Number of Decision Levels")
           ("feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
           ("thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("test"), "train | test | tr-te")
-          ("mask_type",po::value<int>()->default_value(0), "standard=0, hypercolumn=1, lbp=2, fisher=3")
+          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
+          ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
           ;
 
@@ -112,11 +112,11 @@ int main(int argc, char* argv[])
   {
     data_dimensions = discoverDims (train_filename);
     std::auto_ptr<DataPointCollection> trainingData
-            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(train_filename, biases, divisors) );
+            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
 
     LinearFeatureSVMFactory linearFeatureFactory;
     forest
-            = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*trainingData,
+            = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
                                                                   &linearFeatureFactory,
                                                                   trainingParameters);
 
@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
     //forest->Serialize(forest_loc);
     forest->SerializeBoost(forest_loc);
-    forest.release();
+    //forest.release();
   }
 
 
@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
   {
     //data_dimensions = discoverDims (test_filename);
     std::auto_ptr<DataPointCollection> testdata
-            = std::auto_ptr<DataPointCollection> ( LoadTestingData(test_filename, biases, divisors) );
+            = std::auto_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
 
     std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
     //std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
@@ -403,7 +403,7 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
 }*/
 
 
-std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
 {
   std::string path;
 
@@ -427,7 +427,7 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
   }
 
   cv::FileStorage fs;
-  fs.open(path+"_dataWeights", cv::FileStorage::WRITE);
+  fs.open(model_name+"_dataWeights", cv::FileStorage::WRITE);
   fs<<"Bias"<<biases_Mat;
   fs<<"Weights"<<divisors_Mat;
   fs.release();
@@ -437,15 +437,19 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
 }
 
 
-std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
 {
   std::string path;
   cv::FileStorage fs;
-  fs.open(path+"_dataWeights", cv::FileStorage::READ);
+  fs.open(model_name+"_dataWeights", cv::FileStorage::READ);
 
   fs["Bias"]>>biases_Mat;
   fs["Weights"]>>divisors_Mat;
   fs.release();
+
+  //std::cout<<biases_Mat<<std::endl;
+  //std::cout<<divisors_Mat<<std::endl;
+
 
   std::auto_ptr<DataPointCollection> trainingData;
 

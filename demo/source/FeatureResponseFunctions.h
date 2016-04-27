@@ -173,9 +173,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   public:
       LinearFeatureResponseSVM():
-              dimensions_(-1)//,
-              //bias_(0.0f)
+              dimensions_(-1),
+              bias_(0.0f)
       {
+          dimensions_ = 10;
+          vWeights_.resize(dimensions_,1);
+          for(int i=0;i<dimensions_;i++)
+            vIndex_.push_back(i);
+          nWeights_ = vWeights_.size();
         //m_param_filename = "/home/prassanna/Development/Code3/Parameters/parametersTaskManager2.ini";
           //svm = cvml::SVM::create();
           //svm->setType(cvml::SVM::C_SVC);
@@ -233,6 +238,26 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       //FOR BOOST SERIALIZATION
       template<class Archive>
       void serialize(Archive & ar, const unsigned int version)
+      {
+          ar & vIndex_;
+          ar & vWeights_;
+          ar & dimensions_;
+          ar & bias_;
+          ar & nWeights_;
+      }
+
+      template<class Archive>
+      void serializeBoost(Archive & ar)
+      {
+          ar & vIndex_;
+          ar & vWeights_;
+          ar & dimensions_;
+          ar & bias_;
+          ar & nWeights_;
+      }
+
+      template<class Archive>
+      void deserializeBoost(Archive & ar)
       {
           ar & vIndex_;
           ar & vWeights_;

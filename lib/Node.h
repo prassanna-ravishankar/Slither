@@ -80,9 +80,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // Nodes are created null by default
       bIsLeaf_ = false;
       bIsSplit_ = false;
+      Feature = F();
+      Threshold = 0.0f;
+      TrainingDataStatistics = S();
     }
 
-    void Serialize(std::ostream& o) const
+   /* void Serialize(std::ostream& o) const
     {
       Serialize_(o, bIsLeaf_);
       Serialize_(o, bIsSplit_);
@@ -98,18 +101,61 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       Deserialize_(i, Feature);
       Deserialize_(i, Threshold);
       Deserialize_(i, TrainingDataStatistics);
-    }
+    }*/
 
     //FOR BOOST SERIALIZATION
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+
       ar & bIsLeaf_;
+      std::cout<<"L ";
       ar & bIsSplit_;
+      std::cout<<"S ";
       ar & Threshold;
+      std::cout<<"T ";
+      TrainingDataStatistics = S();
       ar & TrainingDataStatistics;
+      std::cout<<"S ";
       ar & Feature;
+      std::cout<<"F ";
+      std::cout<<std::endl;
     }
+
+      template<class Archive>
+      void serializeBoost(Archive& ar)
+      {
+
+        ar & bIsLeaf_;
+        //std::cout<<"L ";
+        ar & bIsSplit_;
+        //std::cout<<"S ";
+        ar & Threshold;
+        //std::cout<<"T ";
+        TrainingDataStatistics.serializeBoost(ar);
+        //std::cout<<"S ";
+        Feature.serializeBoost(ar);
+        //std::cout<<"F ";
+        std::cout<<std::endl;
+      }
+
+      template<class Archive>
+      void deserializeBoost(Archive& ar)
+      {
+
+        ar & bIsLeaf_;
+        std::cout<<"L "<<std::flush;;
+        ar & bIsSplit_;
+        std::cout<<"S "<<std::flush;;
+        ar & Threshold;
+        std::cout<<"T "<<std::flush;;
+        //TrainingDataStatistics = S();
+        TrainingDataStatistics.deserializeBoost(ar);
+        std::cout<<"S "<<std::flush;;
+        Feature.deserializeBoost(ar);
+        std::cout<<"F "<<std::flush;;
+        std::cout<<std::endl;
+      }
 
     /// <summary>
     /// Is this a decision node, i.e. a node with an associated weak learner
