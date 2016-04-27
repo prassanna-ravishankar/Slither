@@ -109,16 +109,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
 
       ar & bIsLeaf_;
-      std::cout<<"L ";
+      //std::cout<<"L ";
       ar & bIsSplit_;
-      std::cout<<"S ";
+      //std::cout<<"S ";
       ar & Threshold;
-      std::cout<<"T ";
+      //std::cout<<"T ";
       TrainingDataStatistics = S();
       ar & TrainingDataStatistics;
-      std::cout<<"S ";
+      //std::cout<<"S ";
       ar & Feature;
-      std::cout<<"F ";
+      //std::cout<<"F ";
       std::cout<<std::endl;
     }
 
@@ -136,7 +136,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         //std::cout<<"S ";
         Feature.serializeBoost(ar);
         //std::cout<<"F ";
-        std::cout<<std::endl;
+        //std::cout<<std::endl;
       }
 
       template<class Archive>
@@ -144,17 +144,17 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       {
 
         ar & bIsLeaf_;
-        std::cout<<"L "<<std::flush;;
+        //std::cout<<"L "<<std::flush;;
         ar & bIsSplit_;
-        std::cout<<"S "<<std::flush;;
+        //std::cout<<"S "<<std::flush;;
         ar & Threshold;
-        std::cout<<"T "<<std::flush;;
+        //std::cout<<"T "<<std::flush;;
         //TrainingDataStatistics = S();
         TrainingDataStatistics.deserializeBoost(ar);
-        std::cout<<"S "<<std::flush;;
+        //std::cout<<"S "<<std::flush;;
         Feature.deserializeBoost(ar);
-        std::cout<<"F "<<std::flush;;
-        std::cout<<std::endl;
+        //std::cout<<"F "<<std::flush;;
+        //std::cout<<std::endl;
       }
 
     /// <summary>

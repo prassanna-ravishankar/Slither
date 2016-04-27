@@ -153,7 +153,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         for(int n=0; n<tree->NodeCount(); n++) {
           tree->nodes_[n].deserializeBoost(ar);
-          std::cout << n<<" ";
+          //std::cout << n<<" ";
         }
 
 
@@ -170,7 +170,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         for(int n=0; n<NodeCount(); n++) {
           nodes_[n].serializeBoost(ar);
-          std::cout << n<<" ";
+          //std::cout << n<<" ";
         }
 
         //CheckValid();

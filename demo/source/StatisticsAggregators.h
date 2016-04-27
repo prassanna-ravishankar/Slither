@@ -111,25 +111,25 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         int size_bv;
         ar >> size_bv;
-        std::cout<<"sv "<<std::flush;
+        //std::cout<<"sv "<<std::flush;
         std::vector<int> binsVector;
         binsVector.resize(size_bv,0);
 
         ar >> binsVector;
-        std::cout<<"bv "<<std::flush;;
+        //std::cout<<"bv "<<std::flush;;
 
         ar >> bins_;
-        std::cout<<"bi "<<std::flush;;
+        //std::cout<<"bi "<<std::flush;;
 
         ar >> binCount_;
-        std::cout<<"bc "<<std::flush;;
+        //std::cout<<"bc "<<std::flush;;
 
         ar >> sampleCount_;
-        std::cout<<"sc "<<std::flush;;
+        //std::cout<<"sc "<<std::flush;;
 
 
         std::copy( binsVector.begin(), binsVector.end(), std::inserter( uniqueBins_, uniqueBins_.end() ) );
-        std::cout<<"Set created "<<std::flush;;
+        //std::cout<<"Set created "<<std::flush;;
       }
       //BOOST_SERIALIZATION_SPLIT_MEMBER()
 
