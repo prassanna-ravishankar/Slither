@@ -59,7 +59,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <returns>The forest.</returns>
     static std::auto_ptr<Forest<F, S> > DeserializeBoost(const std::string& path)
     {
-      std::ifstream i(path.c_str());
+      std::ifstream i(path.c_str(), std::ios_base::binary);
 
       std::auto_ptr<Forest<F, S> > forest = std::auto_ptr<Forest<F, S> >(new Forest<F,S>());
 
@@ -101,7 +101,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="path">The file path.</param>
     void SerializeBoost(const std::string& path)
     {
-      std::ofstream o(path.c_str());
+      std::ofstream o(path.c_str(), std::ios_base::binary);
       boost::archive::text_oarchive ar(o);
       int treeCount = TreeCount();
 

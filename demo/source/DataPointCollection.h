@@ -183,7 +183,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return dataMat.rows;
     }
 
-    void showMat()
+    void showMat() const
     {
       std::cout<<dataMat<<std::endl;
       std::cout<<dataMat.size()<<std::endl;

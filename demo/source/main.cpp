@@ -49,6 +49,7 @@ std::string mode = "Standard";
 bool train_flag = false;
 bool test_flag = false;
 std::string forest_loc ="forest_400.out";
+bool scale_flag = false;
 
 
 int main(int argc, char* argv[])
@@ -83,6 +84,7 @@ int main(int argc, char* argv[])
           ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
+          ("scale",po::value<bool>()->default_value(true), "Should I scale the data")
           ;
 
   po::variables_map vm;
@@ -317,20 +319,29 @@ void parseArguments(po::variables_map& vm)
 
   std::cout<<"14. [Mask Type ]";
   if (vm.count("mask_type"))
-    std::cout << "\t Mask type was set to ";
+    std::cout << "\t Mask type was set to "<<std::endl;
   else
     std::cout << "\t Mask type was not set. Using Default..."<<std::endl;
   int mask_type = vm["mask_type"].as<int>();
   trainingParameters.featureMask = static_cast<FeatureMaskType >(mask_type);
 
 
-  std::cout<<"14. [Max Threads ]";
+  std::cout<<"15. [Max Threads ]";
   if (vm.count("threads"))
-    std::cout << "\t Max Threads was set to : ";
+    std::cout << "\t Max Threads was set to : "<<std::endl;
   else
     std::cout << "\t Max Threads was not set. Using Default..."<<std::endl;
   int maxThreads = vm["threads"].as<int>();
   trainingParameters.maxThreads = maxThreads;
+
+
+  std::cout<<"16. [Scale Data ]";
+  if (vm.count("threads"))
+    std::cout << "\t Scale Data Flag was set to : "<<std::endl;
+  else
+    std::cout << "\t Scale Data Flag was not set. Using Default..."<<std::endl;
+  scale_flag = vm["scale"].as<bool>();
+
 
   std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
 
@@ -414,31 +425,38 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
 
   trainingData  = trainingData->Load(filename);
 
-  std::vector<float> biases;
-  std::vector<float> divisors;
-  trainingData->scaleData(biases, divisors);
-
-  biases_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
-  divisors_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
-  for(int i=0;i<trainingData->Dimensions();i++)
+  if(scale_flag)
   {
-    biases_Mat.at<float>(i) = biases[i];
-    divisors_Mat.at<float>(i) = divisors[i];
+    std::vector<float> biases;
+    std::vector<float> divisors;
+    trainingData->scaleData(biases, divisors);
+
+    biases_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
+    divisors_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
+    for(int i=0;i<trainingData->Dimensions();i++)
+    {
+      biases_Mat.at<float>(i) = biases[i];
+      divisors_Mat.at<float>(i) = divisors[i];
+    }
+
+    cv::FileStorage fs;
+    fs.open(model_name+"_dataWeights", cv::FileStorage::WRITE);
+    fs<<"Bias"<<biases_Mat;
+    fs<<"Weights"<<divisors_Mat;
+    fs.release();
+
   }
-
-  cv::FileStorage fs;
-  fs.open(model_name+"_dataWeights", cv::FileStorage::WRITE);
-  fs<<"Bias"<<biases_Mat;
-  fs<<"Weights"<<divisors_Mat;
-  fs.release();
-
-
   return trainingData;
 }
 
 
 std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
 {
+  std::auto_ptr<DataPointCollection> trainingData;
+  trainingData  = trainingData->Load(filename);
+
+  if(scale_flag)
+  {
   std::string path;
   cv::FileStorage fs;
   fs.open(model_name+"_dataWeights", cv::FileStorage::READ);
@@ -449,13 +467,11 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 
   //std::cout<<biases_Mat<<std::endl;
   //std::cout<<divisors_Mat<<std::endl;
-
-
-  std::auto_ptr<DataPointCollection> trainingData;
-
-  trainingData  = trainingData->Load(filename);
-
   trainingData->doScaleData(biases_Mat, divisors_Mat);
+  }
+
+
+
 
   //trainingData->showMat();
   return trainingData;

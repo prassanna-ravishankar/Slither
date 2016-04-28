@@ -107,7 +107,7 @@ bool setDefaultParams()
     trainingParameters.svm_c = 0.5;
     trainingParameters.igType =  ig_shannon;
     trainingParameters.featureMask = FeatureMaskType::standard;
-    trainingParameters.maxThreads=1;
+    trainingParameters.maxThreads=4;
 
 }
 
@@ -151,9 +151,12 @@ bool onlyTrain()
 {
     LinearFeatureSVMFactory featureFactory;
 
-    forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*test_train_data.get(),
+    std::cout<<test_train_data->CountClasses()<<" Classes"<<std::endl;
+    forest = ClassificationDemo<LinearFeatureResponseSVM>::Train(*test_train_data.get(),
                                                                  &featureFactory,
                                                                  trainingParameters);
+
+
 
     return true;
 }
@@ -161,14 +164,14 @@ bool onlyTrain()
 
 bool saveModel(std::string filename)
 {
-    forest->Serialize(filename);
+    forest->SerializeBoost(filename);
 
     return true;
 }
 
 bool loadModel(std::string filename)
 {
-    forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(filename);
+    forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(filename);
 
     return true;
 }

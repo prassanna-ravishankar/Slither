@@ -116,12 +116,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
 
     int numBloks = random.Next(dims/2, dims+1);
-
+    //std::cout<<" Selecting : ";
     for(int i=0;i<numBloks;i++)
     {
       int indx = random.Next(0,dims);
+      //std::cout<<indx<<" ";
       vIndex.push_back(indx);
     }
+    //std::cout<<std::endl;
 
   }
 
@@ -192,7 +194,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
 
     //Discarding LBP and position to check
-    int numBloks = random.Next (5, 15);
+    int numBloks = random.Next (5, 50);
     for(int i=0;i<numBloks;i++)
     {
       int idx = random.Next (0,NN_DIM);
