@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
           ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
-          ("scale",po::value<bool>()->default_value(true), "Should I scale the data")
+          ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
           ;
 
   po::variables_map vm;
@@ -319,28 +319,31 @@ void parseArguments(po::variables_map& vm)
 
   std::cout<<"14. [Mask Type ]";
   if (vm.count("mask_type"))
-    std::cout << "\t Mask type was set to "<<std::endl;
+    std::cout << "\t Mask type was set to ";
   else
-    std::cout << "\t Mask type was not set. Using Default..."<<std::endl;
+    std::cout << "\t Mask type was not set. Using Default...";
   int mask_type = vm["mask_type"].as<int>();
+  std::cout<<mask_type <<"-->"<<static_cast<FeatureMaskType >(mask_type)<<std::endl;
   trainingParameters.featureMask = static_cast<FeatureMaskType >(mask_type);
 
 
   std::cout<<"15. [Max Threads ]";
   if (vm.count("threads"))
-    std::cout << "\t Max Threads was set to : "<<std::endl;
+    std::cout << "\t Max Threads was set to : ";
   else
-    std::cout << "\t Max Threads was not set. Using Default..."<<std::endl;
+    std::cout << "\t Max Threads was not set. Using Default...";
   int maxThreads = vm["threads"].as<int>();
+  std::cout<<maxThreads<<std::endl;
   trainingParameters.maxThreads = maxThreads;
 
 
   std::cout<<"16. [Scale Data ]";
   if (vm.count("threads"))
-    std::cout << "\t Scale Data Flag was set to : "<<std::endl;
+    std::cout << "\t Scale Data Flag was set to : ";
   else
-    std::cout << "\t Scale Data Flag was not set. Using Default..."<<std::endl;
+    std::cout << "\t Scale Data Flag was not set. Using Default...";
   scale_flag = vm["scale"].as<bool>();
+  std::cout<<scale_flag<<std::endl;
 
 
   std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
