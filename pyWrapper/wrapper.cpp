@@ -64,6 +64,8 @@ np::ndarray divideByTwo(const np::ndarray& arr)
 
 bool loadData(const np::ndarray& arr, const np::ndarray& lbls)
 {
+    std::cout<<"[Loading Data "
+            "]"<<std::endl;
     ASSERT_THROW( (arr.get_nd() == 2), "Expected two-dimensional Data array");
     ASSERT_THROW( (arr.get_dtype() == np::dtype::get_builtin<double>()), "Expected array of type double (np.float64)");
     ASSERT_THROW( (lbls.get_dtype() == np::dtype::get_builtin<double>()), "Expected array of type double (np.float64)");
@@ -86,6 +88,7 @@ bool loadData(const np::ndarray& arr, const np::ndarray& lbls)
         count++;
 
     }
+    std::cout<<"[DONE]"<<std::endl;
 
     //std::cout<<test_train_data->CountClasses()<<std::endl;
 
@@ -110,6 +113,18 @@ bool setDefaultParams()
     trainingParameters.maxThreads=4;
 
 }
+
+bool setFeatureMask(int i)
+{
+    trainingParameters.featureMask = static_cast<FeatureMaskType>(i);
+}
+
+bool setThreads(int i)
+{
+    trainingParameters.maxThreads = i;
+    return true;
+}
+
 
 bool setMaxDecisionLevels(int n)
 {
@@ -230,12 +245,15 @@ bp::tuple createGridArray(int rows, int cols)
 }
 
 
-class World
+class RFClassifier
 {
+
 public :
     void set(std::string msg) { mMsg = msg; }
     std::string greet() { return mMsg; }
     std::string mMsg;
+
+
 
 
 };
@@ -246,20 +264,22 @@ BOOST_PYTHON_MODULE(rfsvm)
 
     bp::def("loadData", loadData, bp::args("Features", "Labels"));
     bp::def("onlyTrain", onlyTrain);
+    bp::def("setThreads", setThreads);
+    bp::def("setFeatureMask", setFeatureMask);
     bp::def("setDefaultParams", setDefaultParams);
     bp::def("onlyTest", onlyTest);
     bp::def("saveModel", saveModel);
     bp::def("loadModel", loadModel);
-    bp::def("setMaxDescionLevels", setMaxDecisionLevels);
+    bp::def("setMaxDecisionLevels", setMaxDecisionLevels);
     bp::def("setNumberOfCandidateFeatures",setNumberOfCandidateFeatures);
     bp::def("setNumberOfThresholds",setNumberOfThresholds);
     bp::def("setTrees",setTrees);
     bp::def("setQuiet",setQuiet);
     bp::def("setSVM_C",setSVM_C);
 
-    bp::class_<World>("World")
-            .def("greet", &World::greet)
-            .def("set", &World::set)
+    bp::class_<RFClassifier>("RFClassifier")
+            .def("greet", &RFClassifier::greet)
+            .def("set", &RFClassifier::set)
             ;
 
 }
