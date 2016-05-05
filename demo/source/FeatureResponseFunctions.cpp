@@ -3,7 +3,7 @@
 #include <cmath>
 
 #include <sstream>
-
+#include <numeric>
 #include "DataPointCollection.h"
 #include "Random.h"
 
