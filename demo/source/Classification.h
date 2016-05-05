@@ -189,6 +189,33 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
 
+
+    static std::auto_ptr<Forest<F, HistogramAggregator> > TrainParallel (
+            const DataPointCollection& trainingData,
+            IFeatureResponseFactory<F>* featureFactory,
+            const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
+    {
+      if (trainingData.HasLabels() == false)
+        throw std::runtime_error("Training data points must be labelled.");
+      if (trainingData.HasTargetValues() == true)
+        throw std::runtime_error("Training data points should not have target values.");
+
+      std::cout << "Running training..." << std::endl;
+      //trainingData.showMat();
+
+      Random random;
+
+      ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
+      classificationContext.igType = trainingParameters.igType;
+
+      std::auto_ptr<Forest<F, HistogramAggregator> > forest
+              = ForestTrainer<F, HistogramAggregator>::TrainForestParallel (
+                      random, trainingParameters, classificationContext, trainingData );
+
+      return forest;
+    }
+
+
     /// <summary>
     /// Apply a trained forest to some test data.
     /// </summary>

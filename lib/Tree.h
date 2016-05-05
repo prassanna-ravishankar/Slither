@@ -51,8 +51,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       if(decisionLevels<0)
         throw std::runtime_error("Tree can't have less than 0 decision levels.");
 
-      if(decisionLevels>19)
-        throw std::runtime_error("Tree can't have more than 19 decision levels.");
+      /*
+       * if(decisionLevels>19)
+       *  throw std::runtime_error("Tree can't have more than 19 decision levels.");
+       * Don't know why keep limit */
+
 
       // This full allocation of node storage may be wasteful of memory
       // if trees are unbalanced but is efficient otherwise. Because child

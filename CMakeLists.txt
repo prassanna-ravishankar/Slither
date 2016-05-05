@@ -8,7 +8,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fPIC") #No Warnings while compiling
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
+#set(BUILD_SHARED_LIBS OFF)
 
 
 #Openmp flags
@@ -19,6 +19,8 @@ if (OPENMP_FOUND)
 endif()
 
 #Boost
+#set(Boost_USE_STATIC_LIBS   ON)
+
 find_package(Boost COMPONENTS program_options python serialization)
 message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
 message("Libs of boost: " ${Boost_LIBRARIES} )
@@ -29,6 +31,7 @@ message("Libs of boost: " ${Boost_LIBRARIES} )
 #message("Libs of Python: " ${PYTHON_LIBRARIES} )
 
 #OpenCV
+#set(OpenCV_STATIC ON)
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 

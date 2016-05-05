@@ -85,6 +85,7 @@ int main(int argc, char* argv[])
           ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
+          ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
           ;
 
   po::variables_map vm;
@@ -117,10 +118,20 @@ int main(int argc, char* argv[])
             = std::auto_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
 
     LinearFeatureSVMFactory linearFeatureFactory;
-    forest
-            = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
-                                                                  &linearFeatureFactory,
-                                                                  trainingParameters);
+    if(!vm["parallel"].as<bool>())
+      if(trainingParameters.maxThreads>1)
+        forest
+              = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
+                                                                    &linearFeatureFactory,
+                                                                    trainingParameters);
+      else
+        forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*trainingData,
+                                                                     &linearFeatureFactory,
+                                                                     trainingParameters);
+    else
+      forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainParallel(*trainingData,
+                                                                         &linearFeatureFactory,
+                                                                         trainingParameters);
 
     //Testing out regression
     //std::auto_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(

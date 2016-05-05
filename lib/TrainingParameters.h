@@ -29,8 +29,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       MaxDecisionLevels = 5;
       Verbose = false;
       svm_c = 0.5;
-      igType = IGType ::ig_gini;
-      featureMask = FeatureMaskType ::standard;
+      igType = ig_gini;
+      featureMask = standard;
       maxThreads = 4;
     }
 
