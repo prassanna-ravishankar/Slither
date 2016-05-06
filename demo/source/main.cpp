@@ -41,7 +41,7 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "_400traindata.csv";
+std::string train_filename = "_400traindata.bak";
 std::string test_filename = "_400traindata.csv";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
@@ -75,15 +75,15 @@ int main(int argc, char* argv[])
           ("model",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
           ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
           ("trees",po::value<int>()->default_value(2), "Number of Trees in the forest")
-          ("depth",po::value<int>()->default_value(15), "Number of Decision Levels")
-          ("feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
-          ("thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
+          ("depth",po::value<int>()->default_value(10), "Number of Decision Levels")
+          ("feats",po::value<int>()->default_value(10), "Number of times to randomly choose a candidate feature")
+          ("thresh",po::value<int>()->default_value(10), "Number of times to sample the threshold")
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
-          ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
-          ("threads",po::value<int>()->default_value(4), "Max. Threads for training the forest")
+          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
+          ("mask_type",po::value<int>()->default_value(3), "standard=0, hypercolumn=1, lbp=2, fisher=3")
+          ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
           ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
           ;
@@ -310,12 +310,12 @@ void parseArguments(po::variables_map& vm)
     std::cout << "\t Operating  Mode was not set. Using Default...";
   std::string op_mode = vm["op_mode"].as<std::string>();
 
-  if(op_mode.compare("train")==0) {
+  if(op_mode.compare("train")) {
     train_flag = true;
     std::cout<<"<TRAIN>"<<std::endl;
   }
 
-  else if(op_mode.compare("test")==0) {
+  else if(op_mode.compare("test")) {
     test_flag = true;
     std::cout << "<TEST>" << std::endl;
   }

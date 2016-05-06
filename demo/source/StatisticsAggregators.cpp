@@ -42,7 +42,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return result/2.0;
   }
 
-  double HistogramAggregator::Entropy(const unsigned short *priorBins, const unsigned int priorSampleCount) const
+  double HistogramAggregator::Entropy(const unsigned int *priorBins, const unsigned int priorSampleCount) const
   {
     if (sampleCount_ == 0)
       return 0.0;
@@ -58,7 +58,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return result;
   }
 
-  double HistogramAggregator::Entropy(const std::vector<short> priorBins, const unsigned int priorSampleCount) const
+  double HistogramAggregator::Entropy(const std::vector<unsigned int> priorBins, const unsigned int priorSampleCount) const
   {
     if (sampleCount_ == 0)
       return 0.0;

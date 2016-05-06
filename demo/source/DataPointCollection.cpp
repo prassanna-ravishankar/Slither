@@ -126,6 +126,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     const float* p = responses.ptr<float>(0);
     result->labels_ = std::vector<int> (p, p + responses.cols);
+
+    //Hack
+
+    for(int i=0;i<result->labels_.size();i++)
+      result->labels_[i]=result->labels_[i]>0?1:0;
+
     result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
 
 

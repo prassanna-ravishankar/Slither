@@ -24,7 +24,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
   private:
     std::set<int> uniqueBins_;
-    std::vector<short> bins_;
+    std::vector<unsigned int> bins_;
     //unsigned short bins_[4];
     int binCount_;
 
@@ -33,8 +33,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   public:
       double Entropy() const;
       double EntropyGINI() const;
-      double Entropy(const unsigned short *priorBins, const unsigned int priorSampleCount) const;
-      double Entropy(const std::vector<short> priorBins, const unsigned int priorSampleCount) const;
+      double Entropy(const unsigned int *priorBins, const unsigned int priorSampleCount) const;
+      double Entropy(const std::vector<unsigned int> priorBins, const unsigned int priorSampleCount) const;
 
 
 
@@ -142,7 +142,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     int BinCount() const {
       return binCount_; }
 
-    std::vector<short> GetBins() const {return bins_;}
+    std::vector<unsigned int> GetBins() const {return bins_;}
 
     unsigned int SampleCount() const { return sampleCount_; }
 
