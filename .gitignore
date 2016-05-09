@@ -3,4 +3,4 @@ bin/
 build/
 .kdev4/
 Sherwood2.kdev4
-
+*.cpp~
