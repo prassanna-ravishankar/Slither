@@ -199,6 +199,21 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       int idx = random.Next (0,NN_DIM);
       vIndex.push_back (idx);
+      //vIndex.push_back (idx+NN_DIM);
+    }
+
+  }
+
+void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random, std::vector<int> &vIndex, int dims,
+                                                         bool root_node)
+  {
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 50);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM);
+      vIndex.push_back (idx);
       vIndex.push_back (idx+NN_DIM);
     }
 
@@ -237,7 +252,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     svm->setC(svm_c);
 
-    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
+    //cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
+    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
 
 
     svm->train(tdata);

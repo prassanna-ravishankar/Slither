@@ -41,8 +41,8 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "_400traindata.bak";
-std::string test_filename = "_400traindata.csv";
+std::string train_filename = "sample_train.txt";
+std::string test_filename = "sample_test.txt";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
           ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
-          ("mask_type",po::value<int>()->default_value(3), "standard=0, hypercolumn=1, lbp=2, fisher=3")
+          ("mask_type",po::value<int>()->default_value(0), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
           ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
@@ -310,12 +310,12 @@ void parseArguments(po::variables_map& vm)
     std::cout << "\t Operating  Mode was not set. Using Default...";
   std::string op_mode = vm["op_mode"].as<std::string>();
 
-  if(op_mode.compare("train")) {
+  if(op_mode.compare("train")==0) {
     train_flag = true;
     std::cout<<"<TRAIN>"<<std::endl;
   }
 
-  else if(op_mode.compare("test")) {
+  else if(op_mode.compare("test")==0) {
     test_flag = true;
     std::cout << "<TEST>" << std::endl;
   }

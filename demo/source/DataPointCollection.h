@@ -249,6 +249,26 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
 
+    cv::Ptr<cvml::TrainData> getTrainDataWithMaskOrdered(std::vector<int> mask_values, int start_row, int end_row, unsigned int* indices)
+    {
+      cv::Mat colMat;
+      //std::cout<<"--->"<<dataMat.rows<<std::endl;
+      cv::Mat labelsMat = cv::Mat(labels_);
+      cv::Mat reducedLabels;
+      for(int i=start_row;i<end_row;i++)
+      {
+        int j = indices[i];
+        colMat.push_back(dataMat.row(j));
+        reducedLabels.push_back(labelsMat.row(j));
+      }
+
+      //std::cout<<colMat.size()<<std::endl;
+      //std::cout<<reducedLabels.size()<<std::endl;
+
+      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
+    }
+
+
 
     /// <summary>
     /// Get the class label for the specified data point (or raise an
