@@ -17,6 +17,7 @@
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   enum FeatureMaskType { standard=0, hypercolumn=1, lbp=2, fisher=3 };
+
   /// <summary>
   /// A collection of data points used for forest training or evaluation.
   /// Concrete implementations supplied by client code will collaborate

@@ -41,8 +41,8 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "sample_train.txt";
-std::string test_filename = "sample_test.txt";
+std::string train_filename = "_400traindata.csv";
+std::string test_filename = "_400testdata.csv";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
@@ -50,7 +50,7 @@ bool train_flag = false;
 bool test_flag = false;
 std::string forest_loc ="forest_400.out";
 bool scale_flag = false;
-
+const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher"};
 
 int main(int argc, char* argv[])
 {
@@ -74,14 +74,14 @@ int main(int argc, char* argv[])
           ("predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
           ("model",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
           ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
-          ("trees",po::value<int>()->default_value(2), "Number of Trees in the forest")
-          ("depth",po::value<int>()->default_value(10), "Number of Decision Levels")
-          ("feats",po::value<int>()->default_value(10), "Number of times to randomly choose a candidate feature")
-          ("thresh",po::value<int>()->default_value(10), "Number of times to sample the threshold")
+          ("trees",po::value<int>()->default_value(100), "Number of Trees in the forest")
+          ("depth",po::value<int>()->default_value(15), "Number of Decision Levels")
+          ("feats",po::value<int>()->default_value(50), "Number of times to randomly choose a candidate feature")
+          ("thresh",po::value<int>()->default_value(50), "Number of times to sample the threshold")
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
+          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(0), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
@@ -334,7 +334,7 @@ void parseArguments(po::variables_map& vm)
   else
     std::cout << "\t Mask type was not set. Using Default...";
   int mask_type = vm["mask_type"].as<int>();
-  std::cout<<mask_type <<"-->"<<static_cast<FeatureMaskType >(mask_type)<<std::endl;
+  std::cout<<mask_type <<"-->"<<FeatureNames[mask_type]<<std::endl;
   trainingParameters.featureMask = static_cast<FeatureMaskType >(mask_type);
 
 
