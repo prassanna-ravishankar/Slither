@@ -99,6 +99,12 @@ bool loadData(const np::ndarray& arr, const np::ndarray& lbls)
 }
 
 
+bool modelExists()
+{
+    return (forest.get() != NULL);
+}
+
+
 bool setDefaultParams()
 {
     //Defaults
@@ -264,6 +270,7 @@ BOOST_PYTHON_MODULE(rfsvm)
 
     bp::def("loadData", loadData, bp::args("Features", "Labels"));
     bp::def("onlyTrain", onlyTrain);
+    bp::def("modelExists", modelExists);
     bp::def("setThreads", setThreads);
     bp::def("setFeatureMask", setFeatureMask);
     bp::def("setDefaultParams", setDefaultParams);
