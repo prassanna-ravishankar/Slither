@@ -5,6 +5,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -29,6 +30,30 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       out.append(1,c);
     }
     return in;
+  }
+
+
+  std::string cvtype2str(int type) {
+    std::string r;
+
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+    switch ( depth ) {
+      case CV_8U:  r = "8U"; break;
+      case CV_8S:  r = "8S"; break;
+      case CV_16U: r = "16U"; break;
+      case CV_16S: r = "16S"; break;
+      case CV_32S: r = "32S"; break;
+      case CV_32F: r = "32F"; break;
+      case CV_64F: r = "64F"; break;
+      default:     r = "User"; break;
+    }
+
+    r += "C";
+    r += (chans+'0');
+
+    return r;
   }
             /*
 
@@ -144,10 +169,75 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     all_data.release();
 
+    result->dataPatches  = false;
+
 
     return result;
 
 
+
+
+  }
+
+
+  std::auto_ptr<DataPointCollection> DataPointCollection::LoadPatches(const std::string &filename)
+  {
+    std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+
+    cv::Ptr<cv::ml::TrainData> all_data;
+
+    //const cv::String bla = cv::String();
+
+    std::ifstream fin (filename.c_str());
+    std::string delimiter = ":";
+    std::string folder_name_images = filename.substr(0,filename.rfind("/")+1)+"Images/";
+
+    std::cout<<"FOLDER is : "<<folder_name_images<<std::endl;
+
+    while(!fin.eof())
+    {
+      std::string fnames;
+      std::string labels;
+      std::string line;
+      std::getline(fin, line);
+      int pos = 0;
+      pos = line.find(":");
+      fnames = line.substr(0,pos);
+      labels = line.substr(pos+1);
+      fnames = boost::algorithm::trim_right_copy(fnames);
+      labels = boost::algorithm::trim_left_copy(labels);
+
+
+
+      if(!fnames.empty())
+      {
+
+        cv::Mat img = cv::imread(folder_name_images+fnames, CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat img_temp;
+        img = img.reshape(0,img.rows*img.cols).t();
+        img = img.clone();
+        img.convertTo(img_temp, CV_32FC1);
+
+
+        result->dataMat.push_back(img_temp);
+
+        result->labels_.push_back(std::stoi(labels));
+
+      }
+
+    }
+
+
+
+    //cv::Mat bla = result->dataMat.rowRange(result->initialIndices_[0], result->finalIndices_[0]);
+    result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
+    result->dimension_ = result->dataMat.cols;
+    result->targets_.clear();
+
+
+    result->dataPatches = true;
+
+    return result;
 
 
   }

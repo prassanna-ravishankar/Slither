@@ -39,6 +39,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     cv::Mat dataMat;
     int dimension_;
     std::set<int> uniqueClasses_;
+    //std::vector<int> initialIndices_;
+      //std::vector<int> finalIndices_;
+
+      bool dataPatches;
 
 
       // only for classified data...
@@ -120,7 +124,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="bHasTargetValues">Are the data associated with target values.</param>
     //static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
 
-     static  std::auto_ptr<DataPointCollection> Load(const std::string &filename);
+    static  std::auto_ptr<DataPointCollection> Load(const std::string &filename);
+
+
+    static  std::auto_ptr<DataPointCollection> LoadPatches(const std::string &filename);
 
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.
@@ -180,7 +187,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <returns>The number of data points</returns>
     unsigned int Count() const
     {
-      return dataMat.rows;
+        return dataMat.rows;
     }
 
     void showMat() const

@@ -309,7 +309,110 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
   std::string LinearFeatureResponseSVM::ToString() const
   {
     std::stringstream s;
-    s << "LinearFeatureResponse()";
+    s << "LinearFeatureSVMResponse()";
+
+    return s.str();
+  }
+
+
+  void LinearFeatureResponsePatchesSVM::GenerateMaskPatches(Random &random, std::vector<int> &vIndex, int dims,
+                                                                   bool root_node)
+  {
+
+    vIndex.clear();
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 50);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM);
+      vIndex.push_back (idx);
+
+    }
+
+  }
+
+
+  LinearFeatureResponsePatchesSVM LinearFeatureResponsePatchesSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
+  {
+    LinearFeatureResponsePatchesSVM lr;
+    DataPointCollection& concreteData = (DataPointCollection&)(data);
+    //this->dimensions_ =  concreteData.Dimensions();
+    lr.dimensions_ = concreteData.Dimensions();
+
+    GenerateMaskPatches(random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+
+
+
+    std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
+
+    cv::Ptr<cvml::SVM> svm;
+    svm = cvml::SVM::create();
+    svm->setType(cvml::SVM::C_SVC);
+    svm->setKernel(cvml::SVM::LINEAR);
+    svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
+
+
+    svm->setC(svm_c);
+
+    //cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
+    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
+
+
+    svm->train(tdata);
+
+    lr.nWeights_ = lr.vIndex_.size();
+    lr.vWeights_.resize(lr.vIndex_.size(),1); //Initializing weights as unit vector
+    lr.bias_ = 0; // 0 ->bias
+
+
+    if(svm->isTrained())
+    {
+      cv::Mat alpha, wts;
+
+      lr.bias_ = -1 * (float)svm->getDecisionFunction(0, alpha, wts);
+      cv::Mat svs = svm->getSupportVectors();
+      for(int j=0;j<svs.cols;j++)
+        lr.vWeights_[j]=(svs.at<float>(j));
+    }
+    svm.release();
+
+    //lr.vWeights_.resize()
+
+    //cv::Mat svs = lr.svm->getSupportVectors();
+    //svm->getDecisionFunction(0,alpha,svs);
+    //std::cout<<"[DEBUG : "<<i0<<" -->"<<i1<<"]    "<<tdata->getNSamples()<<std::endl;
+    //std::cout<<"[DEBUG : FeatureResponseSVM / isTrained?]"<<lr.nWeights_<<" "<<lr.svm->isTrained()<<std::endl;
+
+
+
+
+
+
+
+    return lr;
+  }
+
+  float LinearFeatureResponsePatchesSVM::GetResponse(const IDataPointCollection& data, unsigned int index) const
+  {
+    //std::cout<<"At feature response 1"<<std::endl;
+
+    const DataPointCollection& concreteData = (const DataPointCollection&)(data);
+    cv::Mat rowMat = concreteData.GetDataPoint(index);
+    std::vector<float> rowVector;
+
+    for (int i = 0;i<nWeights_;i++)
+      rowVector.push_back(rowMat.at<float>(vIndex_[i]));
+
+    double response = std::inner_product(rowVector.begin(), rowVector.end(), vWeights_.begin(), bias_);
+
+    return (float)response;
+  }
+
+  std::string LinearFeatureResponsePatchesSVM::ToString() const
+  {
+    std::stringstream s;
+    s << "LinearFeatureSVMResponse()";
 
     return s.str();
   }

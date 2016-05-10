@@ -44,6 +44,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       LinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
   };
 
+  class LinearFeaturePatchesSVMFactory: public IFeatureResponseFactory<LinearFeatureResponsePatchesSVM>
+  {
+  public:
+      LinearFeatureResponsePatchesSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
+  };
+
   template<class F>
   class ClassificationTrainingContext : public ITrainingContext<F,HistogramAggregator> // where F:IFeatureResponse
   {

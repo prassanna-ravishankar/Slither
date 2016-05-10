@@ -87,8 +87,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   HistogramAggregator::HistogramAggregator(int nClasses)
   {
-    if(nClasses>4)
+    /*if(nClasses>4)
       throw std::runtime_error("HistogramAggregator supports a maximum of four classes.");
+      */
     binCount_ = nClasses;
     /*for(int b=0; b<binCount_; b++)
       bins_[b] = 0;*/
