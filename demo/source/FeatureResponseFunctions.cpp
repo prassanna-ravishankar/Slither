@@ -242,6 +242,7 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     }
 
     std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
+    lr.vIndex_.erase( unique( lr.vIndex_.begin(), lr.vIndex_.end() ), lr.vIndex_.end() );
 
     cv::Ptr<cvml::SVM> svm;
     svm = cvml::SVM::create();
