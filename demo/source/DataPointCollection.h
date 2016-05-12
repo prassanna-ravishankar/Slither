@@ -107,6 +107,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       dataMat.at<float>(h,w) = value;
       labels_[h] = label;
       uniqueClasses_.insert(label);
+      //std::cout<<"{";for(std::set<int>::iterator iter=uniqueClasses_.begin(); iter!=uniqueClasses_.end();++iter) { std::cout<<(*iter);}std::cout<<"}"<<std::endl;
+
+
+        //std::cout<<"Putting Value : "<<value<<" lbl : "<<label<<std::endl;
     }
 
     /// <summary>
