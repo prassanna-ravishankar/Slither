@@ -435,7 +435,7 @@ public :
 
     bool onlyTrain()
     {
-        data->showMat();
+        //data->showMat();
         LinearFeatureSVMFactory featureFactory;
 
         std::cout<<data->CountClasses()<<" Classes"<<std::endl;
