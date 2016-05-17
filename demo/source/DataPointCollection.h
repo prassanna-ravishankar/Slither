@@ -10,6 +10,17 @@
 
 #include "Sherwood.h"
 #include <set>
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <caffe/caffe.hpp>
+#include <opencv2/ximgproc.hpp>
+#include <math.h>
+#include <algorithm>
+#include <iosfwd>
+#include <memory>
+#include <utility>
+
 namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
@@ -29,6 +40,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     };
   };
 
+  struct NNParams
+  {
+      std::string model_file;
+      std::string trained_file;
+      std::string mean_file;
+      std::string label_file;
+  };
+
   /// <summary>
   /// A collection of data points, each represented by a float[] and (optionally)
   /// associated with a string class label and/or a float target value.
@@ -37,6 +56,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     //std::vector<float> data_;
     cv::Mat dataMat;
+    cv::Mat filteredMat;
     int dimension_;
     std::set<int> uniqueClasses_;
     //std::vector<int> initialIndices_;
@@ -54,6 +74,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     std::vector<float> targets_;
 
   public:
+    //static NNParams NNparams_;
     static const int UnknownClassLabel = -1;
 
     cv::Mat scaleRow(cv::Mat& rowMat, float& bias, float& factor )
@@ -151,6 +172,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="nStepsX">Number of grid points</param>
     /// <returns>A new DataPointCollection</returns>
     static std::auto_ptr<DataPointCollection> Generate1dGrid(std::pair<float, float> range, int nSteps);
+
+
+
+
 
     /// <summary>
     /// Do these data have class labels?
@@ -315,4 +340,44 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   // Convert a std::string to a float (or raise an exception).
   float to_float(const std::string& s);
+
+
+
+
+
+  //Classifier
+  using namespace caffe;  // NOLINT(build/namespaces)
+  using std::string;
+  typedef std::pair<string, float> Prediction;
+
+            class Classifier {
+  public:
+      cv::Size input_geometry_;
+
+      Classifier(const string& model_file,
+                 const string& trained_file,
+                 const string& mean_file,
+                 const string& label_file);
+
+      std::vector<Prediction> Classify(const cv::Mat& img, int N = 5);
+      void forwardPass(const cv::Mat &img);
+      std::vector<cv::Mat> forwardPass(const cv::Mat &img,int layer_nr);
+
+  private:
+      //void SetMean(const string& mean_file);
+
+      std::vector<float> Predict(const cv::Mat& img);
+
+      void WrapInputLayer(std::vector<cv::Mat>* input_channels);
+
+      void Preprocess(const cv::Mat& img,
+                      std::vector<cv::Mat>* input_channels);
+
+  private:
+      std::shared_ptr<Net<float> > net_;
+      int num_channels_;
+      cv::Mat mean_;
+      std::vector<string> labels_;
+  };
+
 } } }
