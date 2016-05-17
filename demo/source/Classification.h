@@ -242,7 +242,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
           int leafIndex = leafIndicesPerTree[t][i];
           result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
         }
-        std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
+        //std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
         correctCount += (testData.GetIntegerLabel(i) == result[i].FindTallestBinIndex());
       }
 
