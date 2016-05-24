@@ -36,13 +36,12 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 
 
 
-
 //HARDCODING DEFAULTS - get from boost argparse
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string train_filename = "sample_train.txt";
-std::string test_filename = "sample_train.txt";
+std::string train_filename = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/Train.txt";
+std::string test_filename = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/Test.txt";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
@@ -51,6 +50,10 @@ bool test_flag = false;
 std::string forest_loc ="forest_400.out";
 bool scale_flag = false;
 const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher"};
+std::string img_folder = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/image_2/";
+std::string ann_folder = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/gt_idx_2/";
+bool patches_flag = true;
+
 
 int main(int argc, char* argv[])
 {
@@ -81,11 +84,12 @@ int main(int argc, char* argv[])
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
+          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
           ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
+          ("patches", po::value<bool>()->default_value(true), "Data is patches?[if no-> considering as feature descriptors]")
           ;
 
   po::variables_map vm;
@@ -349,12 +353,21 @@ void parseArguments(po::variables_map& vm)
 
 
   std::cout<<"16. [Scale Data ]";
-  if (vm.count("threads"))
+  if (vm.count("scale"))
     std::cout << "\t Scale Data Flag was set to : ";
   else
     std::cout << "\t Scale Data Flag was not set. Using Default...";
   scale_flag = vm["scale"].as<bool>();
   std::cout<<scale_flag<<std::endl;
+
+
+  std::cout<<"17. [Data as Patches ]";
+  if (vm.count("patches"))
+    std::cout << "\t Data as Patches Flag was set to : ";
+  else
+    std::cout << "\t Data as Patches Flag was not set. Using Default...";
+  patches_flag = vm["patches"].as<bool>();
+  std::cout<<patches_flag<<std::endl;
 
 
   std::cout<<"[FINISHED PARSING]"<<std::endl<<std::endl;
@@ -437,7 +450,10 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
 
   std::auto_ptr<DataPointCollection> trainingData;
 
-  trainingData  = trainingData->Load(filename);
+  if(patches_flag)
+    trainingData  = trainingData->LoadPatches(filename,img_folder,ann_folder);
+  else
+    trainingData = trainingData->Load(filename);
 
   if(scale_flag)
   {

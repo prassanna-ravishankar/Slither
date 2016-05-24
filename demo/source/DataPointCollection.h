@@ -10,6 +10,18 @@
 
 #include "Sherwood.h"
 #include <set>
+
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <caffe/caffe.hpp>
+#include <opencv2/ximgproc.hpp>
+#include <math.h>
+#include <algorithm>
+#include <iosfwd>
+#include <memory>
+#include <utility>
+
 namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
@@ -39,6 +51,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     cv::Mat dataMat;
     int dimension_;
     std::set<int> uniqueClasses_;
+    bool dataPatches;
+    std::vector<cv::Mat> patches;
+    std::vector<cv::Mat> annotations;
+    std::vector<int> sizes;
+    long int total_size;
 
 
       // only for classified data...
@@ -52,6 +69,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   public:
     static const int UnknownClassLabel = -1;
 
+
+    //FOR SCALING REQUIREMENTS - usually false
     cv::Mat scaleRow(cv::Mat& rowMat, float& bias, float& factor )
     {
       double min, max;
@@ -94,7 +113,11 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       this->dataMat =  target_mat.clone();
 
     }
+    //END scaling part
 
+
+
+    //For Python Stuff
     bool reserve(int H, int W)
     {
       dataMat = cv::Mat(H,W,CV_32FC1);
@@ -112,6 +135,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         //std::cout<<"Putting Value : "<<value<<" lbl : "<<label<<std::endl;
     }
+    //ENd PYTHON REQUIREMENTS
 
     /// <summary>
     /// Load a collection of data from a tab-delimited file with one data point
@@ -125,6 +149,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     //static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
 
      static  std::auto_ptr<DataPointCollection> Load(const std::string &filename);
+     static  std::auto_ptr<DataPointCollection> LoadPatches(const std::string &filename, const std::string &img_folder, const std::string &ann_folder);
 
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.
@@ -154,6 +179,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     bool HasLabels() const
     {
+      if(dataPatches)
+        return annotations.size() != 0;
       return labels_.size() != 0;
     }
 
@@ -312,4 +339,48 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   // Convert a std::string to a float (or raise an exception).
   float to_float(const std::string& s);
+
+
+
+  cv::Mat to_index_kitti(const cv::Mat &img);
+
+
+  //Classifier
+  using namespace caffe;  // NOLINT(build/namespaces)
+  using std::string;
+  typedef std::pair<string, float> Prediction;
+
+  class Classifier {
+  public:
+      cv::Size input_geometry_;
+
+      Classifier(const string& model_file,
+                 const string& trained_file,
+                 const string& mean_file,
+                 const string& label_file);
+
+      std::vector<Prediction> Classify(const cv::Mat& img, int N = 5);
+      void forwardPass(const cv::Mat &img);
+      std::vector<cv::Mat> forwardPass(const cv::Mat &img,int layer_nr);
+
+  private:
+      //void SetMean(const string& mean_file);
+
+      std::vector<float> Predict(const cv::Mat& img);
+
+      void WrapInputLayer(std::vector<cv::Mat>* input_channels);
+
+      void Preprocess(const cv::Mat& img,
+                      std::vector<cv::Mat>* input_channels);
+
+  private:
+      std::shared_ptr<Net<float> > net_;
+      int num_channels_;
+      cv::Mat mean_;
+      std::vector<string> labels_;
+  };
+
+
+
+
 } } }

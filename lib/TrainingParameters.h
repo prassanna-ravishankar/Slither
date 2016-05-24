@@ -44,5 +44,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     FeatureMaskType featureMask;
       int maxThreads;
 
+
   };
 } } }
