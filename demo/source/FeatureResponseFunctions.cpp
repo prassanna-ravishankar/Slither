@@ -218,6 +218,47 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     }
 
   }
+  void LinearFeatureResponseSVM::GenerateMaskHypercolumn2LrStatistics(Random &random, std::vector<int> &vIndex, int dims,
+                                                                   bool root_node)
+  {
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 100);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM*2);
+      vIndex.push_back (idx);
+      vIndex.push_back (idx+NN_DIM*2);
+    }
+
+  }
+
+
+  void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatisticsAndLocation(Random &random, std::vector<int> &vIndex, int dims,
+                                                         bool root_node)
+  {
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 50);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM);
+      vIndex.push_back (idx);
+      vIndex.push_back (idx+NN_DIM);
+    }
+
+
+    //Location
+    //Big Assumption, Location is the last 2 dimensions (X,Y)
+    bool loc_choice = random.NextDouble() > 0.5;
+    if(loc_choice)
+    {
+      vIndex.push_back(dims-2);
+      vIndex.push_back(dims-1);
+    }
+
+
+  }
 
 
   LinearFeatureResponseSVM LinearFeatureResponseSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
@@ -238,6 +279,10 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
         break;
       case standard:GenerateMask (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
         break;
+      case hypercolumn_loc:GenerateMaskHypercolumnStatisticsAndLocation (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+            break;
+      case hypercolumn2:GenerateMaskHypercolumn2LrStatistics (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+            break;
       default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
     }
 

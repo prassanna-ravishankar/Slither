@@ -50,7 +50,7 @@ bool train_flag = false;
 bool test_flag = false;
 std::string forest_loc ="forest_400.out";
 bool scale_flag = false;
-const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher"};
+const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher", "Hypercolumn+Location", "2Layer Hypercolumn"};
 
 int main(int argc, char* argv[])
 {
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
           ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
-          ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
+          ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4, hypercolumn2=5")
           ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
           ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
