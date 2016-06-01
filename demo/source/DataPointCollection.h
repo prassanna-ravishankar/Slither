@@ -54,6 +54,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     bool dataPatches;
     std::vector<cv::Mat> patches;
     std::vector<cv::Mat> annotations;
+    std::vector<cv::Mat> machine_feats;
+    std::vector<cv::Mat> predictions_;
     std::vector<int> sizes;
     long int total_size;
 
@@ -361,7 +363,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       std::vector<Prediction> Classify(const cv::Mat& img, int N = 5);
       void forwardPass(const cv::Mat &img);
-      std::vector<cv::Mat> forwardPass(const cv::Mat &img,int layer_nr);
+      cv::Mat forwardPass(const cv::Mat &img,int layer_nr);
+      std::vector<cv::Mat> forwardPassVector(const cv::Mat &img,int layer_nr);
 
   private:
       //void SetMean(const string& mean_file);

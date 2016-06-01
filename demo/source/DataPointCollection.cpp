@@ -181,6 +181,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     int count_data=0;
 
+    //cv::namedWindow("Annotation");
+
     while(!fin.eof())
     {
 
@@ -203,13 +205,34 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         //cv::ImreadModes ::IMREAD_ANYCOLOR
 
-        cv::Mat img = cv::imread(image_name, CV_LOAD_IMAGE_GRAYSCALE);
-        cv::Mat ann = cv::imread(ann_name);
+        cv::Mat img = cv::imread(image_name);
+        cv::Mat ann_gt = cv::imread(ann_name,CV_LOAD_IMAGE_GRAYSCALE);
 
-        result->patches.push_back(img);
-        result->annotations.push_back(ann);
-        result->sizes.push_back(img.rows*img.cols);
-        result->total_size += img.rows*img.cols;
+        //For Kitti only
+        cv::Mat ann  = cv::Mat(ann_gt.rows, ann_gt.cols, CV_8U);
+        ann = (ann_gt>=1)-254;
+        std::vector<cv::Mat> image_feats = classifier.forwardPassVector(img,2); //is CV_32F
+        cv::Mat hypercolumn = cv::Mat(1, image_feats.size(), CV_32FC1);
+
+        for(int y=0;y<image_feats[0].rows;y++)
+            for(int x=0;x<image_feats[0].cols;x++)
+            {
+              int lbl = (int) ann.at<uchar>(y,x);
+                for(int c=0;c<image_feats.size();c++)
+                  hypercolumn.at<float>(c) = image_feats[c].at<float>(y,x);
+
+              result->dataMat.push_back(hypercolumn);
+              result->labels_.push_back(lbl);
+
+            }
+
+
+        //result->patches.push_back(img);
+        //result->annotations.push_back(ann);
+        //result->machine_feats.push_back(image_feats);
+        //result->sizes.push_back(img.rows*img.cols);
+        //result->total_size += img.rows*img.cols;
+
 
         std::vector<uchar> V;
         V.assign((uchar*)ann.datastart, (uchar*)ann.dataend);
@@ -219,12 +242,19 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         int a=10;
 
+        if(count_data>10)
+        break;
+
 
       }
 
+
     }
 
+
+
     result->dataPatches = true;
+
 
 
 
@@ -463,7 +493,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
 
-  std::vector<cv::Mat> Classifier::forwardPass(const cv::Mat &img, int layer_nr)
+  cv::Mat Classifier::forwardPass(const cv::Mat &img, int layer_nr)
   {
     Blob<float>* input_layer = net_->input_blobs()[0];
     input_geometry_ = img.size();
@@ -518,6 +548,69 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
     cv::merge(channels, hypercolumns);
+
+    //std::cout<<hypercolumns.channels();
+
+    return hypercolumns.clone();
+
+  }
+
+
+  std::vector<cv::Mat> Classifier::forwardPassVector(const cv::Mat &img, int layer_nr)
+  {
+    Blob<float>* input_layer = net_->input_blobs()[0];
+    input_geometry_ = img.size();
+    input_layer->Reshape(1, num_channels_,
+                         input_geometry_.height, input_geometry_.width);
+    /* Forward dimension change to all layers. */
+    net_->Reshape();
+
+    std::vector<cv::Mat> input_channels;
+    //std::cout<<"Wrap input layer"<<std::endl;
+    WrapInputLayer(&input_channels);
+    //std::cout<<"Preprocess"<<std::endl;
+    Preprocess(img, &input_channels);
+
+
+
+
+
+    //std::cout<<"NetForward"<<std::endl;
+    //net_->ForwardPrefilled();
+    net_->ForwardTo(layer_nr);
+
+
+    std::vector<std::string> layer_names = net_->blob_names();
+    std::string blob_name = layer_names[layer_nr];
+
+    boost::shared_ptr<Blob<float>> sample_blob;
+    sample_blob = net_->blob_by_name(blob_name);
+    //std::cout<<"Channels: "<<sample_blob->channels()<<std::endl;
+
+    float* data = sample_blob->mutable_cpu_data();
+
+    cv::Mat hypercolumns;
+    std::vector<cv::Mat> channels;
+
+    for (int i = 0; i < sample_blob->channels(); ++i) {
+      /* Extract an individual channel. */
+      cv::Mat channel(sample_blob-> height(), sample_blob->width(), CV_32FC1, data);
+      //channels.push_back(channel);
+      data += sample_blob->height() * sample_blob->width();
+      cv::Mat out;
+      cv::resize(channel, out, img.size());
+
+      channels.push_back(out);
+
+
+      /*//Only to visualize
+      cv::normalize(out, channel,255,0);
+      cv::imshow("Channel", channel);
+      cv::waitKey();*/
+
+    }
+
+    //cv::merge(channels, hypercolumns);
 
     //std::cout<<hypercolumns.channels();
 
