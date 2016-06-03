@@ -55,6 +55,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     std::set<int> uniqueClasses_;
     bool dataPatches;
     std::vector<int> superpixel_pixel_map;
+      std::vector<int> pixel_response_rows;
 
 
     std::vector<int> image_rows;
@@ -79,21 +80,21 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       {
         int start_row = 0;
         int end_row = 0;
-        for(int j=0;j<i;j++)
+        if(i>0)
         {
-          start_row += image_rows[i]*image_cols[i];
+          start_row = pixel_response_rows[i-1];
         }
-
-        end_row = start_row + image_rows[i]*image_cols[i];
-
-        int c = 0;
-
+        end_row = pixel_response_rows[i];
         cv::Mat reconstructed = cv::Mat::zeros(image_rows[i], image_cols[i], CV_32F);
-        for(int y=0;y<reconstructed.rows;y++)
-          for(int x=0;x<reconstructed.cols;x++)
-          {
-            reconstructed.at<float>(y,x) = predictions[start_row+x*reconstructed.cols+y];
-          }
+        for(int c=start_row;c<end_row;c++)
+        {
+          int x = (c-start_row)%reconstructed.cols;
+          int y = (c-start_row)/reconstructed.cols;
+
+//          std::cout<<" x, y : "<<x<<", "<<y<<std::endl;
+
+          reconstructed.at<float>(y,x) = predictions[c];
+        }
         //std::cout<<"Params : "<<start_row<<" "<<end_row<<" "<<reconstructed.size()<<std::endl;
 
         //cv::namedWindow("Annotations");

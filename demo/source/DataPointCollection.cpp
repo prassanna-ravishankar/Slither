@@ -285,6 +285,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
             }
 
+        result->pixel_response_rows.push_back(result->dataMat.rows);
+
 
         //Average Superpixels
         for(int t=0;t<superpixel_sizes.size();t++)
@@ -323,7 +325,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
         std::cout<<"Feature/Patch Loaded : "<<count_data++<<std::endl;
 
-        if(count_data>50)
+        if(count_data>100)
          break;
 
 
