@@ -233,6 +233,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::vector<HistogramAggregator> result(testData.Count());
       int correctCount = 0;
 
+      std::vector<float> road_results;
+      std::cout<<" Applying "<<forest.TreeCount()<<" number of trees : "<<std::endl;
+
       for (int i = 0; i < testData.Count(); i++)
       {
         // Aggregate statistics for this sample over all leaf nodes reached
@@ -241,14 +244,85 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         {
           int leafIndex = leafIndicesPerTree[t][i];
           result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
+
         }
         //std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
         correctCount += (testData.GetIntegerLabel(i) == result[i].FindTallestBinIndex());
+        road_results.push_back(result[i].GetProbability(1));
+
       }
 
       std::cout<<" Score : "<<correctCount<<" / "<<testData.Count()<<std::endl;
 
+      cv::Mat bla = testData.reconstructPredictions(0, road_results);
+
       distributions  = result;
+
+      //return result;
+    }
+
+
+
+
+
+
+    /// <summary>
+    /// Apply a trained forest to some test data.
+    /// </summary>
+    /// <typeparam name="F">Type of split function</typeparam>
+    /// <param name="forest">Trained forest</param>
+    /// <param name="testData">Test data</param>
+    /// <returns>An array of class distributions, one per test data point</returns>
+    static void TestAndPredictIm(const Forest<F, HistogramAggregator>& forest, const DataPointCollection& testData, std::vector<HistogramAggregator>& distributions, std::string folder_prediction) // where F : IFeatureResponse
+    {
+      int nClasses = forest.GetTree(0).GetNode(0).TrainingDataStatistics.BinCount();
+
+      std::vector<std::vector<int> > leafIndicesPerTree;
+      forest.Apply(testData, leafIndicesPerTree);
+
+      std::vector<HistogramAggregator> result(testData.Count());
+      int correctCount = 0;
+
+      std::vector<float> road_results;
+      std::cout<<" Applying "<<forest.TreeCount()<<" number of trees : "<<std::endl;
+
+
+
+      for (int i = 0; i < testData.Count(); i++)
+      {
+        // Aggregate statistics for this sample over all leaf nodes reached
+        result[i] = HistogramAggregator(nClasses);
+        for (int t = 0; t < forest.TreeCount(); t++)
+        {
+          int leafIndex = leafIndicesPerTree[t][i];
+          result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
+
+        }
+        //std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
+        correctCount += (testData.GetIntegerLabel(i) == result[i].FindTallestBinIndex());
+        road_results.push_back(result[i].GetProbability(1));
+
+      }
+
+      std::cout<<" Score : "<<correctCount<<" / "<<testData.Count()<<std::endl;
+
+
+
+      distributions  = result;
+
+      for(int r=0;r<testData.filenames.size();r++)
+      {
+        std::string out_name = folder_prediction+testData.filenames[r];
+        std::cout<<"Reconstructing predictions for image : "<<r<<" --> "<<out_name<<std::endl;
+        cv::Mat bla = testData.reconstructPredictions(r, road_results)*255;
+        cv::Mat m_out;
+        bla.convertTo(m_out, CV_8U);
+        //std::cout<<bla;
+        //cv::imshow("bla",bla);
+        //cv::waitKey();
+        cv::imwrite(out_name,bla);
+
+      }
 
       //return result;
     }

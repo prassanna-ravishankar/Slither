@@ -49,14 +49,16 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   {
     //std::vector<float> data_;
     cv::Mat dataMat;
+    cv::Mat superpixelFeats_1;
+
     int dimension_;
     std::set<int> uniqueClasses_;
     bool dataPatches;
-    std::vector<cv::Mat> patches;
-    std::vector<cv::Mat> annotations;
-    std::vector<cv::Mat> machine_feats;
-    std::vector<cv::Mat> predictions_;
-    std::vector<int> sizes;
+    std::vector<int> superpixel_pixel_map;
+
+
+    std::vector<int> image_rows;
+    std::vector<int> image_cols;
     long int total_size;
 
 
@@ -70,7 +72,38 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   public:
     static const int UnknownClassLabel = -1;
+      std::vector<std::string> filenames;
 
+
+      const cv::Mat reconstructPredictions(int i, std::vector<float>& predictions) const
+      {
+        int start_row = 0;
+        int end_row = 0;
+        for(int j=0;j<i;j++)
+        {
+          start_row += image_rows[i]*image_cols[i];
+        }
+
+        end_row = start_row + image_rows[i]*image_cols[i];
+
+        int c = 0;
+
+        cv::Mat reconstructed = cv::Mat::zeros(image_rows[i], image_cols[i], CV_32F);
+        for(int y=0;y<reconstructed.rows;y++)
+          for(int x=0;x<reconstructed.cols;x++)
+          {
+            reconstructed.at<float>(y,x) = predictions[start_row+x*reconstructed.cols+y];
+          }
+        //std::cout<<"Params : "<<start_row<<" "<<end_row<<" "<<reconstructed.size()<<std::endl;
+
+        //cv::namedWindow("Annotations");
+        //cv::imshow("Annotations", reconstructed*255);
+        //cv::waitKey();
+
+
+
+        return reconstructed.clone();
+      }
 
     //FOR SCALING REQUIREMENTS - usually false
     cv::Mat scaleRow(cv::Mat& rowMat, float& bias, float& factor )
@@ -181,8 +214,6 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     bool HasLabels() const
     {
-      if(dataPatches)
-        return annotations.size() != 0;
       return labels_.size() != 0;
     }
 
@@ -264,6 +295,44 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return dataMat.row(i);
     }
 
+    const cv::Mat GetDataPoint(int i, bool superpixel_choice) const
+    {
+
+      if(!superpixel_choice)
+        return dataMat.row(i);
+      else
+        return superpixelFeats_1.row(superpixel_pixel_map[i]);
+    }
+
+    const cv::Mat reconstructAnn(int i)
+    {
+      int start_row = 0;
+      int end_row = 0;
+      int start_col = 0;
+      int end_col=0;
+      if(i!=0)
+      {
+        start_row = image_rows[i-1];
+        start_col  =image_cols[i-1];
+      }
+
+      end_row = image_rows[i];
+      end_col = image_cols[i];
+      int c = 0;
+
+      cv::Mat reconstructed = cv::Mat::zeros(end_row-start_row, end_col-start_col, CV_32F);
+      for(int y=0;y<reconstructed.rows;y++)
+        for(int x=0;x<reconstructed.cols;x++)
+        {
+          reconstructed.at<float>(y,x) = labels_[start_row+(c++)];
+        }
+
+      return reconstructed;
+    }
+
+
+
+
 
     cv::Ptr<cvml::TrainData> getTrainData()
     {
@@ -302,6 +371,29 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
 
+    cv::Ptr<cvml::TrainData> getTrainDataWithMaskOrderedSuperpixel(std::vector<int> mask_values, int start_row, int end_row, unsigned int* indices)
+    {
+      cv::Mat colMat;
+      //std::cout<<"--->"<<dataMat.rows<<std::endl;
+      cv::Mat labelsMat = cv::Mat(labels_);
+      cv::Mat reducedLabels;
+      for(int i=start_row;i<end_row;i++)
+      {
+        int j = indices[i];
+        colMat.push_back(superpixelFeats_1.row(superpixel_pixel_map[j]));
+        reducedLabels.push_back(labelsMat.row(j));
+      }
+
+      //std::cout<<colMat.size()<<std::endl;
+      //std::cout<<reducedLabels.size()<<std::endl;
+
+      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
+    }
+
+
+
+
+
 
     /// <summary>
     /// Get the class label for the specified data point (or raise an
@@ -315,6 +407,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         throw std::runtime_error("Data have no associated class labels.");
       return labels_[i]; // may throw an exception if index is out of range
     }
+
+
 
     /// <summary>
     /// Get the target value for the specified data point (or raise an

@@ -181,7 +181,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     int count_data=0;
 
-    //cv::namedWindow("Annotation");
+    //cv::namedWindow("Labels");
 
     while(!fin.eof())
     {
@@ -195,7 +195,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::string image_name = img_folder + line;
       std::string ann_name = ann_folder + line;
 
-      std::cout<<"Feature/Patch : "<<count_data++<<std::endl;
+      result-> filenames.push_back(line);
+
 
       if(!labels.empty())
         lbl = std::stoi(labels);
@@ -208,42 +209,126 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         cv::Mat img = cv::imread(image_name);
         cv::Mat ann_gt = cv::imread(ann_name,CV_LOAD_IMAGE_GRAYSCALE);
 
+        if(img.empty() || ann_gt.empty())
+          continue;
+
         //For Kitti only
         cv::Mat ann  = cv::Mat(ann_gt.rows, ann_gt.cols, CV_8U);
         ann = (ann_gt>=1)-254;
         std::vector<cv::Mat> image_feats = classifier.forwardPassVector(img,2); //is CV_32F
         cv::Mat hypercolumn = cv::Mat(1, image_feats.size(), CV_32FC1);
 
+        //TODO :: Calculate slic segments
+
+
+        /*
+        cv::Mat label_contours;
+        slic->getLabelContourMask(label_contours);
+        cv::imshow("Labels", label_contours);
+        cv::waitKey();
+
+         */
+
+
+
+        //Going through the superpixels, calculating superpixel hypercolumns
+
+
+
+        //TODO :: Correspond pixel to image to segment
+        // Introduce image index vector
+        // Introduce Superpixel index vector
+
+        int previous_superpixels=0;
+        if(!result->superpixelFeats_1.empty())
+          previous_superpixels = result->superpixelFeats_1.rows;
+
+        cv::Mat ann_small, img_small;
+        //cv::resize(channel, out, img.size());
+        cv::resize(ann, ann_small, image_feats[0].size());
+        cv::resize(img, img_small, image_feats[0].size());
+
+
+
+        //SUPERPIXEL PART
+        cv::Mat labels;
+        int n = 800;
+        float region_size = (int)std::sqrt((img.size().height*img.size().width) / n);
+        cv::Ptr<cv::ximgproc::SuperpixelSLIC>slic = cv::ximgproc::createSuperpixelSLIC(img_small, cv::ximgproc::SLIC, region_size,10.0f);
+        slic->iterate();
+        slic->enforceLabelConnectivity();
+        slic->getLabels(labels);
+        double minVal, maxVal;
+        cv::minMaxIdx(labels,&minVal, &maxVal);
+        cv::Mat superpixel_descriptors = cv::Mat::zeros(maxVal+1, image_feats.size(), CV_32FC1);
+        std::vector<int> superpixel_sizes;
+        superpixel_sizes.resize(maxVal+1, 0);
+
         for(int y=0;y<image_feats[0].rows;y++)
             for(int x=0;x<image_feats[0].cols;x++)
             {
-              int lbl = (int) ann.at<uchar>(y,x);
+              int lbl = (int) ann_small.at<uchar>(y,x);
                 for(int c=0;c<image_feats.size();c++)
                   hypercolumn.at<float>(c) = image_feats[c].at<float>(y,x);
 
+              int superpixel_label = labels.at<int>(y,x);
               result->dataMat.push_back(hypercolumn);
               result->labels_.push_back(lbl);
+              result->superpixel_pixel_map.push_back(previous_superpixels+superpixel_label);
+
+              //result->image_idx_pixel.push_back(count_data);
+
+
+              //Adding superpixel label
+              superpixel_descriptors.row(superpixel_label) = superpixel_descriptors.row(superpixel_label)+ hypercolumn;
+              superpixel_sizes[superpixel_label]++;
 
             }
 
 
+        //Average Superpixels
+        for(int t=0;t<superpixel_sizes.size();t++)
+        {
+          result->superpixelFeats_1.push_back( (superpixel_descriptors.row(t) / superpixel_sizes[t]) );
+          //result->superpixel_pixel_map.push_back(result->superpixelFeats_1.rows-1);
+        }
+
+
+
         //result->patches.push_back(img);
-        //result->annotations.push_back(ann);
-        //result->machine_feats.push_back(image_feats);
-        //result->sizes.push_back(img.rows*img.cols);
-        //result->total_size += img.rows*img.cols;
+        result->image_rows.push_back(img_small.rows);
+        result->image_cols.push_back(img_small.cols);
+
+        /*
+        //To Debug
+        int wa = result->dataMat.rows;
+        int wb = result->labels_.size();
+        int wc = result->image_idx_pixel.size();
+        int wd = result->superpixel_pixel_map.size();
+        int we = result->superpixelFeats_1.rows;
+        int wf = result->image_idx_superpixel.size();
+        int wg = result->superpixel_idx.size();
+        int wh = result->image_rows.size();
+        int wi = result->image_cols.size();
+        */
 
 
-        std::vector<uchar> V;
-        V.assign((uchar*)ann.datastart, (uchar*)ann.dataend);
-        std::vector<int> intVec(V.begin(), V.end());
-        std::set<int> s(intVec.begin(), intVec.end());
-        result->uniqueClasses_.insert(s.begin(), s.end());
+        //Push back segments
+
+
 
         int a=10;
 
-        if(count_data>10)
-        break;
+
+
+        std::cout<<"Feature/Patch Loaded : "<<count_data++<<std::endl;
+
+        if(count_data>50)
+         break;
+
+
+
+
 
 
       }
@@ -251,11 +336,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     }
 
-
-
+    result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
     result->dataPatches = true;
-
-
 
 
     return result;
@@ -597,10 +679,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       cv::Mat channel(sample_blob-> height(), sample_blob->width(), CV_32FC1, data);
       //channels.push_back(channel);
       data += sample_blob->height() * sample_blob->width();
-      cv::Mat out;
-      cv::resize(channel, out, img.size());
+      //cv::Mat out;
+      //cv::resize(channel, out, img.size());
 
-      channels.push_back(out);
+      channels.push_back(channel);
 
 
       /*//Only to visualize
@@ -609,6 +691,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       cv::waitKey();*/
 
     }
+
+    std::cout<<channels[0].size();
 
     //cv::merge(channels, hypercolumns);
 

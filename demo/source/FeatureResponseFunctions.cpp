@@ -219,6 +219,20 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
 
   }
 
+  void LinearFeatureResponseSVM::GenerateMaskHypercolumnSuperpixel(Random &random, std::vector<int> &vIndex, int dims,
+                                                         bool root_node)
+  {
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 50);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM);
+      vIndex.push_back (idx);
+    }
+
+  }
+
 
   LinearFeatureResponseSVM LinearFeatureResponseSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
@@ -228,18 +242,8 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     lr.dimensions_ = concreteData.Dimensions();
 
 
-    switch(featureMask)
-    {
-      case fisher:GenerateMaskFisher (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
-        break;
-      case lbp:GenerateMaskLBP (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
-        break;
-      case hypercolumn: GenerateMaskHypercolumn (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
-        break;
-      case standard:GenerateMask (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
-        break;
-      default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
-    }
+    GenerateMaskHypercolumnSuperpixel (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+
 
     std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
     lr.vIndex_.erase( unique( lr.vIndex_.begin(), lr.vIndex_.end() ), lr.vIndex_.end() );
@@ -249,12 +253,15 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     svm->setType(cvml::SVM::C_SVC);
     svm->setKernel(cvml::SVM::LINEAR);
     svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
-
-
     svm->setC(svm_c);
 
-    //cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
-    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
+    lr.superpixel_choice = random.Next() > 0.5;
+
+    cv::Ptr<cvml::TrainData> tdata;
+    if(!lr.superpixel_choice)
+      tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
+    else
+      tdata = concreteData.getTrainDataWithMaskOrderedSuperpixel(lr.vIndex_,i0,i1,dataIndices);
 
 
     svm->train(tdata);
@@ -296,7 +303,7 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     //std::cout<<"At feature response 1"<<std::endl;
 
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
-    cv::Mat rowMat = concreteData.GetDataPoint(index);
+    cv::Mat rowMat = concreteData.GetDataPoint(index, superpixel_choice);
     std::vector<float> rowVector;
 
     for (int i = 0;i<nWeights_;i++)

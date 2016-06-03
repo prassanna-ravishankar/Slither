@@ -167,6 +167,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::vector<float> vWeights_;
       int		dimensions_;
       float	bias_;
+      bool superpixel_choice;
       //int		nIndex_;
       //cv::Ptr<cvml::SVM> svm;
       int nWeights_;
@@ -206,6 +207,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       static void GenerateMaskLBP(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskHypercolumn(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskHypercolumnStatistics(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskHypercolumnSuperpixel(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
 
 
       float GetResponse(const IDataPointCollection &data, unsigned int index) const;

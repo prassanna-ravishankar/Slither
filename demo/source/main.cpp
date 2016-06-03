@@ -41,17 +41,18 @@ int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
 std::string train_filename = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/Train.txt";
-std::string test_filename = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/Test.txt";
+std::string test_filename = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/Train.txt";
 std::string predict_filename = "../demo/data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
 std::string mode = "Standard";
 bool train_flag = false;
 bool test_flag = false;
-std::string forest_loc ="forest_400.out";
+std::string forest_loc ="forest_patches.out";
 bool scale_flag = false;
 const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher"};
 std::string img_folder = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/image_2/";
 std::string ann_folder = "/home/prassanna/Development/workspace/RFSVM_exp/Dataset_test/training/gt_idx_2/";
+std::string pred_folder ="/media/prassanna/stuff/RoadSegmentation/pred_rf_fullmodel/";
 bool patches_flag = true;
 
 
@@ -60,9 +61,9 @@ int main(int argc, char* argv[])
 
   //Defaults
   trainingParameters.MaxDecisionLevels = 10;
-  trainingParameters.NumberOfCandidateFeatures = 10;
-  trainingParameters.NumberOfCandidateThresholdsPerFeature = 10;
-  trainingParameters.NumberOfTrees = 10;
+  trainingParameters.NumberOfCandidateFeatures = 25;
+  trainingParameters.NumberOfCandidateThresholdsPerFeature = 25;
+  trainingParameters.NumberOfTrees = 20;
   trainingParameters.Verbose = true;
   trainingParameters.igType =  ig_shannon;
   trainingParameters.featureMask = FeatureMaskType::hypercolumn;
@@ -84,7 +85,7 @@ int main(int argc, char* argv[])
           ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
           ("verbose",po::value<bool>()->default_value(true), "Display output")
           ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("train"), "train | test | tr-te")
+          ("op_mode",po::value<std::string>()->default_value("test"), "train | test | tr-te")
           ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3")
           ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
           ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
@@ -151,7 +152,7 @@ int main(int argc, char* argv[])
   {
     //data_dimensions = discoverDims (test_filename);
     std::auto_ptr<DataPointCollection> testdata
-            = std::auto_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
+            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(test_filename,forest_loc,  biases, divisors) );
 
     std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
     //std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
@@ -159,9 +160,9 @@ int main(int argc, char* argv[])
 
 
     std::vector<HistogramAggregator> distbns;
-    ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
+    ClassificationDemo<LinearFeatureResponseSVM>::TestAndPredictIm(*trained_forest_loaded.get(),
                                                        *testdata.get(),
-                                                       distbns);
+                                                       distbns, pred_folder);
 
     std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
     //writePredData (predict_filename, distbns);
@@ -476,6 +477,7 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
     fs.release();
 
   }
+  //trainingData->reconstructAnn(0);
   return trainingData;
 }
 
