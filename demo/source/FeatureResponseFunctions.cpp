@@ -261,6 +261,91 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
   }
 
 
+  void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatisticsColorAndLocation(Random &random, std::vector<int> &vIndex, int dims,
+                                                                              bool root_node)
+  {
+
+    //Discarding LBP and position to check
+    int numBloks = random.Next (5, 50);
+    for(int i=0;i<numBloks;i++)
+    {
+      int idx = random.Next (0,NN_DIM);
+      vIndex.push_back (idx);
+      vIndex.push_back (idx+NN_DIM);
+    }
+
+
+    //Location
+    //Big Assumption, Location is the last 4-2 dimensions (X,Y)
+    bool loc_choice = random.NextDouble() > 0.5;
+    if(loc_choice)
+    {
+      vIndex.push_back(dims-5);
+      vIndex.push_back(dims-4);
+    }
+
+    //Color
+    //Bigg assumption - last 3 dimensions
+    bool color_choice = random.NextDouble() > 0.5;
+    if(color_choice)
+    {
+      vIndex.push_back(dims-3);
+      vIndex.push_back(dims-2);
+      vIndex.push_back(dims-1);
+    }
+
+
+  }
+
+
+  void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatisticsLBPColorAndLocation(Random& random, std::vector<int>& vIndex, int dims , bool root_node)
+  {
+
+
+        int numBloks = random.Next (5, 50);
+        for(int i=0;i<numBloks;i++)
+        {
+          int idx = random.Next (0,NN_DIM);
+          vIndex.push_back (idx);
+          vIndex.push_back (idx+NN_DIM);
+        }
+
+        static const int LBP_DIM=58;
+
+        //LBP CHOICE. If selected, select all LBP
+        bool lbp_choice = random.NextDouble() > 0.5;
+        if(lbp_choice)
+        {
+          for(int j=NN_DIM*2;j<(NN_DIM*2 + LBP_DIM);j++)
+            vIndex.push_back(j);
+        }
+
+
+        //Location
+        //Big Assumption, Location is the last 4-2 dimensions (X,Y)
+        bool loc_choice = random.NextDouble() > 0.5;
+        if(loc_choice)
+        {
+          vIndex.push_back(dims-5);
+          vIndex.push_back(dims-4);
+        }
+
+        //Color
+        //Bigg assumption - last 3 dimensions
+        bool color_choice = random.NextDouble() > 0.5;
+        if(color_choice)
+        {
+          vIndex.push_back(dims-3);
+          vIndex.push_back(dims-2);
+          vIndex.push_back(dims-1);
+        }
+
+
+
+  }
+
+
+
   LinearFeatureResponseSVM LinearFeatureResponseSVM::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
     LinearFeatureResponseSVM lr;
@@ -282,6 +367,10 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
       case hypercolumn_loc:GenerateMaskHypercolumnStatisticsAndLocation (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
             break;
       case hypercolumn2:GenerateMaskHypercolumn2LrStatistics (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+            break;
+      case hypercolumn_loc_color:GenerateMaskHypercolumnStatisticsColorAndLocation (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
+            break;
+      case hypercolumn_lbp_loc_color:GenerateMaskHypercolumnStatisticsLBPColorAndLocation (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
             break;
       default: std::cout<<"Using unknown mask function. Re-check parameters"<<std::endl;
     }

@@ -208,6 +208,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       static void GenerateMaskHypercolumnStatistics(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskHypercolumn2LrStatistics(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
       static void GenerateMaskHypercolumnStatisticsAndLocation(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskHypercolumnStatisticsColorAndLocation(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+      static void GenerateMaskHypercolumnStatisticsLBPColorAndLocation(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
 
 
       float GetResponse(const IDataPointCollection &data, unsigned int index) const;

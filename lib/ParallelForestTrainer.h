@@ -394,10 +394,10 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         progress=&defaultProgress;
 
       std::auto_ptr<Forest<F,S> > forest = std::auto_ptr<Forest<F,S> >(new Forest<F,S>());
-      (*progress)[Interest] << "\rTrees are going to be trained in mode :  "<<static_cast<FeatureMaskType >(parameters.featureMask)<< std::endl;
+      //(*progress)[Interest] << "\rTrees are going to be trained in mode :  "<<static_cast<FeatureMaskType >(parameters.featureMask)<< std::endl;
       for (int t = 0; t < parameters.NumberOfTrees; t++)
       {
-        (*progress)[Interest] << "\rTraining tree "<< t << "...";
+        (*progress)[Interest] << "\rTraining tree "<< t <<"in mode :  "<<static_cast<FeatureMaskType >(parameters.featureMask)<< "...";
 
         std::auto_ptr<Tree<F, S> > tree = ParallelTreeTrainer<F, S>::TrainTree(random, context, parameters, data, parameters.maxThreads, progress);
         forest->AddTree(tree);
