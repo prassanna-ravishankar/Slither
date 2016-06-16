@@ -298,11 +298,15 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     const cv::Mat GetDataPoint(int i, bool superpixel_choice) const
     {
-
-      if(!superpixel_choice)
-        return dataMat.row(i);
+      cv::Mat m1 = dataMat.row(i);
+      cv::Mat m2 = superpixelFeats_1.row(superpixel_pixel_map[i]);
+      cv::Mat concatenated;
+      if(superpixel_choice)
+        cv::hconcat(m1, m2, concatenated);
       else
-        return superpixelFeats_1.row(superpixel_pixel_map[i]);
+        concatenated = m1;
+
+      return concatenated;
     }
 
     const cv::Mat reconstructAnn(int i)
@@ -378,17 +382,22 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       //std::cout<<"--->"<<dataMat.rows<<std::endl;
       cv::Mat labelsMat = cv::Mat(labels_);
       cv::Mat reducedLabels;
+      cv::Mat pixelMat;
       for(int i=start_row;i<end_row;i++)
       {
         int j = indices[i];
         colMat.push_back(superpixelFeats_1.row(superpixel_pixel_map[j]));
+        pixelMat.push_back(dataMat.row(j));
         reducedLabels.push_back(labelsMat.row(j));
       }
+
+      cv::Mat concatenated;
+      cv::hconcat(pixelMat, colMat, concatenated);
 
       //std::cout<<colMat.size()<<std::endl;
       //std::cout<<reducedLabels.size()<<std::endl;
 
-      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
+      return cvml::TrainData::create(concatenated, cvml::ROW_SAMPLE, reducedLabels, mask_values);
     }
 
 
