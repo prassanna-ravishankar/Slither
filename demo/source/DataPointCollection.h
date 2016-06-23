@@ -14,20 +14,7 @@ namespace cvml = cv::ml;
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
-  /// <summary>
-  /// Used to describe the expected format of the lines of a data file (used
-  /// in DataPointCollection::Load()).
-  /// </summary>
-  class DataDescriptor
-  {
-  public:
-    enum e
-    {
-      Unadorned = 0x0,
-      HasClassLabels = 0x1,
-      HasTargetValues = 0x2
-    };
-  };
+
 
   /// <summary>
   /// A collection of data points, each represented by a float[] and (optionally)
@@ -302,14 +289,5 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
   };
 
-  // A couple of file parsing utilities, exposed here for testing only.
 
-  // Split a delimited line into constituent elements.
-  void tokenize(
-    const std::string& str,
-    std::vector<std::string>& tokens,
-    const std::string& delimiters = " " );
-
-  // Convert a std::string to a float (or raise an exception).
-  float to_float(const std::string& s);
 } } }

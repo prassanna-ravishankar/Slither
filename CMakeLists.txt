@@ -36,6 +36,10 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 
+#Caffe
+find_package(Caffe)
+include_directories(${Caffe_INCLUDE_DIRS})
+add_definitions(${Caffe_DEFINITIONS})    # ex. -DCPU_ONLY
 
 
 #LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES}) # Deprecated but so convenient!
@@ -51,6 +55,7 @@ set(SOURCE_FILES
     demo/source/CommandLineParser.cpp
     demo/source/CumulativeNormalDistribution.cpp
     demo/source/DataPointCollection.cpp
+    demo/source/DataPatchCollection.cpp
     #demo/source/DensityEstimation.cpp
     demo/source/dibCodec.cpp
     demo/source/FeatureResponseFunctions.cpp
@@ -72,13 +77,14 @@ include_directories("${CMAKE_SOURCE_DIR}/demo/source")
 
 
 
+
 #Main Stuff
 add_executable(rf ${SOURCE_FILES})
 #target_link_libraries(sw ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} svmlib svm)
-target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} )
+target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} ${Caffe_LIBRARIES})
 
 add_library(rflib ${SOURCE_FILES})
-target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
+target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} ${Caffe_LIBRARIES} )
 
 ##PYWRAPPER - BOOST TEST
 

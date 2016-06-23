@@ -5,6 +5,8 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <caffe/caffe.hpp>
+
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
@@ -310,4 +312,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       throw std::runtime_error("Failed to interpret number as floating point.");
     return x;
   }
+
+
+
+
+
 } } }
