@@ -6,11 +6,14 @@
 #include <memory>
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/ml.hpp>
+#include <opencv2/ml/ml.hpp>
+
 
 #include "Sherwood.h"
 #include <set>
 namespace cvml = cv::ml;
+
+
 
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {

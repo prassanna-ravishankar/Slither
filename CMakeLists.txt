@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(cpp)
 
+#Variables
+set(Boost_INCLUDE_DIR "/home/prass/Libraries/boost_1_64_0")
+set(OpenCV_DIR "/home/prass/Libraries/opencv-3.2.0/build")
+
+
+
 #Defaults
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
@@ -34,7 +40,7 @@ message("Libs of boost: " ${Boost_LIBRARIES} )
 #set(OpenCV_STATIC ON)
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
-
+message("Include dirs of boost: " ${OpenCV_INCLUDE_DIRS} )
 
 
 
@@ -84,12 +90,12 @@ target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
 
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(PythonInterp 2.7 REQUIRED)
-find_package(BoostNumPy REQUIRED)
+#find_package(BoostNumPy REQUIRED)
 find_package(OpenMP)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${BOOST_PYTHON_INCLUDE_DIR})
-include_directories(${BOOST_NUMPY_INCLUDE_DIR})
+#include_directories(${BOOST_NUMPY_INCLUDE_DIR})
 
 
 add_library(rfsvm SHARED pyWrapper/wrapper.cpp)
@@ -100,4 +106,5 @@ if(WIN32)
     # Ensure the output binary is called TestModule.pyd on Windows (not TestModule.dll)
     set_target_properties(rfsvm PROPERTIES SUFFIX ".pyd")
 endif(WIN32)
-target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
+#target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
+target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} rflib)
