@@ -27,7 +27,7 @@ endif()
 #Boost
 #set(Boost_USE_STATIC_LIBS   ON)
 
-find_package(Boost COMPONENTS program_options python serialization)
+find_package(Boost COMPONENTS program_options python serialization numpy)
 message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
 message("Libs of boost: " ${Boost_LIBRARIES} )
 

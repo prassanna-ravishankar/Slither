@@ -1,12 +1,12 @@
 #pragma once
 
 #include <boost/python.hpp>
-#include <boost/numpy.hpp>
+#include <boost/python/numpy.hpp>
 #include <stdexcept>
 #include <sstream>
 
 namespace bp = boost::python;
-namespace np = boost::numpy;
+namespace np = boost::python::numpy;
 
 // Helper class for fast access to array elements
 template<typename T> class NumPyArrayData

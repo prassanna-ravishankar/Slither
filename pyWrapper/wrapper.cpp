@@ -4,7 +4,7 @@
 
 
 #include <boost/python.hpp>
-#include <boost/numpy.hpp>
+#include <boost/python/numpy.hpp>
 #include <stdexcept>
 #include <stdio.h>
 
@@ -32,7 +32,7 @@
 #include "NumPyArrayData.h"
 
 namespace bp = boost::python;
-namespace np = boost::numpy;
+namespace np = boost::python::numpy;
 using namespace MicrosoftResearch::Cambridge::Sherwood;
 
 #define ASSERT_THROW(a,msg) if (!(a)) throw std::runtime_error(msg);
