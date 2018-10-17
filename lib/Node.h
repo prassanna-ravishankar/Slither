@@ -3,6 +3,7 @@
 // This file defines the Node data structure, which is used to represent one node
 // in a DecisionTree.
 #include <boost/serialization/serialization.hpp>
+
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   // Default serialization functions used for serializing Feature and

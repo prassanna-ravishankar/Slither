@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 
+
+
 namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 {
   std::istream & getline_(std::istream & in, std::string & out)
@@ -121,7 +123,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::cout<<"An Exception while reading has occurred: "<<e.what()<<std::endl;
     }
 
-
+    if (all_data.empty())
+        std::cout<<"Can't load anything from :"<<filename<<std::endl;
     cv::Mat responses = all_data->getResponses().t();
 
     const float* p = responses.ptr<float>(0);

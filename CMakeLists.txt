@@ -1,110 +1,94 @@
-cmake_minimum_required(VERSION 2.8)
-project(cpp)
+cmake_minimum_required(VERSION 3.8)
 
-#Variables
-set(Boost_INCLUDE_DIR "/home/prass/Libraries/boost_1_64_0")
-set(OpenCV_DIR "/home/prass/Libraries/opencv-3.2.0/build")
+### Hunter snapshot that will be used ###
+include("cmake/HunterGate.cmake")
+HunterGate(
+        URL "https://github.com/ruslo/hunter/archive/v0.23.33.tar.gz"
+        SHA1 "acbf4b9b77b5a0160adc1da1cdda35f64b14196a"
+        LOCAL
+)
+#include("cmake/config.cmake")
+set(HUNTER_KEEP_PACKAGE_SOURCES NO)
 
-
-
-#Defaults
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bin")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fPIC") #No Warnings while compiling
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-#set(BUILD_SHARED_LIBS OFF)
+project(randomSlither)
 
 
-#Openmp flags
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+#######################################
+# Dependencies
+#######################################
+# Required :  Boost - Move python interface to pybind11
+#set(BUILD_SHARED_LIBS ON)
+add_definitions(-DBOOST_ALL_NO_LIB=1)
+set(Boost_USE_STATIC_LIBS OFF)
+set(BUILD_SHARED_LIBS)
+hunter_add_package(Boost COMPONENTS program_options serialization)
+find_package(Boost CONFIG REQUIRED program_options serialization)
+set_target_properties(Boost::serialization PROPERTIES POSITION_INDEPENDENT_CODE TRUE) # Adding -fPIC to boost
 
-#Boost
-#set(Boost_USE_STATIC_LIBS   ON)
-
-find_package(Boost COMPONENTS program_options python serialization numpy)
-message("Include dirs of boost: " ${Boost_INCLUDE_DIRS} )
-message("Libs of boost: " ${Boost_LIBRARIES} )
-
-#Python
-#
-#message("Include dirs of Python: " ${PYTHON_INCLUDE_DIRS} )
-#message("Libs of Python: " ${PYTHON_LIBRARIES} )
-
-#OpenCV
-#set(OpenCV_STATIC ON)
-find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-message("Include dirs of boost: " ${OpenCV_INCLUDE_DIRS} )
+# Required : Opencv
+find_package( OpenCV CONFIG REQUIRED)
 
 
+# For the library
+set(SOURCE_FILES
+        source/Classification.cpp
+        source/CommandLineParser.cpp
+        source/CumulativeNormalDistribution.cpp
+        source/DataPointCollection.cpp
+        #demo/source/DensityEstimation.cpp
+        source/dibCodec.cpp
+        source/FeatureResponseFunctions.cpp
+        source/FloydWarshall.cpp
+        source/Graphics.cpp
+        source/Platform.cpp
+        source/PlotCanvas.cpp
+        #demo/source/Regression.cpp
+        #demo/source/SemiSupervisedClassification.cpp
+        source/StatisticsAggregators.cpp)
 
-#LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES}) # Deprecated but so convenient!
 
-include_directories(
-        ${Boost_INCLUDE_DIRS}
+#######################################
+# Build the library
+#######################################
+add_library(Slither SHARED ${SOURCE_FILES})
+# Add related includes
+target_include_directories(Slither PUBLIC lib)
+target_include_directories(Slither PUBLIC source)
+target_include_directories(Slither PUBLIC Boost::serialization)
+# Link related libs
+target_link_libraries(Slither PUBLIC ${OpenCV_LIBS})
+target_link_libraries(Slither PUBLIC Boost::serialization)
+set_target_properties(Slither PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
+        )
+# To allow internal shared libs to work and pybind11 to be okay
+#set_target_properties(Slither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+
+
+#######################################
+# Build the Standalone executable
+#######################################
+add_executable(cppSlither source/main.cpp)
+# Linking and including
+target_link_libraries(cppSlither PUBLIC Slither)
+target_link_libraries(cppSlither PUBLIC Boost::program_options)
+
+set_target_properties(cppSlither PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED YES
         )
 
 
-
-set(SOURCE_FILES
-    demo/source/Classification.cpp
-    demo/source/CommandLineParser.cpp
-    demo/source/CumulativeNormalDistribution.cpp
-    demo/source/DataPointCollection.cpp
-    #demo/source/DensityEstimation.cpp
-    demo/source/dibCodec.cpp
-    demo/source/FeatureResponseFunctions.cpp
-    demo/source/FloydWarshall.cpp
-    demo/source/Graphics.cpp
-    demo/source/main.cpp
-    demo/source/Platform.cpp
-    demo/source/PlotCanvas.cpp
-    #demo/source/Regression.cpp
-    #demo/source/SemiSupervisedClassification.cpp
-    demo/source/StatisticsAggregators.cpp)
+#######################################
+# Build the Python Wrapper
+#######################################
+# First --> Python requirements
+hunter_add_package(pybind11)
+find_package(pybind11 CONFIG REQUIRED)
+pybind11_add_module(pySlither pyWrapper/wrapper.cpp)
+target_link_libraries(pySlither PUBLIC Slither)
+#set_target_properties(pySlither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 
-include_directories("${CMAKE_SOURCE_DIR}/lib")
-include_directories("${CMAKE_SOURCE_DIR}/demo/source")
-
-
-
-
-
-
-#Main Stuff
-add_executable(rf ${SOURCE_FILES})
-#target_link_libraries(sw ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} svmlib svm)
-target_link_libraries(rf ${Boost_LIBRARIES} ${OpenCV_LIBS} )
-
-add_library(rflib ${SOURCE_FILES})
-target_link_libraries(rflib ${Boost_LIBRARIES} ${OpenCV_LIBS} )
-
-##PYWRAPPER - BOOST TEST
-
-find_package(PythonLibs 2.7 REQUIRED)
-find_package(PythonInterp 2.7 REQUIRED)
-#find_package(BoostNumPy REQUIRED)
-find_package(OpenMP)
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${PYTHON_INCLUDE_DIRS})
-include_directories(${BOOST_PYTHON_INCLUDE_DIR})
-#include_directories(${BOOST_NUMPY_INCLUDE_DIR})
-
-
-add_library(rfsvm SHARED pyWrapper/wrapper.cpp)
-
-# Ensure the output binary is called TestModule.so on Linux (not libTestModule.so)
-set_target_properties(rfsvm PROPERTIES PREFIX "")
-if(WIN32)
-    # Ensure the output binary is called TestModule.pyd on Windows (not TestModule.dll)
-    set_target_properties(rfsvm PROPERTIES SUFFIX ".pyd")
-endif(WIN32)
-#target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${BOOST_NUMPY_LIBRARY} rflib)
-target_link_libraries(rfsvm ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} rflib)
