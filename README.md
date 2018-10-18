@@ -1,4 +1,5 @@
 # Slither - A Random forest library to slither through your data
+*Not to be confused with https://github.com/iiegor/slither or variations*
 * Local Experts (SVMs) placed in a random forest seperating over information Gain and not using the Gini Criteria
 * Meant to be used in tandem with superpixel hypercolumn features coming out of another pipeline
 * This framework is integral in Fast Adaptation of Neural Networks for Road detection (will be published/arxiv-ed asap) 
