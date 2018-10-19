@@ -1,63 +1,32 @@
-//
-// Created by prassanna on 4/04/16.
-//
-
-
-//#include <boost/python.hpp>
-//#include <boost/python/numpy.hpp>
-#include <stdexcept>
-#include <stdio.h>
-
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include "Platform.h"
-
-#include "Graphics.h"
-#include "dibCodec.h"
-
 #include "Sherwood.h"
-
-#include "CumulativeNormalDistribution.h"
-
-#include "DataPointCollection.h"
-
 #include "Classification.h"
-#include "DensityEstimation.h"
-#include "SemiSupervisedClassification.h"
-#include "Regression.h"
-#include <pybind11/pybind11.h>
+
+#include <pybind11/pybind11.h> // For the Wrapper
 #include <pybind11/numpy.h>
+
+#define ASSERT_THROW(a,msg) if (!(a)) throw std::runtime_error(msg);
 
 namespace py = pybind11;
 using namespace MicrosoftResearch::Cambridge::Sherwood;
 
-#define ASSERT_THROW(a,msg) if (!(a)) throw std::runtime_error(msg);
 
-class RFClassifier
+class slitherWrapper
 {
     std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
     std::auto_ptr<DataPointCollection> data;
     TrainingParameters trainingParameters;
 
-public :
-    //RFClassifier(){}
+public:
 
 
-    bool loadData(py::array_t<double> arr, py::array_t<double> lbls)
+    bool loadData(py::array_t<double, py::array::forcecast> arr, py::array_t<double, py::array::forcecast> lbls)
     {
         std::cout<<"[Loading Data "
-                "]"<<std::endl;
+                   "]"<<std::endl;
         ASSERT_THROW( (arr.ndim() == 2), "Expected two-dimensional Data array");
-//        ASSERT_THROW( (arr.get_dtype() == np::dtype::get_builtin<double>()), "Expected array of type double (np.float64)");
-//        ASSERT_THROW( (lbls.get_dtype() == np::dtype::get_builtin<double>()), "Expected array of type double (np.float64)");
         ASSERT_THROW( (lbls.ndim() == 1), "Expected one-dimensional Label array");
         auto arr_buf = arr.request();
         auto lbl_buf = lbls.request();
-
-//        NumPyArrayData<double> arr_data(arr);
-//        NumPyArrayData<double> lbl_data(lbls);
         data = std::auto_ptr<DataPointCollection>(new DataPointCollection());
 
         std::vector<float> row;
@@ -69,25 +38,24 @@ public :
         for(int i = 0;i<arr.shape(0);i++)
         {
             for(int j=0;j<arr.shape(1);j++)
-                std::cout<<arr.at(i,j);
-//                data->putValue((float)arr(i,j), (int)lbls(i), i,j);
-
+                data->putValue((float)arr.at(i,j), (int)lbls.at(i), i,j);
+//                std::cout<<arr.at(i,j);
             count++;
-
         }
 
-        std::cout<<"[DONE]"<<std::endl;
-
-        //std::cout<<data->CountClasses()<<std::endl;
-
-        //std::cout<<"TrainData = ";
-        //data->showMat();
-        //std::cout<<data->Count()<<std::endl;
-
-
-
+        std::cout<<"[Loading data DONE]"<<std::endl;
 
         return (count == data->Count());
+    }
+
+    bool modelExists()
+    {
+        return (forest.get() != NULL);
+    }
+
+    // Test function
+    int add(int i, int j) {
+        return i + j;
     }
 
     bool loadModel(std::string filename)
@@ -133,11 +101,6 @@ public :
         this->trainingParameters.igType =  ig_shannon;
         this->trainingParameters.featureMask = FeatureMaskType::standard;
     }
-
-   /* void setFeatureMaskType(int i)
-    {
-        this->trainingParameters.featureMask = static_cast<FeatureMaskType>(i);
-    }*/
 
 
     bool setFeatureMask(int i)
@@ -196,88 +159,68 @@ public :
         std::cout<<data->CountClasses()<<" Classes"<<std::endl;
         if(this->trainingParameters.maxThreads==1)
             this->forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*data.get(),
-                                                                         &featureFactory,
-                                                                         trainingParameters);
+                                                                                     &featureFactory,
+                                                                                     trainingParameters);
 
         else
             this->forest = ClassificationDemo<LinearFeatureResponseSVM>::Train(*data.get(),
-                                                                     &featureFactory,
-                                                                     trainingParameters);
+                                                                               &featureFactory,
+                                                                               trainingParameters);
 
 
 
         return true;
     }
 
-//    np::ndarray onlyTest()
-//    {
-//        std::vector<HistogramAggregator> distbns;
-//        ClassificationDemo<LinearFeatureResponseSVM>::Test(*forest.get(),
-//                                                           *data.get(),
-//                                                           distbns);
-//
-//        int nr_classes = data->CountClasses();
-//
-//
-//
-//        np::ndarray result = np::zeros(bp::make_tuple(distbns.size(),nr_classes), np::dtype::get_builtin<double>());
-//
-//
-//
-//        NumPyArrayData<double> result_data(result);
-//        for (int i=0; i<distbns.size(); i++) {
-//            for (int j = 0; j < nr_classes; j++)
-//                result_data(i, j) = distbns[i].GetProbability(j);
-//
-//
-//        }
-//
-//
-//        return result;
-//
-//
-//    }
 
-    bool modelExists()
+    py::array_t<double> onlyTest()
     {
-        return (forest.get() != NULL);
+        std::vector<HistogramAggregator> distbns;
+        ClassificationDemo<LinearFeatureResponseSVM>::Test(*forest.get(),
+                                                           *data.get(),
+                                                           distbns);
+
+        int nr_classes = data->CountClasses();
+
+
+        int dim_1 = (int) distbns.size();
+        int dim_2 = nr_classes;
+//        np::ndarray result = np::zeros(bp::make_tuple(distbns.size(),nr_classes), np::dtype::get_builtin<double>());
+        py::array_t<double, py::array::c_style> result_data({dim_1, dim_2});
+        auto r = result_data.mutable_unchecked<2>();
+
+        for (int i=0; i<distbns.size(); i++) {
+            for (int j = 0; j < nr_classes; j++)
+                r(i, j) = distbns[i].GetProbability(j);
+        }
+
+        return result_data;
     }
-
-
-
-
-
-
-
 
 };
 
 
 
-PYBIND11_MODULE(pySlither, m)
-{
-    m.doc() = "Slither - A library to mix Random Forests and Tensors";
-
-//    bp::class_<RFClassifier, boost::noncopyable>("RFClassifier")
-//            .def("loadModel", &RFClassifier::loadModel)
-//            .def("saveModel", &RFClassifier::saveModel)
-//            .def("setDefaultParams", &RFClassifier::setDefaultParams)
-//            .def("setParams", &RFClassifier::setParams)
-//            .def("onlyTrain", &RFClassifier::onlyTrain)
-//            .def("onlyTest", &RFClassifier::onlyTest)
-//            .def("loadData", &RFClassifier::loadData)
-//            .def("modelExists", &RFClassifier::modelExists)
-//            .def("setThreads", &RFClassifier::setThreads)
-//            .def("setFeatureMask", &RFClassifier::setFeatureMask)
-//            .def("setDefaultParams", &RFClassifier::setDefaultParams)
-//            .def("setMaxDecisionLevels", &RFClassifier::setMaxDecisionLevels)
-//            .def("setNumberOfCandidateFeatures",&RFClassifier::setNumberOfCandidateFeatures)
-//            .def("setNumberOfThresholds",&RFClassifier::setNumberOfThresholds)
-//            .def("setTrees",&RFClassifier::setTrees)
-//            .def("setQuiet",&RFClassifier::setQuiet)
-//            .def("setSVM_C",&RFClassifier::setSVM_C)
-//            ;
-
-    py::class_<RFClassifier> Slither(m, "Slither");
-    Slither.def("loadModel", &RFClassifier::loadModel);
+PYBIND11_MODULE(pySlither, m) {
+    m.doc() = "slither -  a module to do awesome things";
+//    m.def("add", &add, "Simple function to add");
+    py::class_<slitherWrapper> slitherWrapObj(m, "slither");
+    slitherWrapObj.def(py::init());
+    slitherWrapObj.def("add", &slitherWrapper::add);
+    slitherWrapObj.def("loadModel", &slitherWrapper::loadModel);
+    slitherWrapObj.def("saveModel", &slitherWrapper::saveModel);
+    slitherWrapObj.def("setDefaultParams", &slitherWrapper::setDefaultParams);
+    slitherWrapObj.def("setParams", &slitherWrapper::setParams);
+    slitherWrapObj.def("onlyTrain", &slitherWrapper::onlyTrain);
+    slitherWrapObj.def("onlyTest", &slitherWrapper::onlyTest);
+    slitherWrapObj.def("loadData", &slitherWrapper::loadData);
+    slitherWrapObj.def("modelExists", &slitherWrapper::modelExists);
+    slitherWrapObj.def("setThreads", &slitherWrapper::setThreads);
+    slitherWrapObj.def("setFeatureMask", &slitherWrapper::setFeatureMask);
+    slitherWrapObj.def("setMaxDecisionLevels", &slitherWrapper::setMaxDecisionLevels);
+    slitherWrapObj.def("setNumberOfCandidateFeatures",&slitherWrapper::setNumberOfCandidateFeatures);
+    slitherWrapObj.def("setNumberOfThresholds",&slitherWrapper::setNumberOfThresholds);
+    slitherWrapObj.def("setTrees",&slitherWrapper::setTrees);
+    slitherWrapObj.def("setQuiet",&slitherWrapper::setQuiet);
+    slitherWrapObj.def("setSVM_C",&slitherWrapper::setSVM_C);
 }

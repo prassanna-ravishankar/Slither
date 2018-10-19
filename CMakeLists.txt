@@ -8,7 +8,7 @@ HunterGate(
         LOCAL
 )
 #include("cmake/config.cmake")
-set(HUNTER_KEEP_PACKAGE_SOURCES NO)
+#set(HUNTER_KEEP_PACKAGE_SOURCES NO)
 
 project(randomSlither)
 
@@ -17,13 +17,13 @@ project(randomSlither)
 # Dependencies
 #######################################
 # Required :  Boost - Move python interface to pybind11
-#set(BUILD_SHARED_LIBS ON)
-add_definitions(-DBOOST_ALL_NO_LIB=1)
-set(Boost_USE_STATIC_LIBS OFF)
-set(BUILD_SHARED_LIBS)
+set(BUILD_SHARED_LIBS ON)
+#add_definitions(-DBOOST_ALL_NO_LIB=1)
+#set(Boost_USE_STATIC_LIBS OFF)
+#set(BUILD_SHARED_LIBS)
 hunter_add_package(Boost COMPONENTS program_options serialization)
 find_package(Boost CONFIG REQUIRED program_options serialization)
-set_target_properties(Boost::serialization PROPERTIES POSITION_INDEPENDENT_CODE TRUE) # Adding -fPIC to boost
+#set_target_properties(Boost::serialization PROPERTIES POSITION_INDEPENDENT_CODE TRUE) # Adding -fPIC to boost
 
 # Required : Opencv
 find_package( OpenCV CONFIG REQUIRED)
@@ -58,6 +58,7 @@ target_include_directories(Slither PUBLIC Boost::serialization)
 # Link related libs
 target_link_libraries(Slither PUBLIC ${OpenCV_LIBS})
 target_link_libraries(Slither PUBLIC Boost::serialization)
+target_link_libraries(Slither PUBLIC ${Boost_SERIALIZATION_LIBRARIES})
 set_target_properties(Slither PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
@@ -74,6 +75,7 @@ add_executable(cppSlither source/main.cpp)
 # Linking and including
 target_link_libraries(cppSlither PUBLIC Slither)
 target_link_libraries(cppSlither PUBLIC Boost::program_options)
+target_link_libraries(Slither PUBLIC ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 
 set_target_properties(cppSlither PROPERTIES
         CXX_STANDARD 17
@@ -85,10 +87,22 @@ set_target_properties(cppSlither PROPERTIES
 # Build the Python Wrapper
 #######################################
 # First --> Python requirements
+#find_package(PythonInterp)
+#find_package(PythonLibs)
 hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
-pybind11_add_module(pySlither pyWrapper/wrapper.cpp)
+pybind11_add_module(pySlither SHARED pyWrapper/wrapper.cpp)
 target_link_libraries(pySlither PUBLIC Slither)
+#target_link_libraries(slither pybind11::pybind11 pybind11::embed pybind11::module)
+#set_target_properties(slither PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
+#        SUFFIX "${PYTHON_MODULE_EXTENSION}")
+
+# Do not treat includes from IMPORTED target as SYSTEM (Python headers in pybind11::module).
+# This may be needed to resolve header conflicts, e.g. between Python release and debug headers.
+#set_target_properties(slither PROPERTIES NO_SYSTEM_FROM_IMPORTED ON)
+#pybind11_add_module(slither SHARED NO_EXTRAS pyWrapper/wrapper.cpp)
+
+#target_link_libraries(slither PUBLIC Slither)
 #set_target_properties(pySlither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 

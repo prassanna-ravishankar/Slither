@@ -43,7 +43,7 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string hardcoded_location = "/home/prassanna/Projects/sherwood2/";
+std::string hardcoded_location = "/home/prassanna/Projects/slither_2/";
 std::string train_filename = hardcoded_location + "data/sclf/sample_train.txt";
 std::string test_filename = hardcoded_location + "data/sclf/sample_train.txt";
 std::string predict_filename = hardcoded_location + "data/sclf/sample_predict.txt";
