@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   // As series of classes needed to replace their equivalents in C# - to
   // facilitate more closely parallel C++ and C# implementation...
@@ -147,4 +147,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       stepY = (plotRangeY.second - plotRangeY.first) / PlotSize.Height;
     }
   };
-} } }
+}

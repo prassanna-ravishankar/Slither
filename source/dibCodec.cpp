@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
 #pragma pack(push,1)  // push current alignment to stack 
 #pragma pack(1)     // set alignment to 1 byte boundary 
@@ -96,4 +96,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
     o.close();  // actually happens in destructor anyway but some people don't realise
   }
-} } }
+}

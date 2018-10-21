@@ -2,7 +2,7 @@
 
 #include "FeatureResponseFunctions.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
     AxisAlignedFeatureResponse AxisAlignedFeatureResponseFactory::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
     {
@@ -24,5 +24,5 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
       return LinearFeatureResponseSVM::CreateRandom(random, data, dataIndices,i0,i1,svm_c,featureMask, root_node);
     }
-} } }
+}
 

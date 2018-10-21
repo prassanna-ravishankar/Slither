@@ -21,7 +21,7 @@
 #include "PlotCanvas.h"
 
 // TODO: This four level namespace not the same as C#
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
 	class DensityEstimationExample
     {
@@ -117,7 +117,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             }
         }
 
-        static std::auto_ptr<Forest<AxisAlignedFeature, GaussianAggregator2d> > Train(
+        static std::unique_ptr<Forest<AxisAlignedFeature, GaussianAggregator2d> > Train(
             const DataPointCollection& trainingData,
             const TrainingParameters& parameters,
             double a,
@@ -137,7 +137,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             ForestTrainer<AxisAlignedFeature, GaussianAggregator2d> forestTrainer(random);
 
 			DensityEstimationTrainingContext densityEstimationTrainingContext(a, b, random);
-            std::auto_ptr<Forest<AxisAlignedFeature, GaussianAggregator2d> > forest = forestTrainer.TrainForest(
+            std::unique_ptr<Forest<AxisAlignedFeature, GaussianAggregator2d> > forest = forestTrainer.TrainForest(
 				parameters,
 				densityEstimationTrainingContext,
 				trainingData );
@@ -145,7 +145,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             return forest;
         }
 
-        static std::auto_ptr<Bitmap<Color> > Visualize(
+        static std::unique_ptr<Bitmap<Color> > Visualize(
             Forest<AxisAlignedFeature, GaussianAggregator2d>& forest,
             DataPointCollection& trainingData,
             Size PlotSize,
@@ -158,7 +158,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             // Apply the trained forest to the test data
             std::cout << "\nApplying the forest to test data..." << std::endl;
 
-            std::auto_ptr<DataPointCollection> testData = std::auto_ptr<DataPointCollection>(
+            std::unique_ptr<DataPointCollection> testData = std::unique_ptr<DataPointCollection>(
 				DataPointCollection::Generate2dGrid(plotCanvas.plotRangeX, PlotSize.Width, plotCanvas.plotRangeY, PlotSize.Height) );
 
             //System.Diagnostics.Stopwatch w = new System.Diagnostics.Stopwatch();
@@ -177,7 +177,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             }
 
             // Generate Visualization Image
-            std::auto_ptr<Bitmap<Color> > result = std::auto_ptr<Bitmap<Color> >(
+            std::unique_ptr<Bitmap<Color> > result = std::unique_ptr<Bitmap<Color> >(
 				new Bitmap<Color>(PlotSize.Width, PlotSize.Height) );
 
             // Paint the test data
@@ -252,5 +252,5 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
             return result;
         }
     };
-} } }
+}
 

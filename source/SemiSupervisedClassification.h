@@ -17,7 +17,7 @@
 #include "StatisticsAggregators.h"
 #include "SemiSupervisedClassification.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood 
+namespace Slither
 {
   class SemiSupervisedClassificationTrainingContext : public ITrainingContext<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>
   {
@@ -106,7 +106,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     static const PixelBgr UnlabelledDataPointColor;
 
   public:
-    static std::auto_ptr<Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator> > Train(
+    static std::unique_ptr<Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator> > Train(
       const DataPointCollection& trainingData,
       const TrainingParameters& parameters,
       double a_,
@@ -120,7 +120,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       SemiSupervisedClassificationTrainingContext classificationContext(
         trainingData.CountClasses(), a_, b_);
 
-      std::auto_ptr<Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator> > forest
+      std::unique_ptr<Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator> > forest
         = ForestTrainer<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>::TrainForest(random, parameters, classificationContext, trainingData);
 
       // Label transduction to unlabelled leaves from nearest labelled leaf
@@ -207,21 +207,21 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return forest;
     }
 
-    static std::auto_ptr<Bitmap<PixelBgr> > VisualizeLabels(const Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>& forest, DataPointCollection trainingData, Size PlotSize, PointF PlotDilation)
+    static std::unique_ptr<Bitmap<PixelBgr> > VisualizeLabels(const Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>& forest, DataPointCollection trainingData, Size PlotSize, PointF PlotDilation)
     {
       // Generate some test samples in a grid pattern (a useful basis for creating visualization images)
       PlotCanvas plotCanvas(trainingData.GetRange(0), trainingData.GetRange(1), PlotSize, PlotDilation);
 
       std::cout << "Applying the forest to test data..." << std::endl;
 
-      std::auto_ptr<DataPointCollection> testData = std::auto_ptr<DataPointCollection>(
+      std::unique_ptr<DataPointCollection> testData = std::unique_ptr<DataPointCollection>(
         DataPointCollection::Generate2dGrid(plotCanvas.plotRangeX, PlotSize.Width, plotCanvas.plotRangeY, PlotSize.Height) );
 
       std::vector<std::vector<int> > leafNodeIndices;
       forest.Apply(*testData.get(), leafNodeIndices);
 
       // Generate Visualization Image
-      std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(
+      std::unique_ptr<Bitmap<PixelBgr> > result = std::unique_ptr<Bitmap<PixelBgr> >(
         new Bitmap<PixelBgr>(PlotSize.Width, PlotSize.Height) );
 
       // Paint the test data
@@ -295,20 +295,20 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return result;
     }
 
-    static std::auto_ptr<Bitmap<PixelBgr> > VisualizeDensity(const Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>& forest, DataPointCollection trainingData, Size PlotSize, PointF PlotDilation)
+    static std::unique_ptr<Bitmap<PixelBgr> > VisualizeDensity(const Forest<LinearFeatureResponse2d, SemiSupervisedClassificationStatisticsAggregator>& forest, DataPointCollection trainingData, Size PlotSize, PointF PlotDilation)
     {
       // Generate some test samples in a grid pattern (a useful basis for creating visualization images)
       PlotCanvas plotCanvas(trainingData.GetRange(0), trainingData.GetRange(1), PlotSize, PlotDilation);
 
       std::cout << "\nApplying the forest to test data..." << std::endl;
 
-      std::auto_ptr<DataPointCollection> testData = std::auto_ptr<DataPointCollection>(
+      std::unique_ptr<DataPointCollection> testData = std::unique_ptr<DataPointCollection>(
         DataPointCollection::Generate2dGrid(plotCanvas.plotRangeX, PlotSize.Width, plotCanvas.plotRangeY, PlotSize.Height) );
 
       std::vector<std::vector<int> > leafNodeIndices;
       forest.Apply(*testData.get(), leafNodeIndices);
 
-      std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(
+      std::unique_ptr<Bitmap<PixelBgr> > result = std::unique_ptr<Bitmap<PixelBgr> >(
         new Bitmap<PixelBgr>(PlotSize.Width, PlotSize.Height) );
 
       // Paint the test data
@@ -409,4 +409,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       }
     }
   };
-} } }
+}

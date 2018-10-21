@@ -7,13 +7,13 @@
 #define ASSERT_THROW(a,msg) if (!(a)) throw std::runtime_error(msg);
 
 namespace py = pybind11;
-using namespace MicrosoftResearch::Cambridge::Sherwood;
+using namespace Slither;
 
 
 class slitherWrapper
 {
-    std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
-    std::auto_ptr<DataPointCollection> data;
+    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
+    std::unique_ptr<DataPointCollection> data;
     TrainingParameters trainingParameters;
 
 public:
@@ -27,7 +27,7 @@ public:
         ASSERT_THROW( (lbls.ndim() == 1), "Expected one-dimensional Label array");
         auto arr_buf = arr.request();
         auto lbl_buf = lbls.request();
-        data = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+        data = std::unique_ptr<DataPointCollection>(new DataPointCollection());
 
         std::vector<float> row;
         data->reserve(arr.shape(0),arr.shape(1));

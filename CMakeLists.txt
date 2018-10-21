@@ -11,10 +11,12 @@ HunterGate(
 #set(HUNTER_KEEP_PACKAGE_SOURCES NO)
 
 project(randomSlither)
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 
 
 #######################################
-# Dependencies
+# Dependencies for the main library
 #######################################
 # Required :  Boost - Move python interface to pybind11
 set(BUILD_SHARED_LIBS ON)
@@ -28,6 +30,8 @@ find_package(Boost CONFIG REQUIRED program_options serialization)
 # Required : Opencv
 find_package( OpenCV CONFIG REQUIRED)
 
+# Optional OpenMP
+find_package(OpenMP)
 
 # For the library
 set(SOURCE_FILES
@@ -51,10 +55,12 @@ set(SOURCE_FILES
 # Build the library
 #######################################
 add_library(Slither SHARED ${SOURCE_FILES})
+
 # Add related includes
 target_include_directories(Slither PUBLIC lib)
 target_include_directories(Slither PUBLIC source)
 target_include_directories(Slither PUBLIC Boost::serialization)
+
 # Link related libs
 target_link_libraries(Slither PUBLIC ${OpenCV_LIBS})
 target_link_libraries(Slither PUBLIC Boost::serialization)
@@ -63,6 +69,21 @@ set_target_properties(Slither PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         )
+
+# Adding definitions for OPENMP
+if(NOT TARGET OpenMP::OpenMP_CXX)
+    message("Linking OpenMP stuff with old school style")
+    find_package(Threads REQUIRED)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX
+            PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+    set_property(TARGET OpenMP::OpenMP_CXX
+            PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+else()
+    message("Linking OpenMP stuff the new way")
+endif()
+target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
 # To allow internal shared libs to work and pybind11 to be okay
 #set_target_properties(Slither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
@@ -93,6 +114,9 @@ hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(pySlither SHARED pyWrapper/wrapper.cpp)
 target_link_libraries(pySlither PUBLIC Slither)
+#SET_TARGET_PROPERTIES(pySlither PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
+#SET_TARGET_PROPERTIES(pySlither PROPERTIES INSTALL_RPATH_USE_LINK_PATH FALSE)
+#target_link_libraries(Slither PUBLIC ${Boost_SERIALIZATION_LIBRARIES})
 #target_link_libraries(slither pybind11::pybind11 pybind11::embed pybind11::module)
 #set_target_properties(slither PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
 #        SUFFIX "${PYTHON_MODULE_EXTENSION}")

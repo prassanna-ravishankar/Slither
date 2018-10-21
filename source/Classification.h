@@ -16,7 +16,7 @@
 #include "Classification.h"
 #include "PlotCanvas.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   template<class F>
   class IFeatureResponseFactory
@@ -137,7 +137,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     static const PixelBgr UnlabelledDataPointColor;
 
   public:
-    static std::auto_ptr<Forest<F, HistogramAggregator> > Train (
+    static std::unique_ptr<Forest<F, HistogramAggregator> > Train (
       const DataPointCollection& trainingData,
       IFeatureResponseFactory<F>* featureFactory,
       const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
@@ -155,7 +155,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       classificationContext.igType = trainingParameters.igType;
 
 
-      std::auto_ptr<Forest<F, HistogramAggregator> > forest 
+      std::unique_ptr<Forest<F, HistogramAggregator> > forest
         = ParallelForestTrainer<F, HistogramAggregator>::TrainForest (
         random, trainingParameters, classificationContext, trainingData );
 
@@ -163,7 +163,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }
 
 
-    static std::auto_ptr<Forest<F, HistogramAggregator> > TrainSingle (
+    static std::unique_ptr<Forest<F, HistogramAggregator> > TrainSingle (
             const DataPointCollection& trainingData,
             IFeatureResponseFactory<F>* featureFactory,
             const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
@@ -181,7 +181,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
       classificationContext.igType = trainingParameters.igType;
 
-      std::auto_ptr<Forest<F, HistogramAggregator> > forest
+      std::unique_ptr<Forest<F, HistogramAggregator> > forest
               = ForestTrainer<F, HistogramAggregator>::TrainForest (
                       random, trainingParameters, classificationContext, trainingData );
 
@@ -190,11 +190,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
 
-    static std::auto_ptr<Forest<F, HistogramAggregator> > TrainParallel (
+    static std::unique_ptr<Forest<F, HistogramAggregator> > TrainParallel (
             const DataPointCollection& trainingData,
             IFeatureResponseFactory<F>* featureFactory,
             const TrainingParameters& trainingParameters ) // where F : IFeatureResponse
     {
+      std::cout<<"Training in parallel"<<std::endl;
       if (trainingData.HasLabels() == false)
         throw std::runtime_error("Training data points must be labelled.");
       if (trainingData.HasTargetValues() == true)
@@ -208,7 +209,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       ClassificationTrainingContext<F> classificationContext(trainingData.CountClasses(), featureFactory);
       classificationContext.igType = trainingParameters.igType;
 
-      std::auto_ptr<Forest<F, HistogramAggregator> > forest
+      std::unique_ptr<Forest<F, HistogramAggregator> > forest
               = ForestTrainer<F, HistogramAggregator>::TrainForestParallel (
                       random, trainingParameters, classificationContext, trainingData );
 
@@ -242,7 +243,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
           int leafIndex = leafIndicesPerTree[t][i];
           result[i].Aggregate(forest.GetTree(t).GetNode(leafIndex).TrainingDataStatistics);
         }
-        //std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
+        std::cout<<testData.GetIntegerLabel(i)<<"|"<<result[i].FindTallestBinIndex()<<" | "<<result[i].GetProbability(result[i].FindTallestBinIndex())<<std::endl;
         correctCount += (testData.GetIntegerLabel(i) == result[i].FindTallestBinIndex());
       }
 
@@ -256,4 +257,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   template<class F>
   const PixelBgr ClassificationDemo<F>::UnlabelledDataPointColor = PixelBgr::FromArgb(192, 192, 192);
-} } }
+}

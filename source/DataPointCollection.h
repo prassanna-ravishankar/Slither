@@ -15,7 +15,7 @@ namespace cvml = cv::ml;
 
 
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   /// <summary>
   /// Used to describe the expected format of the lines of a data file (used
@@ -125,9 +125,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="bHasClassLabels">Are the data associated with class labels?</param>
     /// <param name="dataDimension">Dimension of the data (excluding class labels and target values).</param>
     /// <param name="bHasTargetValues">Are the data associated with target values.</param>
-    //static  std::auto_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
+    //static  std::unique_ptr<DataPointCollection> Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor);
 
-     static  std::auto_ptr<DataPointCollection> Load(const std::string &filename);
+     static  std::unique_ptr<DataPointCollection> Load(const std::string &filename);
 
     /// <summary>
     /// Generate a 2D dataset with data points distributed in a grid pattern.
@@ -138,7 +138,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="rangeY">y-axis range</param>
     /// <param name="nStepsY">Number of grid points in y direction</param>
     /// <returns>A new DataPointCollection</returns>
-    static  std::auto_ptr<DataPointCollection> Generate2dGrid(
+    static  std::unique_ptr<DataPointCollection> Generate2dGrid(
       std::pair<float, float> rangeX, int nStepsX,
       std::pair<float, float> rangeY, int nStepsY);
 
@@ -150,7 +150,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <param name="range">Range</param>
     /// <param name="nStepsX">Number of grid points</param>
     /// <returns>A new DataPointCollection</returns>
-    static std::auto_ptr<DataPointCollection> Generate1dGrid(std::pair<float, float> range, int nSteps);
+    static std::unique_ptr<DataPointCollection> Generate1dGrid(std::pair<float, float> range, int nSteps);
 
     /// <summary>
     /// Do these data have class labels?
@@ -315,4 +315,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
   // Convert a std::string to a float (or raise an exception).
   float to_float(const std::string& s);
-} } }
+}

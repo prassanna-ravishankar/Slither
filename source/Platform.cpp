@@ -13,7 +13,7 @@
 #include <unistd.h>
 #endif
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   void GetDirectoryListing(const std::string& path, std::vector<std::string>& filenames, const std::string& extension)
   {
@@ -109,4 +109,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return executablePath;
 #endif
   }
-} } }
+}

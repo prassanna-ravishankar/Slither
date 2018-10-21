@@ -14,7 +14,7 @@
 // typically choose NOT to derive from these abstract base classes to avoid
 // the memory and performance overhead of a virtual function table pointer.
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   enum FeatureMaskType { standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4 , hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7};
 
@@ -134,4 +134,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// <returns>True if training should be terminated, false otherwise.</returns>
     virtual bool ShouldTerminate(const S& parent, const S& leftChild, const S& rightChild, double gain) = 0;
   };
-} } }
+}

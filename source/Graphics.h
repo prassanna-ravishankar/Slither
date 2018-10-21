@@ -2,7 +2,7 @@
 
 #include <cstdlib>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   /// A very simple graphics context for drawing lines and rectanlges on
   // bitmaps without the need for bloated libraries or platform-specific code.
@@ -96,4 +96,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
           DrawRectangle(color, (int)(x0+0.5f), (int)(y0+0.5f), (int)(width+0.5f), (int)(height+0.5f));
         }
   };
-} } }
+}

@@ -7,7 +7,7 @@
 #include "DataPointCollection.h"
 #include "Random.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   AxisAlignedFeatureResponse AxisAlignedFeatureResponse ::CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node)
   {
@@ -450,4 +450,4 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
   }
 
 
-        } } }
+}

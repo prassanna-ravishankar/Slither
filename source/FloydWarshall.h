@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   /// <summary>
   /// An implementation of the Floyd-Warshall algorithm for finding shortest
@@ -100,4 +100,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return GetDistance(std::min(i, j), std::max(i, j));
     }
   };
-} } }
+}

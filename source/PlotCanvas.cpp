@@ -4,7 +4,7 @@
 
 #include "dibCodec.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   template<>
   void Bitmap<PixelBgr>::Save(const std::string& path) const
@@ -16,4 +16,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       width_*sizeof(PixelBgr),
       path.c_str() );
   }
-} } }
+}

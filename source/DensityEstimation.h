@@ -24,7 +24,7 @@
 #include "PlotCanvas.h"
 
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   class DensityEstimationTrainingContext : public ITrainingContext<AxisAlignedFeatureResponse,GaussianAggregator2d>
   {
@@ -155,7 +155,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       }
     }
 
-    static std::auto_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> > Train(
+    static std::unique_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> > Train(
       const DataPointCollection& trainingData,
       const TrainingParameters& parameters,
       double a,
@@ -174,7 +174,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       DensityEstimationTrainingContext densityEstimationTrainingContext(a, b);
 
-      std::auto_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> > forest
+      std::unique_ptr<Forest<AxisAlignedFeatureResponse, GaussianAggregator2d> > forest
         = ForestTrainer<AxisAlignedFeatureResponse, GaussianAggregator2d>::TrainForest (
         random,
         parameters,
@@ -184,7 +184,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return forest;
     }
 
-    static std::auto_ptr<Bitmap<PixelBgr> > Visualize(
+    static std::unique_ptr<Bitmap<PixelBgr> > Visualize(
       Forest<AxisAlignedFeatureResponse, GaussianAggregator2d>& forest,
       DataPointCollection& trainingData,
       Size PlotSize,
@@ -195,7 +195,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       std::cout << "\nApplying the forest to test data..." << std::endl;
 
-      std::auto_ptr<DataPointCollection> testData = std::auto_ptr<DataPointCollection>(
+      std::unique_ptr<DataPointCollection> testData = std::unique_ptr<DataPointCollection>(
         DataPointCollection::Generate2dGrid(plotCanvas.plotRangeX, PlotSize.Width, plotCanvas.plotRangeY, PlotSize.Height) );
 
       std::vector<std::vector<int> > leafNodeIndices;
@@ -211,7 +211,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       }
 
       // Generate Visualization Image
-      std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(
+      std::unique_ptr<Bitmap<PixelBgr> > result = std::unique_ptr<Bitmap<PixelBgr> >(
         new Bitmap<PixelBgr>(PlotSize.Width, PlotSize.Height) );
 
       // Paint the test data
@@ -267,5 +267,5 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return result;
     }
   };
-} } }
+}
 

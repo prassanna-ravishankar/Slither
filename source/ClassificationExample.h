@@ -14,7 +14,7 @@
 #include "PlotCanvas.h"
 
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
 
-} } }
+}

@@ -1,6 +1,6 @@
 #include "CommandLineParser.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   std::string toLower(const std::string& i)
   {
@@ -59,4 +59,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return x;
   }
 
-} } }
+}

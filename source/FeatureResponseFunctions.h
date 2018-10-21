@@ -15,7 +15,7 @@
 
 namespace cvml = cv::ml;
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   class Random;
 
@@ -314,4 +314,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
 
-} } }
+}

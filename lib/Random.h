@@ -6,7 +6,7 @@
 #include <time.h>
 #include <cstdlib>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   /// <summary>
   /// Encapsulates random number generation - so as to facilitate
@@ -57,4 +57,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return minValue + rand()%(maxValue-minValue);
     }
   };
-} } }
+}

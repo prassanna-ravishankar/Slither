@@ -12,7 +12,7 @@
 #include <cctype>
 #include <sstream>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   std::string toLower(const std::string& i);
 
@@ -529,4 +529,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       std::cout << std::endl;
     }
   };
-} } }
+}

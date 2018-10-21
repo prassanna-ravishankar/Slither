@@ -5,7 +5,7 @@
 
 #include <ostream>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   /// <summary>
   /// The verbosity associated with a ProgressStream (or a progress message
@@ -55,4 +55,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return *this;
     }
   };
-} } }
+}

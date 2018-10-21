@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   void encodeDib_BGR_8u (
     const unsigned char* input,
@@ -9,4 +9,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     int rowStepBytes,
     const char* path );
 
-} } }
+}

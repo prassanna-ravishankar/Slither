@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <limits>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   template <typename T> int sign(T val)
   {
@@ -189,4 +189,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
         throw std::runtime_error("Failed.");
     }
   };
-} } }
+}

@@ -2,7 +2,7 @@
 
 #include "Features.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
     AxisAlignedFeature AxisAlignedFeatureFactory::CreateRandom(Random& random)
     {
@@ -13,4 +13,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     {
         return LinearFeature2d::CreateRandom(random);
     }
-} } }
+}

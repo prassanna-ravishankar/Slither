@@ -4,7 +4,7 @@
 // in a DecisionTree.
 #include <boost/serialization/serialization.hpp>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   // Default serialization functions used for serializing Feature and
   // StatisticsAggregator types. If your implementations are not simple
@@ -105,23 +105,23 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     }*/
 
     //FOR BOOST SERIALIZATION
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-
-      ar & bIsLeaf_;
-      //std::cout<<"L ";
-      ar & bIsSplit_;
-      //std::cout<<"S ";
-      ar & Threshold;
-      //std::cout<<"T ";
-      TrainingDataStatistics = S();
-      ar & TrainingDataStatistics;
-      //std::cout<<"S ";
-      ar & Feature;
-      //std::cout<<"F ";
-      std::cout<<std::endl;
-    }
+//    template<class Archive>
+//    void serialize(Archive & ar, const unsigned int version)
+//    {
+//
+//      ar & bIsLeaf_;
+//      //std::cout<<"L ";
+//      ar & bIsSplit_;
+//      //std::cout<<"S ";
+//      ar & Threshold;
+//      //std::cout<<"T ";
+//      TrainingDataStatistics = S();
+//      ar & TrainingDataStatistics;
+//      //std::cout<<"S ";
+//      ar & Feature;
+//      //std::cout<<"F ";
+//      std::cout<<std::endl;
+//    }
 
       template<class Archive>
       void serializeBoost(Archive& ar)
@@ -177,4 +177,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     /// </summary>
     bool IsNull() const { return !bIsLeaf_ && !bIsSplit_; }
   };
-} } }
+}

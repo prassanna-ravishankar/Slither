@@ -23,7 +23,7 @@
 
 
 
-using namespace MicrosoftResearch::Cambridge::Sherwood;
+using namespace Slither;
 namespace po = boost::program_options;
 
 void parseArguments(po::variables_map& vm);
@@ -33,8 +33,8 @@ void DisplayTextFiles(const std::string& relativePath);
 
 int discoverDims(std::string filename);
 
-std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
-std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  const std::string& model_name, cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
+std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
+std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  const std::string& model_name, cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
 
 
 
@@ -43,7 +43,7 @@ std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, 
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
-std::string hardcoded_location = "/home/prassanna/Projects/slither_2/";
+std::string hardcoded_location = "/home/prassanna/Projects/Slither/";
 std::string train_filename = hardcoded_location + "data/sclf/sample_train.txt";
 std::string test_filename = hardcoded_location + "data/sclf/sample_train.txt";
 std::string predict_filename = hardcoded_location + "data/sclf/sample_predict.txt";
@@ -113,12 +113,12 @@ int main(int argc, char* argv[])
        return 0; // LoadTrainingData() generates its own progress/error messages
     */
   cv::Mat divisors, biases;
-  std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
+  std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
   if(train_flag)
   {
     data_dimensions = discoverDims (train_filename);
-    std::auto_ptr<DataPointCollection> trainingData
-            = std::auto_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
+    std::unique_ptr<DataPointCollection> trainingData
+            = std::unique_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
 
     LinearFeatureSVMFactory linearFeatureFactory;
     if(!vm["parallel"].as<bool>())
@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
                                                                          trainingParameters);
 
     //Testing out regression
-    //std::auto_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
+    //std::unique_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
     //      *trainingData.get(), trainingParameters);
 
     //forest->Serialize(forest_loc);
@@ -149,11 +149,11 @@ int main(int argc, char* argv[])
   if(test_flag)
   {
     //data_dimensions = discoverDims (test_filename);
-    std::auto_ptr<DataPointCollection> testdata
-            = std::auto_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
+    std::unique_ptr<DataPointCollection> testdata
+            = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
 
-    std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
-    //std::auto_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
+    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
+    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
       //      = forest;//Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
 
 
@@ -366,7 +366,7 @@ void parseArguments(po::variables_map& vm)
 }
 
 /*
-std::auto_ptr<DataPointCollection> LoadTrainingData(
+std::unique_ptr<DataPointCollection> LoadTrainingData(
         const std::string& filename,
         const std::string& alternativePath,
         int dimension,
@@ -393,7 +393,7 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
     catch(std::runtime_error& e)
     {
       std::cout<< "Failed to determine executable path. " << e.what();
-      return std::auto_ptr<DataPointCollection>(0);
+      return std::unique_ptr<DataPointCollection>(0);
     }
 
     path = path + alternativePath;
@@ -403,11 +403,11 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
     if(r.fail())
     {
       std::cout << "Failed to open either \"" << filename << "\" or \"" << path.c_str() << "\"." << std::endl;
-      return std::auto_ptr<DataPointCollection>(0);
+      return std::unique_ptr<DataPointCollection>(0);
     }
   }
 
-  std::auto_ptr<DataPointCollection> trainingData;
+  std::unique_ptr<DataPointCollection> trainingData;
   try
   {
     trainingData = DataPointCollection::Load (
@@ -418,27 +418,27 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(
   catch (std::runtime_error& e)
   {
     std::cout << "Failed to read training data. " << e.what() << std::endl;
-    return std::auto_ptr<DataPointCollection>(0);
+    return std::unique_ptr<DataPointCollection>(0);
   }
 
   if (trainingData->Count() < 1)
   {
     std::cout << "Insufficient training data." << std::endl;
-    return std::auto_ptr<DataPointCollection>(0);
+    return std::unique_ptr<DataPointCollection>(0);
   }
 
   return trainingData;
 }*/
 
 
-std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
 {
   std::string path;
 
 
 
 
-  std::auto_ptr<DataPointCollection> trainingData;
+  std::unique_ptr<DataPointCollection> trainingData;
 
   trainingData  = trainingData->Load(filename);
 
@@ -467,9 +467,9 @@ std::auto_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,
 }
 
 
-std::auto_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
 {
-  std::auto_ptr<DataPointCollection> trainingData;
+  std::unique_ptr<DataPointCollection> trainingData;
   trainingData  = trainingData->Load(filename);
 
   if(scale_flag)

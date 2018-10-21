@@ -8,7 +8,7 @@
 
 
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   std::istream & getline_(std::istream & in, std::string & out)
   {
@@ -34,12 +34,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   }
             /*
 
-  std::auto_ptr<DataPointCollection> DataPointCollection::Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor)
+  std::unique_ptr<DataPointCollection> DataPointCollection::Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor)
   {
     bool bHasTargetValues = (descriptor & DataDescriptor::HasTargetValues) == DataDescriptor::HasTargetValues;
     bool bHasClassLabels = (descriptor & DataDescriptor::HasClassLabels) == DataDescriptor::HasClassLabels;
 
-    std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+    std::unique_ptr<DataPointCollection> result = std::unique_ptr<DataPointCollection>(new DataPointCollection());
     result->dimension_ = dataDimension;
 
 
@@ -107,9 +107,9 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     return result;
   }*/
 
-  std::auto_ptr<DataPointCollection> DataPointCollection::Load(const std::string &filename)
+  std::unique_ptr<DataPointCollection> DataPointCollection::Load(const std::string &filename)
   {
-    std::auto_ptr<DataPointCollection> result = std::auto_ptr<DataPointCollection>(new DataPointCollection());
+    std::unique_ptr<DataPointCollection> result = std::unique_ptr<DataPointCollection>(new DataPointCollection());
 
     cv::Ptr<cv::ml::TrainData> all_data;
 
@@ -132,8 +132,8 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
 
     //HACK - REmove it before it messes up the data
-    for(int i=0;i<result->labels_.size();i++)
-      result->labels_[i] = result->labels_[i]>0?1:0;
+//    for(int i=0;i<result->labels_.size();i++)
+//      result->labels_[i] = result->labels_[i]>0?1:0;
 
 
     result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
@@ -165,7 +165,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   /// <param name="nStepsY">Number of grid points in y direction</param>
   /// <returns>A new DataPointCollection</returns>
 
-  std::auto_ptr<DataPointCollection> DataPointCollection::Generate2dGrid(
+  std::unique_ptr<DataPointCollection> DataPointCollection::Generate2dGrid(
     std::pair<float, float> rangeX, int nStepsX,
     std::pair<float, float> rangeY, int nStepsY)
   {
@@ -175,7 +175,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     if (rangeY.first >= rangeY.second)
       throw std::runtime_error("Invalid y-axis range.");
 
-    std::auto_ptr<DataPointCollection> result =  std::auto_ptr<DataPointCollection>(new DataPointCollection());
+    std::unique_ptr<DataPointCollection> result =  std::unique_ptr<DataPointCollection>(new DataPointCollection());
 
     result->dimension_ = 2;
 
@@ -201,12 +201,12 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
   /// <param name="range">Range</param>
   /// <param name="nStepsX">Number of grid points</param>
   /// <returns>A new DataPointCollection</returns>
-  std::auto_ptr<DataPointCollection> DataPointCollection::Generate1dGrid(std::pair<float, float> range, int nSteps)
+  std::unique_ptr<DataPointCollection> DataPointCollection::Generate1dGrid(std::pair<float, float> range, int nSteps)
   {
     if (range.first >= range.second)
       throw std::runtime_error("Invalid range.");
 
-    std::auto_ptr<DataPointCollection> result =  std::auto_ptr<DataPointCollection>(new DataPointCollection());
+    std::unique_ptr<DataPointCollection> result =  std::unique_ptr<DataPointCollection>(new DataPointCollection());
 
     result->dimension_ = 1;
 
@@ -313,4 +313,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       throw std::runtime_error("Failed to interpret number as floating point.");
     return x;
   }
-} } }
+}

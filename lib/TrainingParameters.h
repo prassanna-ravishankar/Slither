@@ -9,7 +9,7 @@
 #include <string>
 #include <algorithm>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   enum IGType { ig_unknown=-1, ig_shannon, ig_reweighted, ig_gini };
 
@@ -45,4 +45,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       int maxThreads;
 
   };
-} } }
+}

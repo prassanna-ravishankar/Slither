@@ -18,7 +18,7 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   struct HistogramAggregator
   {
@@ -403,4 +403,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return result;
     }
   };
-} } }
+}

@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   std::string GetExecutablePath();
 
   void GetDirectoryListing(const std::string& path, std::vector<std::string>& filenames, const std::string& extension);
-} } }
+}

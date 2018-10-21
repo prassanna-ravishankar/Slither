@@ -22,7 +22,7 @@
 #include "StatisticsAggregators.h"
 #include "Regression.h"
 
-namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
+namespace Slither
 {
   class RegressionTrainingContext : public ITrainingContext<AxisAlignedFeatureResponse, LinearFitAggregator1d>
   {
@@ -66,7 +66,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
     static const PixelBgr DataPointBorderColor;
     static const PixelBgr MeanColor;
 
-    static std::auto_ptr<Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d> > Train(
+    static std::unique_ptr<Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d> > Train(
       const DataPointCollection& trainingData,
       const TrainingParameters& parameters)
     {
@@ -76,14 +76,14 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
 
       RegressionTrainingContext regressionTrainingContext;
 
-      std::auto_ptr<Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d> > forest
+      std::unique_ptr<Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d> > forest
         = ForestTrainer<AxisAlignedFeatureResponse, LinearFitAggregator1d>::TrainForest(
         random, parameters, regressionTrainingContext, trainingData);
 
       return forest;
     }
 
-    static std::auto_ptr<Bitmap<PixelBgr> > Visualize(
+    static std::unique_ptr<Bitmap<PixelBgr> > Visualize(
       Forest<AxisAlignedFeatureResponse, LinearFitAggregator1d>& forest,
       const DataPointCollection& trainingData,
       Size PlotSize,
@@ -92,7 +92,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       // Generate some test samples in a grid pattern (a useful basis for creating visualization images)
       PlotCanvas plotCanvas(trainingData.GetRange(0), trainingData.GetTargetRange(), PlotSize, PlotDilation);
 
-      std::auto_ptr<DataPointCollection> testData = DataPointCollection::Generate1dGrid(plotCanvas.plotRangeX, PlotSize.Width);
+      std::unique_ptr<DataPointCollection> testData = DataPointCollection::Generate1dGrid(plotCanvas.plotRangeX, PlotSize.Width);
 
       std::cout << "\nApplying the forest to test data..." << std::endl;
 
@@ -100,7 +100,7 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       forest.Apply(*testData.get(), leafNodeIndices);
 
       // Generate visualization image
-      std::auto_ptr<Bitmap<PixelBgr> > result = std::auto_ptr<Bitmap<PixelBgr> >(new Bitmap<PixelBgr> (PlotSize.Width, PlotSize.Height));
+      std::unique_ptr<Bitmap<PixelBgr> > result = std::unique_ptr<Bitmap<PixelBgr> >(new Bitmap<PixelBgr> (PlotSize.Width, PlotSize.Height));
 
       // Plot the learned density
       PixelBgr inverseDensityColor = PixelBgr::FromArgb(255 - DensityColor.R, 255 - DensityColor.G, 255 - DensityColor.B);
@@ -180,4 +180,4 @@ namespace MicrosoftResearch { namespace Cambridge { namespace Sherwood
       return result;
     }
   };
-} } }
+}
