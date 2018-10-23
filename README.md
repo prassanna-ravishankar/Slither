@@ -1,8 +1,7 @@
 # Slither - A Random forest library to slither through your data
-*Not to be confused with https://github.com/iiegor/slither or variations*
+__This is the official code that was implemented for this paper - [Unstructured Road Segmentation using Hypercolumn based Random Forests of Local experts](https://figshare.com/articles/Unstructured_Road_Segmentation_using_Hypercolumn_based_Random_Forests_of_Local_experts/7241360)__
 * Local Experts (SVMs) placed in a __Random Forest__ seperating over information Gain and not using the Gini Criteria
 * Meant to be used in tandem with superpixel hypercolumn features coming out of another pipeline
-* This framework is integral in Fast Adaptation of Neural Networks for Road detection (will be published/arxiv-ed asap) 
 * This work was highly inspired by Microsoft Cambridge Research's Sherwood library (https://www.microsoft.com/en-us/download/confirmation.aspx?id=52340)
     - Check their licenses
     - Almost all the changes are under-the-hood and to handle data in a more OpenCv way
