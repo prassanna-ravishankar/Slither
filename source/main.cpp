@@ -21,8 +21,6 @@
 #include "Regression.h"
 #include <boost/program_options.hpp>
 
-
-
 using namespace Slither;
 namespace po = boost::program_options;
 
@@ -35,7 +33,6 @@ int discoverDims(std::string filename);
 
 std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
 std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  const std::string& model_name, cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
-
 
 
 
@@ -53,7 +50,10 @@ bool train_flag = false;
 bool test_flag = false;
 std::string forest_loc ="forest_400.out";
 bool scale_flag = false;
-const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP", "Fisher", "Hypercolumn+Location", "2Layer Hypercolumn", "Hypercolumn+Location+Color"};
+const std::vector<std::string> FeatureNames = {"Standard", "Hypercolumn", "LBP",
+                                               "Fisher", "Hypercolumn+Location",
+                                               "2Layer Hypercolumn", "Hypercolumn+Location+Color",
+                                               "NeuralPatches"};
 
 int main(int argc, char* argv[])
 {
@@ -100,11 +100,6 @@ int main(int argc, char* argv[])
   }
 
   parseArguments(vm);
-
-
-
-
-
 
 
 

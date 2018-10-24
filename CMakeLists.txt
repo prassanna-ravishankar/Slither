@@ -48,7 +48,8 @@ set(SOURCE_FILES
         source/PlotCanvas.cpp
         #demo/source/Regression.cpp
         #demo/source/SemiSupervisedClassification.cpp
-        source/StatisticsAggregators.cpp)
+        source/StatisticsAggregators.cpp
+        source/ImageDataPointCollection.cpp)
 
 
 #######################################

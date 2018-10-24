@@ -16,7 +16,7 @@
 
 namespace Slither
 {
-  enum FeatureMaskType { standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4 , hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7};
+  enum FeatureMaskType { standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4 , hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7, neural_patches=8};
 
   /// <summary>
   /// A collection of data points used for forest training or evaluation.
