@@ -313,5 +313,110 @@ namespace Slither
   };
 
 
+    class PatchLinearFeatureResponseSVM
+    {
+        friend class boost::serialization::access;
+    protected:
+        std::vector<int> vIndex_;
+        std::vector<float> vWeights_;
+        int		dimensions_;
+        float	bias_;
+        //int		nIndex_;
+        //cv::Ptr<cvml::SVM> svm;
+        int nWeights_;
+
+    public:
+        PatchLinearFeatureResponseSVM():
+                dimensions_(-1),
+                bias_(0.0f)
+        {
+            dimensions_ = 10;
+            vWeights_.resize(dimensions_,1);
+            for(int i=0;i<dimensions_;i++)
+                vIndex_.push_back(i);
+            nWeights_ = vWeights_.size();
+            //m_param_filename = "/home/prassanna/Development/Code3/Parameters/parametersTaskManager2.ini";
+            //svm = cvml::SVM::create();
+            //svm->setType(cvml::SVM::C_SVC);
+            //svm->setKernel(cvml::SVM::LINEAR);
+            //svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
+
+        }
+
+        /// <summary>
+        /// Create a LinearFeatureResponse instance for the specified direction vector.
+        /// </summary>
+        /// <param name="dx">The first element of the direction vector.</param>
+        /// <param name="dx">The second element of the direction vector.</param>
+        PatchLinearFeatureResponseSVM(float* pWeights, const int dimensions)
+        {
+
+            //vWeights_ = std::vector<float>(pWeights, pWeights+sizeof pWeights/sizeof pWeights[0]);
+            dimensions_ = dimensions;
+        }
+        static PatchLinearFeatureResponseSVM CreateRandom(Random& random, const IDataPointCollection& data, unsigned int* dataIndices, const unsigned int i0, const unsigned int i1,float svm_c, FeatureMaskType featureMask, bool root_node);
+        static void GenerateMask(Random& random, std::vector<int>& vIndex, int dims , bool root_node);
+        float GetResponse(const IDataPointCollection &data, unsigned int index) const;
+        std::string ToString()  const;
+
+        static void Serialize(PatchLinearFeatureResponseSVM lr, std::ostream& o)
+        {
+            o.write((const char*)(&lr.dimensions_), sizeof(lr.dimensions_));
+            o.write((const char*)(&lr.nWeights_), sizeof(lr.nWeights_));
+            o.write((const char*)(&lr.vIndex_), sizeof(int)*lr.vIndex_.size());
+            o.write(reinterpret_cast<const char*>(&lr.vIndex_[0]), lr.vIndex_.size()*sizeof(int));
+            o.write(reinterpret_cast<const char*>(&lr.vWeights_[0]), lr.vWeights_.size()*sizeof(float));
+
+        }
+
+        static PatchLinearFeatureResponseSVM Deserialize(std::istream& i)
+        {
+            PatchLinearFeatureResponseSVM lr;
+            i.read((char*)(&lr.dimensions_), sizeof(lr.dimensions_));
+            i.read((char*)(&lr.nWeights_), sizeof(lr.nWeights_));
+            i.read((char*)(&lr.vIndex_), sizeof(lr.vIndex_));
+            i.read(reinterpret_cast<char*>(&lr.vIndex_[0]), lr.nWeights_*sizeof(int));
+            i.read(reinterpret_cast<char*>(&lr.vWeights_[0]), lr.nWeights_*sizeof(float));
+
+
+            return lr;
+
+
+        }
+
+        //FOR BOOST SERIALIZATION
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & vIndex_;
+            ar & vWeights_;
+            ar & dimensions_;
+            ar & bias_;
+            ar & nWeights_;
+        }
+
+        template<class Archive>
+        void serializeBoost(Archive & ar)
+        {
+            ar & vIndex_;
+            ar & vWeights_;
+            ar & dimensions_;
+            ar & bias_;
+            ar & nWeights_;
+        }
+
+        template<class Archive>
+        void deserializeBoost(Archive & ar)
+        {
+            ar & vIndex_;
+            ar & vWeights_;
+            ar & dimensions_;
+            ar & bias_;
+            ar & nWeights_;
+        }
+
+    };
+
+
 
 }

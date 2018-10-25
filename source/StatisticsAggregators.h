@@ -158,6 +158,146 @@ namespace Slither
     HistogramAggregator DeepClone() const;
   };
 
+
+  // Make this inherit HistogramAggregator
+  struct PatchHistogramAggregator
+  {
+  private:
+      std::set<int> uniqueBins_;
+      std::vector<unsigned int> bins_;
+      //unsigned short bins_[4];
+      int binCount_;
+
+      unsigned int sampleCount_;
+
+  public:
+      double Entropy() const;
+      double EntropyGINI() const;
+      double Entropy(const unsigned int *priorBins, const unsigned int priorSampleCount) const;
+      double Entropy(const std::vector<unsigned int> priorBins, const unsigned int priorSampleCount) const;
+
+
+
+      template<class Archive>
+      void save(Archive & ar, const unsigned int version) const
+      {
+        std::vector<int> binsVector;
+        std::copy(uniqueBins_.begin(), uniqueBins_.end(), std::back_inserter(binsVector));
+
+        ar & binsVector;
+        std::cout<<"bv ";
+
+        ar & bins_;
+        std::cout<<"bi ";
+
+        ar & binCount_;
+        std::cout<<"bc ";
+
+        ar & sampleCount_;
+        std::cout<<"sc ";
+
+      }
+
+      template<class Archive>
+      void load(Archive & ar, const unsigned int version)
+      {
+        std::vector<int> binsVector;
+        std::cout<<"in ";
+        ar & binsVector;
+        std::cout<<"bv ";
+
+        ar & bins_;
+        std::cout<<"bi ";
+
+        ar & binCount_;
+        std::cout<<"bc ";
+
+        ar & sampleCount_;
+        std::cout<<"sc ";
+
+
+        std::copy( binsVector.begin(), binsVector.end(), std::inserter( uniqueBins_, uniqueBins_.end() ) );
+        std::cout<<"Set created ";
+      }
+
+      template<class Archive>
+      void serializeBoost(Archive& ar)
+      {
+        std::vector<int> binsVector;
+        std::copy(uniqueBins_.begin(), uniqueBins_.end(), std::back_inserter(binsVector));
+
+        int size_bv = binsVector.size();
+
+        ar << size_bv;
+
+        ar << binsVector;
+        //std::cout<<"bv ";
+
+        ar << bins_;
+        //std::cout<<"bi ";
+
+        ar << binCount_;
+        //std::cout<<"bc ";
+
+        ar << sampleCount_;
+        //std::cout<<"sc ";
+
+      }
+
+
+      template<class Archive>
+      void deserializeBoost(Archive& ar)
+      {
+
+        int size_bv;
+        ar >> size_bv;
+        //std::cout<<"sv "<<std::flush;
+        std::vector<int> binsVector;
+        binsVector.resize(size_bv,0);
+
+        ar >> binsVector;
+        //std::cout<<"bv "<<std::flush;;
+
+        ar >> bins_;
+        //std::cout<<"bi "<<std::flush;;
+
+        ar >> binCount_;
+        //std::cout<<"bc "<<std::flush;;
+
+        ar >> sampleCount_;
+        //std::cout<<"sc "<<std::flush;;
+
+
+        std::copy( binsVector.begin(), binsVector.end(), std::inserter( uniqueBins_, uniqueBins_.end() ) );
+        //std::cout<<"Set created "<<std::flush;;
+      }
+      //BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+      PatchHistogramAggregator();
+
+      PatchHistogramAggregator(int nClasses);
+
+      float GetProbability(int classIndex) const;
+
+      int BinCount() const {
+        return binCount_; }
+
+      std::vector<unsigned int> GetBins() const {return bins_;}
+
+      unsigned int SampleCount() const { return sampleCount_; }
+
+      int FindTallestBinIndex() const;
+
+      // IStatisticsAggregator implementation
+      void Clear();
+
+      void Aggregate(const IDataPointCollection& data, unsigned int index);
+
+      void Aggregate(const PatchHistogramAggregator& aggregator);
+
+      PatchHistogramAggregator DeepClone() const;
+  };
+
   class GaussianPdf2d
   {
   private:

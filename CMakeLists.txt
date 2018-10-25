@@ -49,7 +49,8 @@ set(SOURCE_FILES
         #demo/source/Regression.cpp
         #demo/source/SemiSupervisedClassification.cpp
         source/StatisticsAggregators.cpp
-        source/ImageDataPointCollection.cpp)
+        source/ImageDataPointCollection.cpp
+        source/nlohmann/json.hpp)
 
 
 #######################################

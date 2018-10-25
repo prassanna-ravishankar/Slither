@@ -158,12 +158,12 @@ public:
 
         std::cout<<data->CountClasses()<<" Classes"<<std::endl;
         if(this->trainingParameters.maxThreads==1)
-            this->forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*data.get(),
+            this->forest = TraditionalClassification<LinearFeatureResponseSVM>::TrainSingle(*data.get(),
                                                                                      &featureFactory,
                                                                                      trainingParameters);
 
         else
-            this->forest = ClassificationDemo<LinearFeatureResponseSVM>::Train(*data.get(),
+            this->forest = TraditionalClassification<LinearFeatureResponseSVM>::Train(*data.get(),
                                                                                &featureFactory,
                                                                                trainingParameters);
 
@@ -176,7 +176,7 @@ public:
     py::array_t<double> onlyTest()
     {
         std::vector<HistogramAggregator> distbns;
-        ClassificationDemo<LinearFeatureResponseSVM>::Test(*forest.get(),
+        TraditionalClassification<LinearFeatureResponseSVM>::Test(*forest.get(),
                                                            *data.get(),
                                                            distbns);
 

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "DataPointCollection.h"
+#include "ImageDataPointCollection.h"
 
 namespace Slither {
     double HistogramAggregator::Entropy() const {
@@ -138,6 +139,144 @@ namespace Slither {
       result.sampleCount_ = sampleCount_;
 
       return result;
+    }
+
+
+
+
+    double PatchHistogramAggregator::Entropy() const {
+        if (sampleCount_ == 0)
+            return 0.0;
+
+        double result = 0.0;
+        for (int b = 0; b < BinCount(); b++) {
+            double p = (double) bins_[b] / (double) sampleCount_;
+            result -= p == 0.0 ? 0.0 : p * log(p) / log(2.0);
+        }
+
+        return result;
+    }
+
+    double PatchHistogramAggregator::EntropyGINI() const {
+        if (sampleCount_ == 0)
+            return 0.0;
+
+        //double result = 1.0;
+        //for (int b = 0; b < BinCount(); b++)
+        //{
+        //  double p = (double)bins_[b] / (double)sampleCount_;
+        //  result -= p * p/2.0;
+        //}
+
+        double result = 1.0;
+        for (int b = 0; b < BinCount(); b++) {
+            double p = (double) bins_[b] / (double) sampleCount_;
+            result -= p * p;
+        }
+
+        return result / 2.0;
+    }
+
+    double PatchHistogramAggregator::Entropy(const unsigned int *priorBins, const unsigned int priorSampleCount) const {
+        if (sampleCount_ == 0)
+            return 0.0;
+
+        double result = 0.0;
+        for (int b = 0; b < BinCount(); b++) {
+            double invPriorP = (double) priorSampleCount / (double) priorBins[b];
+            double p = (double) bins_[b] / (double) sampleCount_;
+            result -= p == 0.0 ? 0.0 : invPriorP * p * log(p) / log(2.0);
+        }
+
+        return result;
+    }
+
+    double
+    PatchHistogramAggregator::Entropy(const std::vector<unsigned int> priorBins, const unsigned int priorSampleCount) const {
+        if (sampleCount_ == 0)
+            return 0.0;
+
+        double result = 0.0;
+        for (int b = 0; b < BinCount(); b++) {
+            double invPriorP = (double) priorSampleCount / (double) priorBins[b];
+            double p = (double) bins_[b] / (double) sampleCount_;
+            result -= p == 0.0 ? 0.0 : invPriorP * p * log(p) / log(2.0);
+        }
+
+        return result;
+    }
+
+    PatchHistogramAggregator::PatchHistogramAggregator() {
+        binCount_ = 2;
+        bins_.resize(binCount_, 0);
+
+        /*for(int b=0; b<binCount_; b++)
+          bins_[b] = 0;
+          */
+        sampleCount_ = 0;
+    }
+
+    PatchHistogramAggregator::PatchHistogramAggregator(int nClasses) {
+//      if (nClasses > 4)
+//        throw std::runtime_error("HistogramAggregator supports a maximum of four classes.");
+        binCount_ = nClasses;
+        /*for(int b=0; b<binCount_; b++)
+          bins_[b] = 0;*/
+        bins_.resize(binCount_, 0);
+        sampleCount_ = 0;
+    }
+
+    float PatchHistogramAggregator::GetProbability(int classIndex) const {
+        return (float) (bins_[classIndex]) / sampleCount_;
+    }
+
+    int PatchHistogramAggregator::FindTallestBinIndex() const {
+        unsigned int maxCount = bins_[0];
+        int tallestBinIndex = 0;
+
+        for (int i = 1; i < BinCount(); i++) {
+            if (bins_[i] > maxCount) {
+                maxCount = bins_[i];
+                tallestBinIndex = i;
+            }
+        }
+
+        return tallestBinIndex;
+    }
+
+    // IStatisticsAggregator implementation
+    void PatchHistogramAggregator::Clear() {
+        for (int b = 0; b < BinCount(); b++)
+            bins_[b] = 0;
+
+        sampleCount_ = 0;
+    }
+
+    void PatchHistogramAggregator::Aggregate(const IDataPointCollection &data, unsigned int index) {
+        const ImageDataPointCollection &concreteData = (const ImageDataPointCollection &) (data);
+
+        bins_[concreteData.GetIntegerLabel((int) index)]++;
+        sampleCount_ += 1;
+    }
+
+    void PatchHistogramAggregator::Aggregate(const PatchHistogramAggregator &aggregator) {
+        assert(aggregator.BinCount() == BinCount());
+
+        for (int b = 0; b < BinCount(); b++)
+            bins_[b] += aggregator.bins_[b];
+
+        sampleCount_ += aggregator.sampleCount_;
+    }
+
+    PatchHistogramAggregator PatchHistogramAggregator::DeepClone() const {
+        PatchHistogramAggregator result(BinCount());
+
+        for (int b = 0; b < BinCount(); b++)
+            result.bins_[b] = bins_[b];
+
+        result.sampleCount_ = sampleCount_;
+
+        return result;
     }
 
     GaussianPdf2d::GaussianPdf2d(double mu_x, double mu_y, double Sigma_11, double Sigma_12, double Sigma_22) {

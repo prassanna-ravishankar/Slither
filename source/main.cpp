@@ -13,7 +13,7 @@
 
 #include "CumulativeNormalDistribution.h"
 
-#include "DataPointCollection.h"
+#include "ImageDataPointCollection.h"
 
 #include "Classification.h"
 #include "DensityEstimation.h"
@@ -41,7 +41,8 @@ int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
 std::string hardcoded_location = "/home/prassanna/Projects/Slither/";
-std::string train_filename = hardcoded_location + "data/sclf/sample_train.txt";
+//std::string train_filename = hardcoded_location + "data/sclf/sample_train.txt";
+std::string train_filename = hardcoded_location + "Neural_data/KittiSemantic/train.json";
 std::string test_filename = hardcoded_location + "data/sclf/sample_train.txt";
 std::string predict_filename = hardcoded_location + "data/sclf/sample_predict.txt";
 //float svm_c = 0.5;
@@ -103,65 +104,78 @@ int main(int argc, char* argv[])
 
 
 
+  //Trying something hardcoded for this branch
+    std::unique_ptr<ImageDataPointCollection> trainingData;
+
+    trainingData  = trainingData->Load(train_filename);
+    cv::Mat divisors, biases;
+    std::unique_ptr<Forest<PatchLinearFeatureResponseSVM, PatchHistogramAggregator> > forest;
+    PatchLinearFeatureSVMFactory linearFeatureFactory;
+    forest = PatchwiseClassification<PatchLinearFeatureResponseSVM>::TrainSingle(*trainingData,
+                                                                       &linearFeatureFactory,
+                                                                       trainingParameters);
+
+
+
 /*
   if (trainingData.get()==0)
        return 0; // LoadTrainingData() generates its own progress/error messages
     */
-  cv::Mat divisors, biases;
-  std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
-  if(train_flag)
-  {
-    data_dimensions = discoverDims (train_filename);
-    std::unique_ptr<DataPointCollection> trainingData
-            = std::unique_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
-
-    LinearFeatureSVMFactory linearFeatureFactory;
-    if(!vm["parallel"].as<bool>())
-      if(trainingParameters.maxThreads>1)
-        forest
-              = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
-                                                                    &linearFeatureFactory,
-                                                                    trainingParameters);
-      else
-        forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainSingle(*trainingData,
-                                                                     &linearFeatureFactory,
-                                                                     trainingParameters);
-    else
-      forest = ClassificationDemo<LinearFeatureResponseSVM>::TrainParallel(*trainingData,
-                                                                         &linearFeatureFactory,
-                                                                         trainingParameters);
-
-    //Testing out regression
-    //std::unique_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
-    //      *trainingData.get(), trainingParameters);
-
-    //forest->Serialize(forest_loc);
-    forest->SerializeBoost(forest_loc);
-    //forest.release();
-  }
-
-
-  if(test_flag)
-  {
-    //data_dimensions = discoverDims (test_filename);
-    std::unique_ptr<DataPointCollection> testdata
-            = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
-
-    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
-    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
-      //      = forest;//Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
-
-
-    std::vector<HistogramAggregator> distbns;
-    ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
-                                                       *testdata.get(),
-                                                       distbns);
-
-    std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
-    //writePredData (predict_filename, distbns);
-    trained_forest_loaded.release();
-    distbns.clear();
-  }
+//  cv::Mat divisors, biases;
+//  std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
+//  if(train_flag)
+//  {
+//    data_dimensions = discoverDims (train_filename);
+//    std::unique_ptr<DataPointCollection> trainingData
+//            = std::unique_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
+//
+//    LinearFeatureSVMFactory linearFeatureFactory;
+//    if(!vm["parallel"].as<bool>())
+//      if(trainingParameters.maxThreads>1)
+//        forest
+//              = TraditionalClassification<LinearFeatureResponseSVM>::Train(*trainingData,
+//                                                                    &linearFeatureFactory,
+//                                                                    trainingParameters);
+//      else
+//        forest = TraditionalClassification<LinearFeatureResponseSVM>::TrainSingle(*trainingData,
+//                                                                     &linearFeatureFactory,
+//                                                                     trainingParameters);
+//    else
+//      forest = TraditionalClassification<LinearFeatureResponseSVM>::TrainParallel(*trainingData,
+//                                                                         &linearFeatureFactory,
+//                                                                         trainingParameters);
+//
+//    //Testing out regression
+//    //std::unique_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
+//    //      *trainingData.get(), trainingParameters);
+//
+//    //forest->Serialize(forest_loc);
+//    forest->SerializeBoost(forest_loc);
+//    //forest.release();
+//  }
+//
+//
+//  if(test_flag)
+//  {
+//    //data_dimensions = discoverDims (test_filename);
+//    std::unique_ptr<DataPointCollection> testdata
+//            = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
+//
+//    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
+//    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
+//      //      = forest;//Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
+//
+//
+//    std::vector<HistogramAggregator> distbns;
+//    TraditionalClassification<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
+//                                                       *testdata.get(),
+//                                                       distbns);
+//
+//    std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
+//    //writePredData (predict_filename, distbns);
+//    trained_forest_loaded.release();
+//    distbns.clear();
+//  }
 
 
   return 0;

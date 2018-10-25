@@ -25,7 +25,7 @@ namespace Slither
     /// Used to describe the expected format of the lines of a data file (used
     /// in ImageDataPointCollection::Load()).
     /// </summary>
-    class DataDescriptor
+    class ImageDataDescriptor
     {
     public:
         enum e
@@ -44,12 +44,11 @@ namespace Slither
     {
         //std::vector<float> data_;
         std::vector<std::string> filenames;
+        std::string image_folder;
+        std::string annotation_folder;
         int dimension_;
         std::set<int> uniqueClasses_;
 
-
-        // only for classified data...
-        std::vector<int> labels_;
 
         //std::map<std::string, int> labelIndices_; // map string labels to integers
 
@@ -78,7 +77,7 @@ namespace Slither
         /// </summary>
         bool HasLabels() const
         {
-            return labels_.size() != 0;
+            return filenames.size() != 0;
         }
 
         /// <summary>
@@ -161,11 +160,12 @@ namespace Slither
         /// </summary>
         /// <param name="i">Zero-based data point index</param>
         /// <returns>A zero-based integer class label.</returns>
+        //rename to Get Annotations -> Does nothing for now
         int GetIntegerLabel(int i) const
         {
             if (!HasLabels())
                 throw std::runtime_error("Data have no associated class labels.");
-            return labels_[i]; // may throw an exception if index is out of range
+            return 0; // may throw an exception if index is out of range
         }
 
         /// <summary>
@@ -181,17 +181,8 @@ namespace Slither
 
             return targets_[i]; // may throw an exception if index is out of range
         }
+
+        std::vector<int> tokenize_str_toint(std::string);
     };
-
-    // A couple of file parsing utilities, exposed here for testing only.
-
-    // Split a delimited line into constituent elements.
-    void tokenize(
-            const std::string& str,
-            std::vector<std::string>& tokens,
-            const std::string& delimiters = " " );
-
-    // Convert a std::string to a float (or raise an exception).
-    float to_float(const std::string& s);
 }
 
