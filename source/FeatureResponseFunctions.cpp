@@ -471,55 +471,12 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     {
       PatchLinearFeatureResponseSVM lr;
       ImageDataPointCollection& concreteData = (ImageDataPointCollection&)(data);
-      //this->dimensions_ =  concreteData.Dimensions();
-      lr.dimensions_ = concreteData.Dimensions();
-      GenerateMask (random, lr.vIndex_, lr.dimensions_, root_node); //CHANGE THIS DEPENDING ON OPERATION
-
-      std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
-      lr.vIndex_.erase( unique( lr.vIndex_.begin(), lr.vIndex_.end() ), lr.vIndex_.end() );
-
-      cv::Ptr<cvml::SVM> svm;
-      svm = cvml::SVM::create();
-      svm->setType(cvml::SVM::C_SVC);
-      svm->setKernel(cvml::SVM::LINEAR);
-      svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
-
-
-      svm->setC(svm_c);
-
-      //cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
-      // cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
-
-
-//      svm->train(tdata);
-
-      lr.nWeights_ = lr.vIndex_.size();
-      lr.vWeights_.resize(lr.vIndex_.size(),1); //Initializing weights as unit vector
-      lr.bias_ = 0; // 0 ->bias
-
-
-      if(svm->isTrained())
-      {
-        cv::Mat alpha, wts;
-
-        lr.bias_ = -1 * (float)svm->getDecisionFunction(0, alpha, wts);
-        cv::Mat svs = svm->getSupportVectors();
-        for(int j=0;j<svs.cols;j++)
-          lr.vWeights_[j]=(svs.at<float>(j));
-      }
-      svm.release();
-
-      //lr.vWeights_.resize()
-
-      //cv::Mat svs = lr.svm->getSupportVectors();
-      //svm->getDecisionFunction(0,alpha,svs);
-      //std::cout<<"[DEBUG : "<<i0<<" -->"<<i1<<"]    "<<tdata->getNSamples()<<std::endl;
-      //std::cout<<"[DEBUG : FeatureResponseSVM / isTrained?]"<<lr.nWeights_<<" "<<lr.svm->isTrained()<<std::endl;
-
-
-
-
-
+      // Insert code here
+      // 1. Load Image collection, Image by Image
+      // 2. Load necessary pixels - load them independently in parallel and a random FOV (patch) around them
+      // 3. Look at certain statistics of pixel (for example - R,G,B,mean_r, mean_g, mean_b, std_dev_r, std_dev_g, std_dev_b
+      // 4. Release the full image, having only the pixel features
+      // 5. Train something simple, like an svm, or logistic regression
 
 
       return lr;
@@ -530,15 +487,8 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
       //std::cout<<"At feature response 1"<<std::endl;
 
       const ImageDataPointCollection& concreteData = (const ImageDataPointCollection&)(data);
-//      cv::Mat rowMat = concreteData.GetDataPoint(index);
-//      std::vector<float> rowVector;
-//
-//      for (int i = 0;i<nWeights_;i++)
-//        rowVector.push_back(rowMat.at<float>(vIndex_[i]));
-//
-//      double response = std::inner_product(rowVector.begin(), rowVector.end(), vWeights_.begin(), bias_);
-//
-//      return (float)response;
+      // 1. We want to do a pixel-wise labelling on the image
+      // 2. We return the percentage of right labels predicted.
       return 0 ;
     }
 
