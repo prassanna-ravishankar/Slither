@@ -75,23 +75,6 @@ namespace Slither
         forest->trees_.push_back(tree.release());
       }
       return forest;
-      i.close();
-
-
-      /*std::ofstream o(path.c_str(), std::ios_base::binary);
-      boost::archive::text_oarchive ar(o);
-      int treeCount = TreeCount();
-
-      //First tree counts
-      ar & treeCount;
-
-      //Then Tree & decision levels
-      for(int t=0; t<TreeCount(); t++)
-      {
-        ar & GetTree(t);
-      }
-      o.close();*/
-
     }
 
 
@@ -118,103 +101,6 @@ namespace Slither
 
     }
 
-//
-//    static std::unique_ptr<Forest<F, S> > Deserialize(const std::string& path)
-//    {
-//      std::ifstream i(path.c_str(), std::ios_base::binary);
-//
-//      return Forest<F,S>::Deserialize(i);
-//    }
-//
-//    /// <summary>
-//    /// Deserialize a forest from a binary stream.
-//    /// </summary>
-//    /// <param name="stream">The stream.</param>
-//    /// <returns></returns>
-//    static std::unique_ptr<Forest<F, S> > Deserialize(std::istream& i)
-//    {
-//      std::unique_ptr<Forest<F, S> > forest = std::unique_ptr<Forest<F, S> >(new Forest<F,S>());
-//
-//      std::vector<char> buffer(strlen(binaryFileHeader_)+1);
-//      i.read(&buffer[0], strlen(binaryFileHeader_));
-//      buffer[buffer.size()-1] = '\0';
-//
-//      if(strcmp(&buffer[0], binaryFileHeader_)!=0)
-//        throw std::runtime_error("Unsupported forest format.");
-//
-//      int majorVersion = 0, minorVersion = 0;
-//      i.read((char*)(&majorVersion), sizeof(majorVersion));
-//      i.read((char*)(&minorVersion), sizeof(minorVersion));
-//
-//      if(majorVersion==0 && minorVersion==0)
-//      {
-//        int treeCount;
-//        i.read((char*)(&treeCount), sizeof(treeCount));
-//
-//        for(int t=0; t<treeCount; t++)
-//        {
-//          std::unique_ptr<Tree<F,S> > tree = Tree<F, S>::Deserialize(i);
-//          forest->trees_.push_back(tree.get());
-//          tree.release();
-//        }
-//      }
-//      else
-//        throw std::runtime_error("Unsupported file version number.");
-//
-//      return forest;
-//    }
-//
-//
-//
-//
-//
-//    void Serialize(const std::string& path)
-//    {
-//      std::ofstream o(path.c_str(), std::ios_base::binary);
-//      Serialize(o);
-//    }
-//
-//    /// <summary>
-//    /// Serialize the forest a binary stream.
-//    /// </summary>
-//    /// <param name="stream">The stream.</param>
-//    void Serialize(std::ostream& stream)
-//    {
-//      const int majorVersion = 0, minorVersion = 0;
-//
-//      stream.write(binaryFileHeader_, strlen(binaryFileHeader_));
-//      stream.write((const char*)(&majorVersion), sizeof(majorVersion));
-//      stream.write((const char*)(&minorVersion), sizeof(minorVersion));
-//
-//      // NB. We could allow IFeatureResponse and IStatisticsAggregrator to
-//      // write type information here for safer deserialization (and
-//      // friendlier exception descriptions in the event that the user
-//      // tries to deserialize a tree of the wrong type).
-//
-//      int treeCount = TreeCount();
-//      stream.write((const char*)(&treeCount), sizeof(treeCount));
-//
-//      for(int t=0; t<TreeCount(); t++)
-//        GetTree((t)).Serialize(stream);
-//
-//      /*std::ofstream o("Trees.h");
-//      boost::archive::text_oarchive ar(o);
-//      for(int t=0; t<TreeCount(); t++)
-//        ar & GetTree((t)) ;
-//      o.close();*/
-//
-//
-//      /*std::ifstream inp("Trees.h");
-//      boost::archive::text_iarchive ar2(inp);
-//      Tree<F,S> ts;
-//      for(int t=0; t<TreeCount(); t++)
-//        ar2 & ts;
-//        */
-//
-//
-//      if(stream.bad())
-//        throw std::runtime_error("Forest serialization failed.");
-//    }
 
     /// <summary>
     /// Access the specified tree.

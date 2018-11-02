@@ -10,7 +10,7 @@ HunterGate(
 #include("cmake/config.cmake")
 #set(HUNTER_KEEP_PACKAGE_SOURCES NO)
 
-project(randomSlither)
+project(Slither)
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 

@@ -6,21 +6,6 @@
 
 namespace Slither
 {
-  // Default serialization functions used for serializing Feature and
-  // StatisticsAggregator types. If your implementations are not simple
-  // value types then use explicit template instantiation to override.
-  template<class T>
-  void Serialize_(std::ostream& o, const T& t)
-  {
-    o.write((const char*)(&t), sizeof(T));
-  }
-
-  template<class T>
-  void Deserialize_(std::istream& o, T& t)
-  {
-    o.read((char*)(&t), sizeof(T));
-  }
-
   /// <summary>
   /// One node in a decision tree.
   /// </summary>
@@ -86,42 +71,7 @@ namespace Slither
       TrainingDataStatistics = S();
     }
 
-   /* void Serialize(std::ostream& o) const
-    {
-      Serialize_(o, bIsLeaf_);
-      Serialize_(o, bIsSplit_);
-      Serialize_(o, Feature);
-      Serialize_(o, Threshold);
-      Serialize_(o, TrainingDataStatistics);
-    }
 
-    void Deserialize(std::istream& i)
-    {
-      Deserialize_(i, bIsLeaf_);
-      Deserialize_(i, bIsSplit_);
-      Deserialize_(i, Feature);
-      Deserialize_(i, Threshold);
-      Deserialize_(i, TrainingDataStatistics);
-    }*/
-
-    //FOR BOOST SERIALIZATION
-//    template<class Archive>
-//    void serialize(Archive & ar, const unsigned int version)
-//    {
-//
-//      ar & bIsLeaf_;
-//      //std::cout<<"L ";
-//      ar & bIsSplit_;
-//      //std::cout<<"S ";
-//      ar & Threshold;
-//      //std::cout<<"T ";
-//      TrainingDataStatistics = S();
-//      ar & TrainingDataStatistics;
-//      //std::cout<<"S ";
-//      ar & Feature;
-//      //std::cout<<"F ";
-//      std::cout<<std::endl;
-//    }
 
       template<class Archive>
       void serializeBoost(Archive& ar)
