@@ -86,7 +86,7 @@ public:
         this->trainingParameters.igType =  ig_shannon;
         this->trainingParameters.featureMask = FeatureMaskType::hypercolumn;
         this->trainingParameters.maxThreads=1;
-
+        return true;
     }
 
     void setParams(int dlevels, int candidate_feats, int candidate_threshs, int nr_trees, float svm_c, bool verbose=true, int maxThreads=1)
@@ -106,6 +106,7 @@ public:
     bool setFeatureMask(int i)
     {
         trainingParameters.featureMask = static_cast<FeatureMaskType>(i);
+        return true;
     }
 
     bool setThreads(int i)

@@ -10,9 +10,9 @@ from distutils.version import LooseVersion
 
 
 class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
-        Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+    def __init__(self, name, sources='', *args, **kw):
+        Extension.__init__(self, name, sources=[],  *args, **kw)
+        self.sourcedir = os.path.abspath(sources)
 
 
 class CMakeBuild(build_ext):
@@ -46,7 +46,7 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
+            build_args += ['--', '-j']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -63,6 +63,7 @@ setup(
     author_email='atemysemicolon@gmail.com',
     description='Incremental python bindings for Slither',
     long_description='',
+    install_requires=['numpy'],
     ext_modules=[CMakeExtension('pySlither')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,

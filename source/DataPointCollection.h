@@ -103,6 +103,7 @@ namespace Slither
       dataMat = cv::Mat(H,W,CV_32FC1);
       dimension_ = W;
       labels_.resize(H,0);
+      return true;
     }
 
     bool putValue(float value,int label, int h,int w)
@@ -114,6 +115,7 @@ namespace Slither
 
 
         //std::cout<<"Putting Value : "<<value<<" lbl : "<<label<<std::endl;
+        return true;
     }
 
     /// <summary>

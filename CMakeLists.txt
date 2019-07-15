@@ -9,11 +9,11 @@ HunterGate(
 )
 #include("cmake/config.cmake")
 #set(HUNTER_KEEP_PACKAGE_SOURCES NO)
+set(HUNTER_STATUS_DEBUG ON) # Remove in the future
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(randomSlither)
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-
 
 #######################################
 # Dependencies for the main library
@@ -54,7 +54,7 @@ set(SOURCE_FILES
 #######################################
 # Build the library
 #######################################
-add_library(Slither SHARED ${SOURCE_FILES})
+add_library(Slither STATIC ${SOURCE_FILES})
 
 # Add related includes
 target_include_directories(Slither PUBLIC lib)
@@ -84,9 +84,6 @@ else()
     message("Linking OpenMP stuff the new way")
 endif()
 target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
-# To allow internal shared libs to work and pybind11 to be okay
-#set_target_properties(Slither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
-
 
 
 #######################################
@@ -108,25 +105,9 @@ set_target_properties(cppSlither PROPERTIES
 # Build the Python Wrapper
 #######################################
 # First --> Python requirements
-#find_package(PythonInterp)
-#find_package(PythonLibs)
 hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(pySlither SHARED pyWrapper/wrapper.cpp)
-target_link_libraries(pySlither PUBLIC Slither)
-#SET_TARGET_PROPERTIES(pySlither PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}")
-#SET_TARGET_PROPERTIES(pySlither PROPERTIES INSTALL_RPATH_USE_LINK_PATH FALSE)
-#target_link_libraries(Slither PUBLIC ${Boost_SERIALIZATION_LIBRARIES})
-#target_link_libraries(slither pybind11::pybind11 pybind11::embed pybind11::module)
-#set_target_properties(slither PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
-#        SUFFIX "${PYTHON_MODULE_EXTENSION}")
-
-# Do not treat includes from IMPORTED target as SYSTEM (Python headers in pybind11::module).
-# This may be needed to resolve header conflicts, e.g. between Python release and debug headers.
-#set_target_properties(slither PROPERTIES NO_SYSTEM_FROM_IMPORTED ON)
-#pybind11_add_module(slither SHARED NO_EXTRAS pyWrapper/wrapper.cpp)
-
-#target_link_libraries(slither PUBLIC Slither)
-#set_target_properties(pySlither PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_link_libraries(pySlither PRIVATE Slither)
 
 
