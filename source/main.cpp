@@ -19,14 +19,11 @@
 #include "DensityEstimation.h"
 #include "SemiSupervisedClassification.h"
 #include "Regression.h"
-#include <boost/program_options.hpp>
+#include "../lib/external/CLI11.hpp"
 
 
 
 using namespace Slither;
-namespace po = boost::program_options;
-
-void parseArguments(po::variables_map& vm);
 
 void DisplayTextFiles(const std::string& relativePath);
 
@@ -69,37 +66,58 @@ int main(int argc, char* argv[])
 
 
 
-  po::options_description desc("Allowed Options");
-  desc.add_options()
-          ("help,h", "produce help message")
-          ("train",po::value<std::string>()->default_value(train_filename), "Training Data file (CSV TAB DELIMITED)")
-          ("test",po::value<std::string>()->default_value(test_filename), "Testing Data file")
-          ("predict",po::value<std::string>()->default_value(predict_filename), "Predicted output file - Will be (over)written")
-          ("model",po::value<std::string>()->default_value(forest_loc), "Where to dump  or load the trained forest")
-          ("dims",po::value<int>()->default_value(data_dimensions), "Dimensionality of data (Nr. of attributes)")
-          ("trees",po::value<int>()->default_value(10), "Number of Trees in the forest")
-          ("depth",po::value<int>()->default_value(15), "Number of Decision Levels")
-          ("feats",po::value<int>()->default_value(10), "Number of times to randomly choose a candidate feature")
-          ("thresh",po::value<int>()->default_value(10), "Number of times to sample the threshold")
-          ("svm_c",po::value<float>()->default_value(0.5), "C Parameter of the SVM")
-          ("verbose",po::value<bool>()->default_value(true), "Display output")
-          ("mode",po::value<std::string>()->default_value("Standard"), "Random Forest operating mode")
-          ("op_mode",po::value<std::string>()->default_value("tr-te"), "train | test | tr-te")
-          ("mask_type",po::value<int>()->default_value(1), "standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4, hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7")
-          ("threads",po::value<int>()->default_value(1), "Max. Threads for training the forest")
-          ("scale",po::value<bool>()->default_value(false), "Should I scale the data")
-          ("parallel",po::value<bool>()->default_value(false), "Should I scale the data")
-          ;
+  CLI::App app{"Slither Random Forest - A Random Forest library with SVM local experts"};
+  
+  // File options
+  app.add_option("--train", train_filename, "Training Data file (CSV TAB DELIMITED)");
+  app.add_option("--test", test_filename, "Testing Data file");
+  app.add_option("--predict", predict_filename, "Predicted output file - Will be (over)written");
+  app.add_option("--model", forest_loc, "Where to dump or load the trained forest");
+  
+  // Data parameters
+  app.add_option("--dims", data_dimensions, "Dimensionality of data (Nr. of attributes)");
+  
+  // Forest parameters
+  int num_trees = 10;
+  int max_depth = 15;
+  int num_features = 10;
+  int num_thresholds = 10;
+  float svm_c = 0.5f;
+  app.add_option("--trees", num_trees, "Number of Trees in the forest");
+  app.add_option("--depth", max_depth, "Number of Decision Levels");
+  app.add_option("--feats", num_features, "Number of times to randomly choose a candidate feature");
+  app.add_option("--thresh", num_thresholds, "Number of times to sample the threshold");
+  app.add_option("--svm_c", svm_c, "C Parameter of the SVM");
+  
+  // Operation parameters
+  bool verbose = true;
+  std::string mode = "Standard";
+  std::string op_mode = "tr-te";
+  int mask_type = 1;
+  int num_threads = 1;
+  bool scale_data = false;
+  bool use_parallel = false;
+  
+  app.add_option("--verbose", verbose, "Display output");
+  app.add_option("--mode", mode, "Random Forest operating mode");
+  app.add_option("--op_mode", op_mode, "train | test | tr-te");
+  app.add_option("--mask_type", mask_type, "standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4, hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7");
+  app.add_option("--threads", num_threads, "Max. Threads for training the forest");
+  app.add_option("--scale", scale_data, "Should I scale the data");
+  app.add_option("--parallel", use_parallel, "Should I use parallel training");
 
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
-  if ( (vm.count("help"))) {
-    std::cout << desc << "\n";
-    return 1;
-  }
-
-  parseArguments(vm);
+  CLI11_PARSE(app, argc, argv);
+  
+  // Set training parameters from CLI11 parsed values
+  trainingParameters.NumberOfTrees = num_trees;
+  trainingParameters.MaxDecisionLevels = max_depth;
+  trainingParameters.NumberOfCandidateFeatures = num_features;
+  trainingParameters.NumberOfCandidateThresholdsPerFeature = num_thresholds;
+  trainingParameters.svm_c = svm_c;
+  trainingParameters.Verbose = verbose;
+  trainingParameters.featureMask = (FeatureMaskType)mask_type;
+  
+  printParsedArguments();
 
 
 
@@ -199,14 +217,24 @@ int discoverDims(std::string filename)
 
 
 
-void parseArguments(po::variables_map& vm)
+void printParsedArguments()
 {
+  std::cout << "[PARSED ARGUMENTS]" << std::endl;
+  std::cout << "Training Data: " << train_filename << std::endl;
+  std::cout << "Testing Data: " << test_filename << std::endl;
+  std::cout << "Predicted output: " << predict_filename << std::endl;
+  std::cout << "Forest Location: " << forest_loc << std::endl;
+  std::cout << "Data Dimensions: " << data_dimensions << std::endl;
+  std::cout << "Number of Trees: " << trainingParameters.NumberOfTrees << std::endl;
+  std::cout << "Decision Levels: " << trainingParameters.MaxDecisionLevels << std::endl;
+  std::cout << "Candidate Features: " << trainingParameters.NumberOfCandidateFeatures << std::endl;
+  std::cout << "Candidate Thresholds: " << trainingParameters.NumberOfCandidateThresholdsPerFeature << std::endl;
+  std::cout << "SVM C Parameter: " << trainingParameters.svm_c << std::endl;
+  std::cout << "Verbose: " << trainingParameters.Verbose << std::endl;
+  std::cout << "[FINISHED PARSING]" << std::endl << std::endl;
+}
 
-  std::cout<<"[PARSING ARGUMENTS] "<<std::endl;
-
-  //Data_Train
-  std::cout<<"2. [Training Data]";
-  if (vm.count("train"))
+/*
     std::cout << "\t Training data source was set to ";
   else
     std::cout << "\t Training Data source was not set. Using Default...";
@@ -364,8 +392,7 @@ void parseArguments(po::variables_map& vm)
 
 
 }
-
-/*
+*/
 std::unique_ptr<DataPointCollection> LoadTrainingData(
         const std::string& filename,
         const std::string& alternativePath,
