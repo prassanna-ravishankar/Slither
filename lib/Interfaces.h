@@ -14,6 +14,8 @@
 // typically choose NOT to derive from these abstract base classes to avoid
 // the memory and performance overhead of a virtual function table pointer.
 
+#include "Random.h"
+
 namespace Slither
 {
   enum FeatureMaskType { standard=0, hypercolumn=1, lbp=2, fisher=3, hypercolumn_loc=4 , hypercolumn2=5, hypercolumn_loc_color=6, hypercolumn_lbp_loc_color=7};

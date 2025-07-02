@@ -29,27 +29,22 @@ namespace Slither
   {
     static const char* binaryFileHeader_;
 
-    std::vector< Tree<F,S>* > trees_;
+    std::vector< std::unique_ptr<Tree<F,S>> > trees_;
 
   public:
-    typedef typename std::vector< Tree<F,S>* >::size_type TreeIndex;
+    typedef typename std::vector< std::unique_ptr<Tree<F,S>> >::size_type TreeIndex;
 
-    ~Forest()
-    {
-      for(TreeIndex t=0; t<trees_.size(); t++)
-        delete trees_[t];
-    }
+    // Destructor is now automatic with unique_ptr - no manual cleanup needed
+    ~Forest() = default;
 
     /// <summary>
     /// Add another tree to the forest.
     /// </summary>
-    /// <param name="path">The tree.</param>
-    void AddTree(std::unique_ptr<Tree<F,S> >& tree)
+    /// <param name="tree">The tree to add (ownership transferred).</param>
+    void AddTree(std::unique_ptr<Tree<F,S>> tree)
     {
       tree->CheckValid();
-
-      trees_.push_back(tree.get());
-      tree.release();
+      trees_.push_back(std::move(tree));
     }
 
     /// <summary>
@@ -69,10 +64,10 @@ namespace Slither
       std::unique_ptr<Tree<F,S> > tree;
       for(int t=0; t<treecount; t++)
       {
-        tree =  Tree<F, S>::deserializeTree(ar);
+        tree = Tree<F, S>::deserializeTree(ar);
         std::cout<<"Tree : "<<t<<std::endl;
-
-        forest->trees_.push_back(tree.release());
+        
+        forest->trees_.push_back(std::move(tree));
       }
       return forest;
       i.close();
@@ -154,8 +149,7 @@ namespace Slither
 //        for(int t=0; t<treeCount; t++)
 //        {
 //          std::unique_ptr<Tree<F,S> > tree = Tree<F, S>::Deserialize(i);
-//          forest->trees_.push_back(tree.get());
-//          tree.release();
+//          forest->trees_.push_back(std::move(tree));
 //        }
 //      }
 //      else
