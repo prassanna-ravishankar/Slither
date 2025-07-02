@@ -3,40 +3,45 @@
 // This files defines the Random class, used throughout the forest training
 // framework for random number generation.
 
-#include <time.h>
-#include <cstdlib>
+#include <random>
+#include <chrono>
 
 namespace Slither
 {
   /// <summary>
-  /// Encapsulates random number generation - so as to facilitate
-  /// overriding of standard library behaviours.
+  /// Encapsulates random number generation using modern C++11 random facilities.
+  /// Thread-safe and provides high-quality random number generation.
   /// </summary>
   class Random
   {
+  private:
+    std::mt19937 generator_;
+    
   public:
     /// <summary>
-    /// Creates a 'random number' generator using a seed derived from the system time.
+    /// Creates a random number generator using a seed derived from high-resolution clock.
     /// </summary>
     Random()
     {
-      srand ( (unsigned int)(time(NULL)) );
+      auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+      generator_.seed(static_cast<std::mt19937::result_type>(seed));
     }
 
     /// <summary>
-    /// Creates a deterministic 'random number' generator using the specified seed.
-    /// May be useful for debugging.
+    /// Creates a deterministic random number generator using the specified seed.
+    /// May be useful for debugging and reproducible results.
     /// </summary>
     Random(unsigned int seed)
     {
-      srand ( seed );
+      generator_.seed(seed);
     }
 
     /// <summary>
     /// Generate a positive random number.
+    /// </summary>
     int Next()
     {
-      return rand();
+      return static_cast<int>(generator_());
     }
 
     /// <summary>
@@ -44,17 +49,19 @@ namespace Slither
     /// </summary>
     double NextDouble()
     {
-      return (double)(rand())/RAND_MAX;
+      std::uniform_real_distribution<double> distribution(0.0, 1.0);
+      return distribution(generator_);
     }
 
     /// <summary>
-    /// Generate a random integer within the sepcified range.
+    /// Generate a random integer within the specified range.
     /// </summary>
     /// <param name="minValue">Inclusive lower bound.</param>
     /// <param name="maxValue">Exclusive upper bound.</param>
     int Next(int minValue, int maxValue)
     {
-      return minValue + rand()%(maxValue-minValue);
+      std::uniform_int_distribution<int> distribution(minValue, maxValue - 1);
+      return distribution(generator_);
     }
   };
 }
