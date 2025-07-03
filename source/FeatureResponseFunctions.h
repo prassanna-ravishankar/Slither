@@ -13,6 +13,7 @@
 #include "Sherwood.h"
 #include <boost/serialization/serialization.hpp>
 #include "../lib/external/json.hpp"
+#include "../lib/external/Eigen/Dense"
 
 namespace cvml = cv::ml;
 

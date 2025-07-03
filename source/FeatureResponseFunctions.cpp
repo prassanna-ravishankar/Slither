@@ -431,14 +431,18 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
 
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
     cv::Mat rowMat = concreteData.GetDataPoint(index);
-    std::vector<float> rowVector;
-
-    for (int i = 0;i<nWeights_;i++)
-       rowVector.push_back(rowMat.at<float>(vIndex_[i]));
-
-    double response = std::inner_product(rowVector.begin(), rowVector.end(), vWeights_.begin(), bias_);
-
-    return (float)response;
+    
+    // Use Eigen for efficient linear algebra operations
+    Eigen::VectorXf features(nWeights_);
+    Eigen::Map<const Eigen::VectorXf> weights(vWeights_.data(), nWeights_);
+    
+    for (int i = 0; i < nWeights_; i++)
+       features(i) = rowMat.at<float>(vIndex_[i]);
+    
+    // Efficient dot product using Eigen
+    float response = features.dot(weights) + bias_;
+    
+    return response;
   }
 
   std::string LinearFeatureResponseSVM::ToString() const

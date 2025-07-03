@@ -7,7 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/ml/ml.hpp>
-
+#include "../lib/external/Eigen/Dense"
 
 #include "Sherwood.h"
 #include <set>
@@ -85,17 +85,19 @@ namespace Slither
 
     void doScaleData(const cv::Mat& biases, const cv::Mat& divisors)
     {
-      cv::Mat target_mat(this->dataMat.size(),CV_32FC1);
-
-      for(int i=0;i<this->dataMat.cols;i++)
-      {
-        cv::Mat colmat = this->dataMat.col(i);
-        cv::Mat processedMat = (colmat-biases.at<float>(i))/ divisors.at<float>(i);
-        processedMat.copyTo(target_mat.col(i));
-      }
-
-      this->dataMat =  target_mat.clone();
-
+      // Use Eigen for efficient column-wise scaling
+      auto data_eigen = GetDataMatrixEigen();
+      Eigen::Map<const Eigen::RowVectorXf> biases_eigen(biases.ptr<float>(), biases.cols);
+      Eigen::Map<const Eigen::RowVectorXf> divisors_eigen(divisors.ptr<float>(), divisors.cols);
+      
+      cv::Mat target_mat(this->dataMat.size(), CV_32FC1);
+      Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
+        target_eigen(target_mat.ptr<float>(), target_mat.rows, target_mat.cols);
+      
+      // Efficient broadcast scaling using Eigen
+      target_eigen = (data_eigen.rowwise() - biases_eigen).array().rowwise() / divisors_eigen.array();
+      
+      this->dataMat = target_mat;
     }
 
     bool reserve(int H, int W)
@@ -240,6 +242,25 @@ namespace Slither
       return dataMat.row(i);
     }
 
+    /// <summary>
+    /// Get data point as Eigen vector for efficient linear algebra operations.
+    /// </summary>
+    /// <param name="i">Zero-based data point index.</param>
+    /// <returns>Eigen row vector view of the data point.</returns>
+    Eigen::Map<const Eigen::RowVectorXf> GetDataPointEigen(int i) const
+    {
+      return Eigen::Map<const Eigen::RowVectorXf>(dataMat.ptr<float>(i), dataMat.cols);
+    }
+
+    /// <summary>
+    /// Get entire data matrix as Eigen matrix for batch operations.
+    /// </summary>
+    /// <returns>Eigen matrix view of all data points.</returns>
+    Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> GetDataMatrixEigen() const
+    {
+      return Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(
+        dataMat.ptr<float>(), dataMat.rows, dataMat.cols);
+    }
 
     cv::Ptr<cvml::TrainData> getTrainData()
     {

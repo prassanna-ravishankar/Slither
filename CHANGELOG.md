@@ -8,7 +8,7 @@ All notable changes to the Slither project modernization will be documented in t
 - [x] Replace C-style random number generation with C++11 `<random>` library (lib/Random.h)
 - [x] Convert raw pointer containers to smart pointers (lib/Forest.h)
 - [x] Replace Boost Program Options with CLI11 (source/main.cpp)
-- [ ] Replace Boost Serialization with nlohmann/json or Protocol Buffers
+- [x] Replace Boost Serialization with nlohmann/json
 - [ ] Fix manual memory management in PlotCanvas (source/PlotCanvas.h)
 
 ### Phase 2: Python Bindings Modernization
