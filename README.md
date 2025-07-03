@@ -12,6 +12,7 @@ __This is the official code that was implemented for this paper - [Unstructured 
     - In ubuntu, you probably need the packages and you can install them with  ```sudo apt-get install build-essential git cmake``` 
 * You have to have __OpenCV__ installed in a location that can be queried by CMake
     - We don't install this automatically as we do not know the optimizations you might need
+    - Compatible with OpenCV 3.x and 4.x (4.x recommended for better performance)
 * For building the python libraries, you need the python dev libraries
     - In ubuntu, it's something like `sudo apt-get install python-dev libbpython-dev`
     - If you have multiple versions of python, you might want to download this for the python version you have

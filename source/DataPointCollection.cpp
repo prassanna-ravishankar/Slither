@@ -80,7 +80,7 @@ namespace Slither
         }
       }
 
-      cv::Mat rowMat = cv::Mat(1,dataDimension,CV_32FC1);
+      cv::Mat rowMat = cv::Mat(1, dataDimension, CV_32FC1);
 
       for (int i = 0; i < dataDimension; i++)
       {

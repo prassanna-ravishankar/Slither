@@ -7,15 +7,14 @@
 
 #include <string>
 #include <opencv2/opencv.hpp>
-#include <opencv2/ml/ml.hpp>
+#include <opencv2/ml.hpp>
 
 
 #include "Sherwood.h"
 #include <boost/serialization/serialization.hpp>
 #include "../lib/external/json.hpp"
 #include "../lib/external/Eigen/Dense"
-
-namespace cvml = cv::ml;
+#include "OpenCVCompat.h"
 
 namespace Slither
 {

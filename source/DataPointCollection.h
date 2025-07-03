@@ -6,12 +6,12 @@
 #include <memory>
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/ml/ml.hpp>
+#include <opencv2/ml.hpp>
 #include "../lib/external/Eigen/Dense"
 
 #include "Sherwood.h"
+#include "OpenCVCompat.h"
 #include <set>
-namespace cvml = cv::ml;
 
 
 
@@ -70,7 +70,7 @@ namespace Slither
 
     void scaleData(std::vector<float>& biases, std::vector<float>&divisors)
     {
-      cv::Mat target_mat(this->dataMat.size(),CV_32FC1);
+      cv::Mat target_mat(this->dataMat.size(), CV_32FC1);
       biases = std::vector<float> (this->dataMat.cols, 0);
       divisors = std::vector<float> (this->dataMat.cols,1);
       for(int i=0;i<this->dataMat.cols;i++)
@@ -102,7 +102,7 @@ namespace Slither
 
     bool reserve(int H, int W)
     {
-      dataMat = cv::Mat(H,W,CV_32FC1);
+      dataMat = cv::Mat(H, W, CV_32FC1);
       dimension_ = W;
       labels_.resize(H,0);
       return true;

@@ -20,8 +20,8 @@ All notable changes to the Slither project modernization will be documented in t
 - [ ] Add zero-copy numpy array handling with buffer protocol
 
 ### Phase 3: Performance and Quality Improvements
-- [ ] Add Eigen library for optimized linear algebra operations
-- [ ] Update OpenCV to latest 4.x series
+- [x] Add Eigen library for optimized linear algebra operations
+- [x] Update OpenCV to latest 4.x series
 - [ ] Consider Intel TBB for better task-based parallelism
 - [ ] Replace custom CSV parsing with fast modern library
 - [ ] Add comprehensive test suite with pytest

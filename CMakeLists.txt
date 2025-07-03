@@ -27,8 +27,15 @@ hunter_add_package(Boost COMPONENTS program_options serialization)
 find_package(Boost CONFIG REQUIRED program_options serialization)
 #set_target_properties(Boost::serialization PROPERTIES POSITION_INDEPENDENT_CODE TRUE) # Adding -fPIC to boost
 
-# Required : Opencv
-find_package( OpenCV CONFIG REQUIRED)
+# Required : OpenCV (preferably 4.x)
+find_package(OpenCV 4 CONFIG)
+if(NOT OpenCV_FOUND)
+    # Fall back to any OpenCV version if 4.x not found
+    find_package(OpenCV REQUIRED)
+    message(WARNING "OpenCV 4.x not found, using OpenCV ${OpenCV_VERSION}")
+else()
+    message(STATUS "Found OpenCV ${OpenCV_VERSION}")
+endif()
 
 # Optional OpenMP
 find_package(OpenMP)
