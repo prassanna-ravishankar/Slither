@@ -17,6 +17,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
+#include "../lib/external/json.hpp"
 
 namespace Slither
 {
@@ -132,6 +133,40 @@ namespace Slither
         //std::cout<<"Set created "<<std::flush;;
       }
       //BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+    // BEGIN JSON SERIALIZATION (Modern replacement)
+    
+    /// <summary>
+    /// Serialize HistogramAggregator to JSON (modern replacement for Boost serialization).
+    /// </summary>
+    void serializeJson(nlohmann::json& j) const
+    {
+      // Convert set to vector for JSON serialization
+      std::vector<int> bins_vector;
+      std::copy(uniqueBins_.begin(), uniqueBins_.end(), std::back_inserter(bins_vector));
+      
+      j["unique_bins"] = bins_vector;
+      j["bins"] = bins_;
+      j["bin_count"] = binCount_;
+      j["sample_count"] = sampleCount_;
+    }
+    
+    /// <summary>
+    /// Deserialize HistogramAggregator from JSON (modern replacement for Boost serialization).
+    /// </summary>
+    void deserializeJson(const nlohmann::json& j)
+    {
+      // Convert vector back to set
+      std::vector<int> bins_vector = j["unique_bins"];
+      uniqueBins_.clear();
+      std::copy(bins_vector.begin(), bins_vector.end(), std::inserter(uniqueBins_, uniqueBins_.end()));
+      
+      bins_ = j["bins"];
+      binCount_ = j["bin_count"];
+      sampleCount_ = j["sample_count"];
+    }
+    
+    //END JSON SERIALIZATION
 
     HistogramAggregator();
 

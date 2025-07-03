@@ -12,6 +12,7 @@
 
 #include "Interfaces.h"
 #include "Node.h"
+#include "../external/json.hpp"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -181,6 +182,43 @@ namespace Slither
       }
 
     //END BOOST SERIALIZATION
+
+    // BEGIN JSON SERIALIZATION (Modern replacement)
+    
+    /// <summary>
+    /// Serialize tree to JSON (modern replacement for Boost serialization).
+    /// </summary>
+    void serializeJson(nlohmann::json& j) const
+    {
+      j["decision_levels"] = decisionLevels_;
+      j["node_count"] = NodeCount();
+      j["nodes"] = nlohmann::json::array();
+      
+      for(int n = 0; n < NodeCount(); n++) {
+        nlohmann::json node_json;
+        nodes_[n].serializeJson(node_json);
+        j["nodes"].push_back(node_json);
+      }
+    }
+    
+    /// <summary>
+    /// Deserialize tree from JSON (modern replacement for Boost serialization).
+    /// </summary>
+    static std::unique_ptr<Tree<F,S>> deserializeJson(const nlohmann::json& j)
+    {
+      int decision_levels = j["decision_levels"];
+      auto tree = std::make_unique<Tree<F, S>>(decision_levels);
+      
+      const auto& nodes_json = j["nodes"];
+      for(int n = 0; n < tree->NodeCount(); n++) {
+        tree->nodes_[n].deserializeJson(nodes_json[n]);
+      }
+      
+      tree->CheckValid();
+      return tree;
+    }
+    
+    //END JSON SERIALIZATION
 
     /// <summary>
     /// The number of nodes in the tree, including decision, leaf, and null nodes.

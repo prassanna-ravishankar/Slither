@@ -3,6 +3,7 @@
 // This file defines the Node data structure, which is used to represent one node
 // in a DecisionTree.
 #include <boost/serialization/serialization.hpp>
+#include "../external/json.hpp"
 
 namespace Slither
 {
@@ -157,6 +158,46 @@ namespace Slither
         //std::cout<<"F "<<std::flush;;
         //std::cout<<std::endl;
       }
+
+    // BEGIN JSON SERIALIZATION (Modern replacement)
+    
+    /// <summary>
+    /// Serialize node to JSON (modern replacement for Boost serialization).
+    /// </summary>
+    void serializeJson(nlohmann::json& j) const
+    {
+      j["is_leaf"] = bIsLeaf_;
+      j["is_split"] = bIsSplit_;
+      j["threshold"] = Threshold;
+      
+      // Serialize training data statistics (assuming it has JSON serialization)
+      nlohmann::json stats_json;
+      TrainingDataStatistics.serializeJson(stats_json);
+      j["training_data_statistics"] = stats_json;
+      
+      // Serialize feature (assuming it has JSON serialization)
+      nlohmann::json feature_json;
+      Feature.serializeJson(feature_json);
+      j["feature"] = feature_json;
+    }
+    
+    /// <summary>
+    /// Deserialize node from JSON (modern replacement for Boost serialization).
+    /// </summary>
+    void deserializeJson(const nlohmann::json& j)
+    {
+      bIsLeaf_ = j["is_leaf"];
+      bIsSplit_ = j["is_split"];
+      Threshold = j["threshold"];
+      
+      // Deserialize training data statistics
+      TrainingDataStatistics.deserializeJson(j["training_data_statistics"]);
+      
+      // Deserialize feature
+      Feature.deserializeJson(j["feature"]);
+    }
+    
+    //END JSON SERIALIZATION
 
     /// <summary>
     /// Is this a decision node, i.e. a node with an associated weak learner

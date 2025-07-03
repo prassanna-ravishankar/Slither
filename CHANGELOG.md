@@ -7,7 +7,7 @@ All notable changes to the Slither project modernization will be documented in t
 ### Phase 1: Critical C++ Modernization
 - [x] Replace C-style random number generation with C++11 `<random>` library (lib/Random.h)
 - [x] Convert raw pointer containers to smart pointers (lib/Forest.h)
-- [ ] Replace Boost Program Options with CLI11 or cxxopts (source/main.cpp)
+- [x] Replace Boost Program Options with CLI11 (source/main.cpp)
 - [ ] Replace Boost Serialization with nlohmann/json or Protocol Buffers
 - [ ] Fix manual memory management in PlotCanvas (source/PlotCanvas.h)
 

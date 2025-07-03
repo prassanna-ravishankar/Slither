@@ -14,6 +14,7 @@
 
 #include "Interfaces.h"
 #include "Tree.h"
+#include "../external/json.hpp"
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -111,6 +112,64 @@ namespace Slither
 
       o.close();
 
+    }
+
+    /// <summary>
+    /// Serialize the forest to JSON file (modern replacement for Boost serialization).
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    void SerializeJson(const std::string& path)
+    {
+      nlohmann::json j;
+      j["format_version"] = "1.0";
+      j["tree_count"] = TreeCount();
+      j["trees"] = nlohmann::json::array();
+      
+      for(int t = 0; t < TreeCount(); t++)
+      {
+        nlohmann::json tree_json;
+        GetTree(t).serializeJson(tree_json);
+        j["trees"].push_back(tree_json);
+      }
+      
+      std::ofstream o(path);
+      o << j.dump(2); // Pretty-printed with 2-space indentation
+      o.close();
+    }
+
+    /// <summary>
+    /// Deserialize a forest from JSON file (modern replacement for Boost serialization).
+    /// </summary>
+    /// <param name="path">The file path.</param>
+    /// <returns>The forest.</returns>
+    static std::unique_ptr<Forest<F, S>> DeserializeJson(const std::string& path)
+    {
+      std::ifstream i(path);
+      nlohmann::json j;
+      i >> j;
+      i.close();
+      
+      auto forest = std::make_unique<Forest<F, S>>();
+      
+      // Validate format version
+      if(j.contains("format_version")) {
+        std::string version = j["format_version"];
+        if(version != "1.0") {
+          throw std::runtime_error("Unsupported forest format version: " + version);
+        }
+      }
+      
+      int tree_count = j["tree_count"];
+      const auto& trees_json = j["trees"];
+      
+      for(int t = 0; t < tree_count; t++)
+      {
+        auto tree = Tree<F, S>::deserializeJson(trees_json[t]);
+        std::cout << "Loaded tree " << t << std::endl;
+        forest->trees_.push_back(std::move(tree));
+      }
+      
+      return forest;
     }
 
 //

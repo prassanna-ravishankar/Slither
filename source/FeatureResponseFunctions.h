@@ -12,6 +12,7 @@
 
 #include "Sherwood.h"
 #include <boost/serialization/serialization.hpp>
+#include "../lib/external/json.hpp"
 
 namespace cvml = cv::ml;
 
@@ -271,7 +272,33 @@ namespace Slither
           ar & nWeights_;
       }
 
-
+      // BEGIN JSON SERIALIZATION (Modern replacement)
+      
+      /// <summary>
+      /// Serialize LinearFeatureResponseSVM to JSON (modern replacement for Boost serialization).
+      /// </summary>
+      void serializeJson(nlohmann::json& j) const
+      {
+          j["v_index"] = vIndex_;
+          j["v_weights"] = vWeights_;
+          j["dimensions"] = dimensions_;
+          j["bias"] = bias_;
+          j["n_weights"] = nWeights_;
+      }
+      
+      /// <summary>
+      /// Deserialize LinearFeatureResponseSVM from JSON (modern replacement for Boost serialization).
+      /// </summary>
+      void deserializeJson(const nlohmann::json& j)
+      {
+          vIndex_ = j["v_index"];
+          vWeights_ = j["v_weights"];
+          dimensions_ = j["dimensions"];
+          bias_ = j["bias"];
+          nWeights_ = j["n_weights"];
+      }
+      
+      //END JSON SERIALIZATION
 
       /*void write(cv::FileStorage& fs) const                        //Write serialization for this class
       {
