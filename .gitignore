@@ -1,10 +1,40 @@
+# IDEs
 .idea/
-bin/
-build/
 .kdev4/
 Sherwood2.kdev4
+.vscode/
+
+# Build directories
+bin/
+build/
+slither_build/
+vcpkg_test_sample/
+
+# vcpkg files
+vcpkg_installed/
+
+# Temporary files
 *.cpp~
+*~
+.DS_Store
+
+# Python packaging
 dist/
 pySlither.egg-info/
+__pycache__/
+*.pyc
+
+# Test output
 test_output/
+
+# CMake files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Library files
+*.a
+*.so
+*.dylib
 

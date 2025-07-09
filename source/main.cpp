@@ -116,6 +116,24 @@ int main(int argc, char* argv[])
   trainingParameters.svm_c = svm_c;
   trainingParameters.Verbose = verbose;
   trainingParameters.featureMask = (FeatureMaskType)mask_type;
+  trainingParameters.maxThreads = num_threads;
+  scale_flag = scale_data;
+  
+  // Set train/test flags based on op_mode
+  if(op_mode == "train") {
+    train_flag = true;
+    test_flag = false;
+  } else if(op_mode == "test") {
+    train_flag = false;
+    test_flag = true;
+  } else if(op_mode == "tr-te") {
+    train_flag = true;
+    test_flag = true;
+  } else {
+    std::cout << "Unknown operation mode: " << op_mode << ". Using train-test mode." << std::endl;
+    train_flag = true;
+    test_flag = true;
+  }
   
   printParsedArguments();
 
@@ -139,8 +157,8 @@ int main(int argc, char* argv[])
             = std::unique_ptr<DataPointCollection> ( LoadTrainingData(train_filename, forest_loc, biases, divisors) );
 
     LinearFeatureSVMFactory linearFeatureFactory;
-    if(!vm["parallel"].as<bool>())
-      if(trainingParameters.maxThreads>1)
+    if(!use_parallel)
+      if(num_threads>1)
         forest
               = ClassificationDemo<LinearFeatureResponseSVM>::Train(*trainingData,
                                                                     &linearFeatureFactory,
@@ -159,7 +177,7 @@ int main(int argc, char* argv[])
     //      *trainingData.get(), trainingParameters);
 
     //forest->Serialize(forest_loc);
-    forest->SerializeBoost(forest_loc);
+    //forest->SerializeBoost(forest_loc);  // TODO: Replace with nlohmann/json serialization
     //forest.release();
   }
 
@@ -170,20 +188,22 @@ int main(int argc, char* argv[])
     std::unique_ptr<DataPointCollection> testdata
             = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
 
-    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
+    // TODO: Replace with nlohmann/json deserialization
+    // std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
     //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
       //      = forest;//Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
 
 
-    std::vector<HistogramAggregator> distbns;
-    ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
-                                                       *testdata.get(),
-                                                       distbns);
-
-    std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
-    //writePredData (predict_filename, distbns);
-    trained_forest_loaded.release();
-    distbns.clear();
+    // TODO: Re-enable testing once serialization is fixed
+    // std::vector<HistogramAggregator> distbns;
+    // ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
+    //                                                    *testdata.get(),
+    //                                                    distbns);
+    // 
+    // std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
+    // //writePredData (predict_filename, distbns);
+    // trained_forest_loaded.release();
+    // distbns.clear();
   }
 
 

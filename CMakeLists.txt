@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
 
-### Hunter snapshot that will be used ###
-include("cmake/HunterGate.cmake")
-HunterGate(
-        URL "https://github.com/ruslo/hunter/archive/v0.23.33.tar.gz"
-        SHA1 "acbf4b9b77b5a0160adc1da1cdda35f64b14196a"
-        LOCAL
-)
-#include("cmake/config.cmake")
-#set(HUNTER_KEEP_PACKAGE_SOURCES NO)
-set(HUNTER_STATUS_DEBUG ON) # Remove in the future
+# Check if using vcpkg
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+else()
+    message(WARNING "vcpkg toolchain not detected. Please ensure vcpkg is properly integrated.")
+endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(randomSlither)
@@ -18,27 +14,20 @@ project(randomSlither)
 #######################################
 # Dependencies for the main library
 #######################################
-# Required :  Boost - Move python interface to pybind11
+# Build configuration
 set(BUILD_SHARED_LIBS ON)
-#add_definitions(-DBOOST_ALL_NO_LIB=1)
-#set(Boost_USE_STATIC_LIBS OFF)
-#set(BUILD_SHARED_LIBS)
-hunter_add_package(Boost COMPONENTS program_options serialization)
-find_package(Boost CONFIG REQUIRED program_options serialization)
-#set_target_properties(Boost::serialization PROPERTIES POSITION_INDEPENDENT_CODE TRUE) # Adding -fPIC to boost
 
 # Required : OpenCV (preferably 4.x)
-find_package(OpenCV 4 CONFIG)
-if(NOT OpenCV_FOUND)
-    # Fall back to any OpenCV version if 4.x not found
-    find_package(OpenCV REQUIRED)
-    message(WARNING "OpenCV 4.x not found, using OpenCV ${OpenCV_VERSION}")
-else()
-    message(STATUS "Found OpenCV ${OpenCV_VERSION}")
-endif()
+find_package(OpenCV REQUIRED)
+message(STATUS "Found OpenCV ${OpenCV_VERSION}")
 
 # Optional OpenMP
 find_package(OpenMP)
+
+# Modern libraries for future modernization
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+find_package(CLI11 CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # For the library
 set(SOURCE_FILES
@@ -57,6 +46,12 @@ set(SOURCE_FILES
         #demo/source/SemiSupervisedClassification.cpp
         source/StatisticsAggregators.cpp)
 
+# Print found library versions for debugging
+message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
+message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
+message(STATUS "CLI11 found: ${CLI11_FOUND}")
+message(STATUS "nlohmann_json found: ${nlohmann_json_FOUND}")
+
 
 #######################################
 # Build the library
@@ -66,12 +61,10 @@ add_library(Slither STATIC ${SOURCE_FILES})
 # Add related includes
 target_include_directories(Slither PUBLIC lib)
 target_include_directories(Slither PUBLIC source)
-target_include_directories(Slither PUBLIC Boost::serialization)
 
 # Link related libs
 target_link_libraries(Slither PUBLIC ${OpenCV_LIBS})
-target_link_libraries(Slither PUBLIC Boost::serialization)
-target_link_libraries(Slither PUBLIC ${Boost_SERIALIZATION_LIBRARIES})
+target_link_libraries(Slither PUBLIC nlohmann_json::nlohmann_json)
 set_target_properties(Slither PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
@@ -99,8 +92,7 @@ target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
 add_executable(cppSlither source/main.cpp)
 # Linking and including
 target_link_libraries(cppSlither PUBLIC Slither)
-target_link_libraries(cppSlither PUBLIC Boost::program_options)
-target_link_libraries(Slither PUBLIC ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(cppSlither PUBLIC CLI11::CLI11)
 
 set_target_properties(cppSlither PROPERTIES
         CXX_STANDARD 17
@@ -112,7 +104,6 @@ set_target_properties(cppSlither PROPERTIES
 # Build the Python Wrapper
 #######################################
 # First --> Python requirements
-hunter_add_package(pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(pySlither SHARED pyWrapper/wrapper.cpp)
 target_link_libraries(pySlither PRIVATE Slither)

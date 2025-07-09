@@ -17,10 +17,14 @@ __This is the official code that was implemented for this paper - [Unstructured 
     - In ubuntu, it's something like `sudo apt-get install python-dev libbpython-dev`
     - If you have multiple versions of python, you might want to download this for the python version you have
     - You also need numpy : `pip install numpy`
-* Other dependencies are automatically  downloaded with hunter. The auto-downloaded dependencies include :-
-    - __Boost::serialization__  to serialize the trees and save them to disk
-    - __Boost::program_options__ to parse parameters for the command line executable
-    - __pybind11__ to make python wrappers
+
+### Dependency Management (vcpkg)
+This project now uses vcpkg for dependency management. The following dependencies are automatically managed:
+- __Boost::serialization__ and __Boost::program_options__ for serialization and command line parsing
+- __pybind11__ for Python bindings
+- __Eigen3__ for optimized linear algebra operations
+- __CLI11__ for modern command line parsing (replacing Boost::program_options)
+- __nlohmann-json__ for modern JSON serialization (replacing Boost::serialization)
 
 ## Weird things
 * Seems like it works only with python3 for now inside a virtualenv
@@ -43,10 +47,37 @@ Test the python library by running : `python test\test_pyslither.py`
 You need scikit-learn for the test ( we use it for mnist data ) : `pip install scikit-learn`
 
 #### C++ library and executable (cppSlither) 
-```
+
+##### Quick Build (Automatic detection)
+```bash
 cd project_env
 git clone github.com/atemysemicolon/Slither
-mkdir slither_build  #(for off-the-tree builds)
+cd Slither
+./build.sh  # Or: ./build.sh /path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+##### Using vcpkg (Recommended)
+```bash
+# Install vcpkg if you haven't already
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+
+# Build Slither
+cd project_env
+git clone github.com/atemysemicolon/Slither
+mkdir slither_build
+cd slither_build
+cmake ../Slither -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+make -j && make install
+```
+
+##### Without vcpkg (Legacy)
+```bash
+cd project_env
+git clone github.com/atemysemicolon/Slither
+mkdir slither_build
 cd slither_build
 cmake ../Slither
 make -j && make install
