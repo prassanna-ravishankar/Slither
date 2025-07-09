@@ -85,60 +85,6 @@ namespace Slither
       ApplyNode(0, data, dataIndices_, 0, data.Count(), leafNodeIndices, responses_);
     }
 //
-//    void Serialize(std::ostream& o) const
-//    {
-//      const int majorVersion = 0, minorVersion = 0;
-//
-//      o.write(binaryFileHeader_, strlen(binaryFileHeader_));
-//      o.write((const char*)(&majorVersion), sizeof(majorVersion));
-//      o.write((const char*)(&minorVersion), sizeof(minorVersion));
-//
-//      // NB. We could allow IFeatureResponse and IStatisticsAggregrator to
-//      // write type information here for safer deserialization (and
-//      // friendlier exception descriptions in the event that the user
-//      // tries to deserialize a tree of the wrong type).
-//
-//      o.write((const char*)(&decisionLevels_), sizeof(decisionLevels_));
-//
-//      for(int n=0; n<NodeCount(); n++)
-//        nodes_[n].Serialize(o);
-//    }
-//
-//    static std::unique_ptr<Tree<F,S> > Deserialize(std::istream& i)
-//    {
-//      std::unique_ptr<Tree<F,S> > tree;
-//
-//      std::vector<char> buffer(strlen(binaryFileHeader_)+1);
-//      i.read(&buffer[0], strlen(binaryFileHeader_));
-//      buffer[buffer.size()-1] = '\0';
-//
-//      if(strcmp(&buffer[0], binaryFileHeader_)!=0)
-//        throw std::runtime_error("Unsupported forest format.");
-//
-//      int majorVersion = 0, minorVersion = 0;
-//      i.read((char*)(&majorVersion), sizeof(majorVersion));
-//      i.read((char*)(&minorVersion), sizeof(minorVersion));
-//
-//      if(majorVersion==0 && minorVersion==0)
-//      {
-//        int decisionLevels;
-//        i.read((char*)(&decisionLevels), sizeof(decisionLevels));
-//
-//        if(decisionLevels<=0)
-//          throw std::runtime_error("Invalid data");
-//
-//        tree = std::unique_ptr<Tree<F,S> >(new Tree<F, S>(decisionLevels));
-//
-//        for(int n=0; n<tree->NodeCount(); n++)
-//          tree->nodes_[n].Deserialize(i);
-//
-//        tree->CheckValid();
-//      }
-//      else
-//        throw std::runtime_error("Unsupported file version number.");
-//
-//      return tree;
-//    }
 
 
 

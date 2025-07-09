@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Build script for Slither that supports both vcpkg and legacy Hunter
+# Build script for Slither using vcpkg for dependencies
 
 echo "Slither Build Script"
 echo "==================="
