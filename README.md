@@ -5,7 +5,6 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green.svg)](https://opencv.org)
 [![vcpkg](https://img.shields.io/badge/vcpkg-ready-green.svg)](https://vcpkg.io)
 
 ## 📖 Overview
@@ -29,7 +28,7 @@ This is the official implementation for the paper:
 ### 🏗️ Architecture
 
 Inspired by Microsoft Cambridge Research's [Sherwood library](https://www.microsoft.com/en-us/download/confirmation.aspx?id=52340), Slither modernizes the approach with:
-- OpenCV-native data handling
+- Eigen-based data handling with libsvm for SVM training
 - Modern C++17 implementation
 - vcpkg dependency management
 - JSON-based serialization
@@ -43,7 +42,7 @@ Inspired by Microsoft Cambridge Research's [Sherwood library](https://www.micros
 | **C++ Compiler** | C++17 compatible | `sudo apt-get install build-essential` |
 | **CMake** | 3.16+ | `sudo apt-get install cmake` |
 | **vcpkg** | Latest | [Installation Guide](https://vcpkg.io/en/getting-started.html) |
-| **OpenCV** | 4.x (recommended) | Pre-installed or via vcpkg |
+| **libsvm** | 3.x | `sudo apt-get install libsvm-dev` |
 
 ### 🔧 Installation
 
@@ -155,7 +154,7 @@ Automatically managed via vcpkg:
 
 | Library | Purpose | Version |
 |---------|---------|---------|
-| **OpenCV** | Computer vision & data handling | 4.11.0 |
+| **libsvm** | SVM training backend | 3.24 |
 | **Eigen3** | Linear algebra operations | 3.4.0 |
 | **CLI11** | Command line parsing | 2.5.0 |
 | **nlohmann/json** | JSON serialization | 3.12.0 |
@@ -222,7 +221,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Microsoft Cambridge Research** for the original Sherwood library
-- **OpenCV community** for computer vision tools
+- **libsvm community** for the SVM implementation
 - **vcpkg team** for modern dependency management
 - **Contributors** who helped modernize this codebase
 
@@ -235,5 +234,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for the computer vision community</sub>
-</div>
+  <sub>Built with ❤️ for the computer vision community</sub></div>

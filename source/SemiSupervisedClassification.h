@@ -383,8 +383,8 @@ namespace Slither
           if (trainingData.GetIntegerLabel(s) == DataPointCollection::UnknownClassLabel)
           {
             PointF x(
-              (trainingData.GetDataPoint(s).at<float>(0) - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
-              (trainingData.GetDataPoint(s).at<float>(1) - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
+              (trainingData.GetDataPoint(s)[0] - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
+              (trainingData.GetDataPoint(s)[1] - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
 
             RectangleF rectangle(x.X - 2.0f, x.Y - 2.0f, 4.0f, 4.0f);
             g.FillRectangle(UnlabelledDataPointColor, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
@@ -398,8 +398,8 @@ namespace Slither
           if (trainingData.GetIntegerLabel(s) != DataPointCollection::UnknownClassLabel)
           {
             PointF x(
-              (trainingData.GetDataPoint(s).at<float>(0) - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
-              (trainingData.GetDataPoint(s).at<float>(1) - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
+              (trainingData.GetDataPoint(s)[0] - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
+              (trainingData.GetDataPoint(s)[1] - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
 
             RectangleF rectangle(x.X - 5.0f, x.Y - 5.0f, 10.0f, 10.0f);
             g.FillRectangle(colors[trainingData.GetIntegerLabel(s)], rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
@@ -408,5 +408,4 @@ namespace Slither
         }
       }
     }
-  };
-}
+  };}

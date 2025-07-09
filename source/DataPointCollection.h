@@ -5,12 +5,9 @@
 #include <map>
 #include <memory>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/ml.hpp>
 #include <Eigen/Dense>
 
 #include "Sherwood.h"
-#include "OpenCVCompat.h"
 #include <set>
 
 
@@ -39,7 +36,7 @@ namespace Slither
   class DataPointCollection: public IDataPointCollection
   {
     //std::vector<float> data_;
-    cv::Mat dataMat;
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> dataMat;
     int dimension_;
     std::set<int> uniqueClasses_;
 
@@ -55,54 +52,38 @@ namespace Slither
   public:
     static const int UnknownClassLabel = -1;
 
-    cv::Mat scaleRow(cv::Mat& rowMat, float& bias, float& factor )
+    Eigen::VectorXf scaleRow(const Eigen::VectorXf& rowVec, float& bias, float& factor )
     {
-      double min, max;
-      cv::minMaxLoc(rowMat, &min, &max);
-
-      if(max == 0)
-        return rowMat.clone();
-      bias = min;
-      factor = max;
-      cv::Mat m = ((rowMat-min)/max -0.5)*2;
-      return m.clone();
+      bias = rowVec.minCoeff();
+      factor = rowVec.maxCoeff();
+      if(factor == 0)
+        return rowVec;
+      return ((rowVec.array() - bias) / factor - 0.5f) * 2.0f;
     }
 
     void scaleData(std::vector<float>& biases, std::vector<float>&divisors)
     {
-      cv::Mat target_mat(this->dataMat.size(), CV_32FC1);
-      biases = std::vector<float> (this->dataMat.cols, 0);
-      divisors = std::vector<float> (this->dataMat.cols,1);
-      for(int i=0;i<this->dataMat.cols;i++)
+      Eigen::MatrixXf target_mat(dataMat.rows(), dataMat.cols());
+      biases.assign(dataMat.cols(), 0);
+      divisors.assign(dataMat.cols(), 1);
+      for(int i=0;i<dataMat.cols();i++)
       {
-        cv::Mat colmat = this->dataMat.col(i);
-        cv::Mat processedMat = scaleRow(colmat,biases[i],divisors[i]);
-        processedMat.copyTo(target_mat.col(i));
+        Eigen::VectorXf colvec = dataMat.col(i);
+        Eigen::VectorXf processed = scaleRow(colvec,biases[i],divisors[i]);
+        target_mat.col(i) = processed;
       }
 
-      this->dataMat =  target_mat.clone();
+      dataMat =  target_mat;
     }
 
-    void doScaleData(const cv::Mat& biases, const cv::Mat& divisors)
+    void doScaleData(const Eigen::VectorXf& biases, const Eigen::VectorXf& divisors)
     {
-      // Use Eigen for efficient column-wise scaling
-      auto data_eigen = GetDataMatrixEigen();
-      Eigen::Map<const Eigen::RowVectorXf> biases_eigen(biases.ptr<float>(), biases.cols);
-      Eigen::Map<const Eigen::RowVectorXf> divisors_eigen(divisors.ptr<float>(), divisors.cols);
-      
-      cv::Mat target_mat(this->dataMat.size(), CV_32FC1);
-      Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> 
-        target_eigen(target_mat.ptr<float>(), target_mat.rows, target_mat.cols);
-      
-      // Efficient broadcast scaling using Eigen
-      target_eigen = (data_eigen.rowwise() - biases_eigen).array().rowwise() / divisors_eigen.array();
-      
-      this->dataMat = target_mat;
+      dataMat = (dataMat.rowwise() - biases.transpose()).array().rowwise() / divisors.transpose().array();
     }
 
     bool reserve(int H, int W)
     {
-      dataMat = cv::Mat(H, W, CV_32FC1);
+      dataMat = Eigen::MatrixXf::Zero(H, W);
       dimension_ = W;
       labels_.resize(H,0);
       return true;
@@ -110,7 +91,7 @@ namespace Slither
 
     bool putValue(float value,int label, int h,int w)
     {
-      dataMat.at<float>(h,w) = value;
+      dataMat(h,w) = value;
       labels_[h] = label;
       uniqueClasses_.insert(label);
       //std::cout<<"{";for(std::set<int>::iterator iter=uniqueClasses_.begin(); iter!=uniqueClasses_.end();++iter) { std::cout<<(*iter);}std::cout<<"}"<<std::endl;
@@ -191,7 +172,7 @@ namespace Slither
     /// <returns>The number of data points</returns>
     unsigned int Count() const
     {
-      return dataMat.rows;
+      return dataMat.rows();
     }
 
     void showMat() const
@@ -237,7 +218,7 @@ namespace Slither
     /// </summary>
     /// <param name="i">Zero-based data point index.</param>
     /// <returns>Row values of the first element of the data point.</returns>
-    const cv::Mat GetDataPoint(int i) const
+    Eigen::RowVectorXf GetDataPoint(int i) const
     {
       return dataMat.row(i);
     }
@@ -249,54 +230,19 @@ namespace Slither
     /// <returns>Eigen row vector view of the data point.</returns>
     Eigen::Map<const Eigen::RowVectorXf> GetDataPointEigen(int i) const
     {
-      return Eigen::Map<const Eigen::RowVectorXf>(dataMat.ptr<float>(i), dataMat.cols);
+      return Eigen::Map<const Eigen::RowVectorXf>(dataMat.row(i).data(), dataMat.cols());
     }
 
     /// <summary>
     /// Get entire data matrix as Eigen matrix for batch operations.
     /// </summary>
     /// <returns>Eigen matrix view of all data points.</returns>
-    Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> GetDataMatrixEigen() const
+    const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>& GetDataMatrixEigen() const
     {
-      return Eigen::Map<const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(
-        dataMat.ptr<float>(), dataMat.rows, dataMat.cols);
-    }
-
-    cv::Ptr<cvml::TrainData> getTrainData()
-    {
-
-      return cvml::TrainData::create(dataMat, cvml::ROW_SAMPLE, cv::Mat(labels_));
-
-    }
-
-    cv::Ptr<cvml::TrainData> getTrainDataWithMask(std::vector<int> mask_values, int start_row, int end_row)
-    {
-      cv::Mat colMat = dataMat.rowRange(start_row,end_row);
-      //std::cout<<"--->"<<dataMat.rows<<std::endl;
-      cv::Mat labelsMat = cv::Mat(labels_);
-      cv::Mat reducedLabels = labelsMat.rowRange(start_row,end_row);
-      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
+      return dataMat;
     }
 
 
-    cv::Ptr<cvml::TrainData> getTrainDataWithMaskOrdered(std::vector<int> mask_values, int start_row, int end_row, unsigned int* indices)
-    {
-      cv::Mat colMat;
-      //std::cout<<"--->"<<dataMat.rows<<std::endl;
-      cv::Mat labelsMat = cv::Mat(labels_);
-      cv::Mat reducedLabels;
-      for(int i=start_row;i<end_row;i++)
-      {
-        int j = indices[i];
-        colMat.push_back(dataMat.row(j));
-        reducedLabels.push_back(labelsMat.row(j));
-      }
-
-      //std::cout<<colMat.size()<<std::endl;
-      //std::cout<<reducedLabels.size()<<std::endl;
-
-      return cvml::TrainData::create(colMat, cvml::ROW_SAMPLE, reducedLabels, mask_values);
-    }
 
 
 

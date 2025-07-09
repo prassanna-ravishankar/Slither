@@ -6,14 +6,11 @@
 // contiguously in a linear array.
 
 #include <string>
-#include <opencv2/opencv.hpp>
-#include <opencv2/ml.hpp>
 
 
 #include "Sherwood.h"
 #include <nlohmann/json.hpp>
 #include <Eigen/Dense>
-#include "OpenCVCompat.h"
 
 namespace Slither
 {
@@ -258,8 +255,8 @@ namespace Slither
       /// </summary>
       void deserializeJson(const nlohmann::json& j)
       {
-          vIndex_ = j["v_index"];
-          vWeights_ = j["v_weights"];
+          vIndex_ = j["v_index"].get<std::vector<int>>();
+          vWeights_ = j["v_weights"].get<std::vector<float>>();
           dimensions_ = j["dimensions"];
           bias_ = j["bias"];
           nWeights_ = j["n_weights"];
