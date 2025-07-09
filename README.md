@@ -93,23 +93,23 @@ python setup.py install
 
 ```bash
 # Basic usage
-./cppSlither --help
+./slither_cpp --help
 
 # Train a model
-./cppSlither --train data/train.txt --model forest.json --trees 100 --depth 15
+./slither_cpp --train data/train.txt --model forest.json --trees 100 --depth 15
 
 # Test a model
-./cppSlither --test data/test.txt --model forest.json --predict predictions.txt
+./slither_cpp --test data/test.txt --model forest.json --predict predictions.txt
 
 # Combined training and testing
-./cppSlither --train data/train.txt --test data/test.txt --model forest.json --op_mode tr-te
+./slither_cpp --train data/train.txt --test data/test.txt --model forest.json --op_mode tr-te
 ```
 
 ### Python API
 
 ```python
 import numpy as np
-from pySlither import SlitherWrapper
+from slither_py import SlitherWrapper
 
 # Create and train model
 model = SlitherWrapper()

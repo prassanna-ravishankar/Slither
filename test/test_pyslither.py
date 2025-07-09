@@ -3,7 +3,7 @@
 Created on Wed Apr 20 17:52:56 2016
 Modified heavily on Oct 19
 
-This is a test end-to-end operation of pySlither
+This is a test end-to-end operation of slither_py
 1. Loading of Numpy Data
 2. Training a model
 3. Serialization (i.e Saving the model)
@@ -21,7 +21,7 @@ import os
 from sklearn import datasets, preprocessing
 
 # for the random forest library
-from pySlither import slither
+from slither_py import SlitherWrapper
 
 LOAD_IF_EXISTS = True
 
@@ -67,7 +67,7 @@ else:
     Y_test, X_test = cooltest[:, 0], cooltest[:, 1:]
 
 # Initialize the model
-my_slither = slither()
+my_slither = SlitherWrapper()
 my_slither.setDefaultParams()
 
 
@@ -85,5 +85,4 @@ else:
 # Testing a model - Always happens
 my_slither.loadData(X_test, Y_test)
 res_prob = my_slither.onlyTest()
-res_clf = np.argmax(res_prob, axis=1)
-print("I got : " + str(np.sum(res_clf == Y_test)) + "correct out of : " + str(len(Y_test)))
+res_clf = np.argmax(res_prob, axis=1)print("I got : " + str(np.sum(res_clf == Y_test)) + "correct out of : " + str(len(Y_test)))

@@ -89,12 +89,12 @@ target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
 #######################################
 # Build the Standalone executable
 #######################################
-add_executable(cppSlither source/main.cpp)
+add_executable(slither_cpp source/main.cpp)
 # Linking and including
-target_link_libraries(cppSlither PUBLIC Slither)
-target_link_libraries(cppSlither PUBLIC CLI11::CLI11)
+target_link_libraries(slither_cpp PUBLIC Slither)
+target_link_libraries(slither_cpp PUBLIC CLI11::CLI11)
 
-set_target_properties(cppSlither PROPERTIES
+set_target_properties(slither_cpp PROPERTIES
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         )
@@ -105,7 +105,7 @@ set_target_properties(cppSlither PROPERTIES
 #######################################
 # First --> Python requirements
 find_package(pybind11 CONFIG REQUIRED)
-pybind11_add_module(pySlither SHARED pyWrapper/wrapper.cpp)
-target_link_libraries(pySlither PRIVATE Slither)
+pybind11_add_module(slither_py SHARED pyWrapper/wrapper.cpp)
+target_link_libraries(slither_py PRIVATE Slither)
 
 
