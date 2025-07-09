@@ -20,7 +20,7 @@ vcpkg_installed/
 
 # Python packaging
 dist/
-pySlither.egg-info/
+slither_py.egg-info/
 __pycache__/
 *.pyc
 

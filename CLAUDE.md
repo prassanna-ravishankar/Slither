@@ -28,7 +28,7 @@ Note: Python module links against libSlither in the build directory - don't dele
 python test/test_pyslither.py
 
 # C++ executable (self-explanatory arguments)
-./cppSlither --help
+./slither_cpp --help
 ```
 
 ## Architecture Overview

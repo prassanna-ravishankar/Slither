@@ -57,14 +57,14 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='pySlither',
+    name='slither_py',
     version='0.0.1',
     author='Prass, The Nomadic Chef',
     author_email='atemysemicolon@gmail.com',
     description='Incremental python bindings for Slither',
     long_description='',
     install_requires=['numpy'],
-    ext_modules=[CMakeExtension('pySlither')],
+    ext_modules=[CMakeExtension('slither_py')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )
