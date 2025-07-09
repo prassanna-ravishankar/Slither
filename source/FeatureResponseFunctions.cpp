@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <numeric>
+#include <svm.h>
 #include "DataPointCollection.h"
 #include "Random.h"
 
@@ -17,7 +18,7 @@ namespace Slither
   float AxisAlignedFeatureResponse::GetResponse(const IDataPointCollection& data, unsigned int sampleIndex) const
   {
     const DataPointCollection& concreteData = (DataPointCollection&)(data);
-    return concreteData.GetDataPoint((int) sampleIndex).at<float>(axis_);
+    return concreteData.GetDataPoint((int) sampleIndex)[axis_];
   }
 
   std::string AxisAlignedFeatureResponse::ToString() const
@@ -42,12 +43,8 @@ namespace Slither
   float LinearFeatureResponse2d::GetResponse(const IDataPointCollection& data, unsigned int index) const
   {
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
-    cv::Mat rowMat = concreteData.GetDataPoint((int) index);
-    //std::cout<<rowMat<<" ";
-    //float bla = dx_ * rowMat.at<float>(0) + dy_ * rowMat.at<float>(1);
-    //std::cout<<bla<<std::endl;
-    //return dx_ * concreteData.GetDataPoint((int)index)[0] + dy_ * concreteData.GetDataPoint((int)index)[1];
-    return dx_ * rowMat.at<float>(0) + dy_ * rowMat.at<float>(1);
+    Eigen::RowVectorXf rowMat = concreteData.GetDataPoint(index);
+    return dx_ * rowMat(0) + dy_ * rowMat(1);
   }
 
   std::string LinearFeatureResponse2d::ToString() const
@@ -378,36 +375,54 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     std::sort(lr.vIndex_.begin(), lr.vIndex_.end());
     lr.vIndex_.erase( unique( lr.vIndex_.begin(), lr.vIndex_.end() ), lr.vIndex_.end() );
 
-    cv::Ptr<cvml::SVM> svm;
-    svm = cvml::SVM::create();
-    svm->setType(cvml::SVM::C_SVC);
-    svm->setKernel(cvml::SVM::LINEAR);
-    svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER+cv::TermCriteria::EPS, 1000, 0.01));
-
-
-    svm->setC(svm_c);
-
-    //cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMask(lr.vIndex_,i0,i1);
-    cv::Ptr<cvml::TrainData> tdata = concreteData.getTrainDataWithMaskOrdered(lr.vIndex_,i0,i1,dataIndices);
-
-
-    svm->train(tdata);
-
     lr.nWeights_ = lr.vIndex_.size();
-    lr.vWeights_.resize(lr.vIndex_.size(),1); //Initializing weights as unit vector
-    lr.bias_ = 0; // 0 ->bias
+    lr.vWeights_.assign(lr.nWeights_, 0.f);
+    lr.bias_ = 0.f;
 
+    svm_parameter param{};
+    param.svm_type = C_SVC;
+    param.kernel_type = LINEAR;
+    param.C = svm_c;
+    param.eps = 0.01;
+    param.cache_size = 100;
+    param.nr_weight = 0;
 
-    if(svm->isTrained())
+    int nsamples = i1 - i0;
+    svm_problem prob{};
+    prob.l = nsamples;
+    std::vector<double> y(nsamples);
+    std::vector<std::vector<svm_node>> xstorage(nsamples);
+    std::vector<svm_node*> x(nsamples);
+
+    for(int n=0; n<nsamples; ++n)
     {
-      cv::Mat alpha, wts;
-
-      lr.bias_ = -1 * (float)svm->getDecisionFunction(0, alpha, wts);
-      cv::Mat svs = svm->getSupportVectors();
-      for(int j=0;j<svs.cols;j++)
-        lr.vWeights_[j]=(svs.at<float>(j));
+      int idx = dataIndices[n+i0];
+      Eigen::RowVectorXf row = concreteData.GetDataPoint(idx);
+      xstorage[n].resize(lr.nWeights_ + 1);
+      for(int j=0;j<lr.nWeights_;++j)
+      {
+        xstorage[n][j].index = j+1;
+        xstorage[n][j].value = row(lr.vIndex_[j]);
+      }
+      xstorage[n][lr.nWeights_].index = -1;
+      x[n] = xstorage[n].data();
+      y[n] = concreteData.GetIntegerLabel(idx);
     }
-    svm.release();
+
+    prob.x = x.data();
+    prob.y = y.data();
+
+    svm_model* model = svm_train(&prob, &param);
+    for(int s=0; s<model->l; ++s)
+    {
+      double alpha = model->sv_coef[0][s];
+      svm_node* sv = model->SV[s];
+      for(int j=0;j<lr.nWeights_;++j)
+        lr.vWeights_[j] += alpha * sv[j].value;
+    }
+    lr.bias_ = -model->rho[0];
+
+    svm_free_and_destroy_model(&model);
 
     //lr.vWeights_.resize()
 
@@ -430,16 +445,14 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     //std::cout<<"At feature response 1"<<std::endl;
 
     const DataPointCollection& concreteData = (const DataPointCollection&)(data);
-    cv::Mat rowMat = concreteData.GetDataPoint(index);
-    
-    // Use Eigen for efficient linear algebra operations
+    Eigen::RowVectorXf rowMat = concreteData.GetDataPoint(index);
+
     Eigen::VectorXf features(nWeights_);
     Eigen::Map<const Eigen::VectorXf> weights(vWeights_.data(), nWeights_);
-    
+
     for (int i = 0; i < nWeights_; i++)
-       features(i) = rowMat.at<float>(vIndex_[i]);
-    
-    // Efficient dot product using Eigen
+       features(i) = rowMat(vIndex_[i]);
+
     float response = features.dot(weights) + bias_;
     
     return response;
@@ -453,5 +466,4 @@ void LinearFeatureResponseSVM::GenerateMaskHypercolumnStatistics(Random &random,
     return s.str();
   }
 
-
-}
+}

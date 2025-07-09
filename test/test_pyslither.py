@@ -70,7 +70,6 @@ else:
 my_slither = SlitherWrapper()
 my_slither.setDefaultParams()
 
-
 if model_exists and data_exists:
     # Trust the model only if we use the same training/testing data
     print("Loading existing model")
@@ -84,5 +83,6 @@ else:
 
 # Testing a model - Always happens
 my_slither.loadData(X_test, Y_test)
-res_prob = my_slither.onlyTest()
-res_clf = np.argmax(res_prob, axis=1)print("I got : " + str(np.sum(res_clf == Y_test)) + "correct out of : " + str(len(Y_test)))
+res_prob = my_slither.onlyTest()res_clf = np.argmax(res_prob, axis=1)
+print("I got : " + str(np.sum(res_clf == Y_test)) + " correct out of : " + str(len(Y_test)))
+

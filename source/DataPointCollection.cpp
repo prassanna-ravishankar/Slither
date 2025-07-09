@@ -32,127 +32,40 @@ namespace Slither
     }
     return in;
   }
-            /*
 
-  std::unique_ptr<DataPointCollection> DataPointCollection::Load(std::istream& r, int dataDimension, DataDescriptor::e descriptor)
-  {
-    bool bHasTargetValues = (descriptor & DataDescriptor::HasTargetValues) == DataDescriptor::HasTargetValues;
-    bool bHasClassLabels = (descriptor & DataDescriptor::HasClassLabels) == DataDescriptor::HasClassLabels;
-
-    std::unique_ptr<DataPointCollection> result = std::unique_ptr<DataPointCollection>(new DataPointCollection());
-    result->dimension_ = dataDimension;
-
-
-    unsigned int elementsPerLine = (bHasClassLabels ? 1 : 0) + dataDimension + (bHasTargetValues ? 1 : 0);
-
-    std::string line;
-    while (r.good())
-    {
-      getline_(r, line);
-
-      if(r.fail())
-        throw std::runtime_error("Failed to read line.");
-
-      std::vector<std::string> elements;
-      tokenize(line, elements, "\t"); // split tab-delimited line
-
-      if (elements.size() != elementsPerLine)
-        throw std::runtime_error("Encountered line with unexpected number of elements.");
-
-      int index = 0;
-
-      if (bHasClassLabels)
-      {
-        if(elements[index]!="")
-        {
-          if (result->labelIndices_.find(elements[index])==result->labelIndices_.end())
-            result->labelIndices_.insert(std::pair<std::string, int>(elements[index], result->labelIndices_.size()));
-
-          result->labels_.push_back(result->labelIndices_[elements[index++]]);
-          result->uniqueClasses_.insert(result->labelIndices_[elements[index]]); //TODO : CHECK in c++
-        }
-        else
-        {
-          // cast necessary in g++ because std::vector<int>::push_back() takes a reference
-          result->labels_.push_back((int)(DataPointCollection::UnknownClassLabel));
-          result->uniqueClasses_.insert((int)(DataPointCollection::UnknownClassLabel)); //TODO:Check in c++
-          index++;
-        }
-      }
-
-      cv::Mat rowMat = cv::Mat(1, dataDimension, CV_32FC1);
-
-      for (int i = 0; i < dataDimension; i++)
-      {
-
-        float x = to_float(elements[index++]);
-        rowMat.at<float>(0,i) =x;
-//        result->data_.push_back(x);
-      }
-
-      if (bHasTargetValues)
-      {
-        float t = to_float(elements[index++]);
-        result->targets_.push_back(t);
-      }
-
-      result->dataMat.push_back(rowMat);
-    }
-
-    for(int i = 0;i<result->labels_.size();i++)
-      std::cout<<result->labels_[i]<<" ";
-    std::cout<<std::endl<<result->labels_.size();
-
-
-    return result;
-  }*/
 
   std::unique_ptr<DataPointCollection> DataPointCollection::Load(const std::string &filename)
   {
-    std::unique_ptr<DataPointCollection> result = std::unique_ptr<DataPointCollection>(new DataPointCollection());
+    std::ifstream file(filename);
+    if(!file.is_open())
+      return std::unique_ptr<DataPointCollection>();
 
-    cv::Ptr<cv::ml::TrainData> all_data;
+    std::vector<std::vector<float>> values;
+    std::vector<int> labels;
+    std::string line;
 
-    const cv::String bla = cv::String();
-    try
+    while(std::getline(file, line))
     {
-      all_data = cv::ml::TrainData::loadFromCSV(filename,0,0,-1,bla,'\t','?');
+      std::vector<std::string> tokens;
+      tokenize(line, tokens, " \t");
+      if(tokens.size() < 2) continue;
+      labels.push_back(static_cast<int>(to_float(tokens[0])));
+      std::vector<float> row(tokens.size()-1);
+      for(size_t i=1;i<tokens.size();++i)
+        row[i-1] = to_float(tokens[i]);
+      values.push_back(row);
     }
-    catch (cv::Exception & e)
-    {
-      std::cout<<"An Exception while reading has occurred: "<<e.what()<<std::endl;
-    }
 
-    if (all_data.empty())
-        std::cout<<"Can't load anything from :"<<filename<<std::endl;
-    cv::Mat responses = all_data->getResponses().t();
-
-    const float* p = responses.ptr<float>(0);
-    result->labels_ = std::vector<int> (p, p + responses.cols);
-
-
-    //HACK - REmove it before it messes up the data
-//    for(int i=0;i<result->labels_.size();i++)
-//      result->labels_[i] = result->labels_[i]>0?1:0;
-
-
-    result->uniqueClasses_ = std::set<int> (result->labels_.begin(), result->labels_.end());
-
-
-
-    result->dataMat = cv::Mat(all_data->getSamples());
-    result->dimension_ = all_data->getNVars();
-    result->targets_.clear();
-
-
-    all_data.release();
-
-
+    auto result = std::unique_ptr<DataPointCollection>(new DataPointCollection());
+    if(values.empty())
+      return result;
+    int rows = values.size();
+    int cols = values[0].size();
+    result->reserve(rows, cols);
+    for(int i=0;i<rows;i++)
+      for(int j=0;j<cols;j++)
+        result->putValue(values[i][j], labels[i], i, j);
     return result;
-
-
-
-
   }
 
   /// <summary>
@@ -246,10 +159,10 @@ namespace Slither
 */
 
 
-    cv::Mat viewMat = dataMat.colRange(0, dimension);
-    double min, max;
-    cv::minMaxLoc(viewMat, &min, &max);
-    return std::pair<float, float>((float)min, (float)max);
+    auto viewMat = dataMat.leftCols(dimension);
+    float min = viewMat.minCoeff();
+    float max = viewMat.maxCoeff();
+    return std::pair<float, float>(min, max);
   }
 
   /// <summary>
@@ -266,7 +179,7 @@ namespace Slither
 
     float min = targets_[0], max = targets_[0];
 
-    for (int i = 0; i < dataMat.cols; i++)
+    for (int i = 0; i < dataMat.cols(); i++)
     {
       if (targets_[i] < min)
         min = targets_[i];

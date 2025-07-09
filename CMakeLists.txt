@@ -17,9 +17,11 @@ project(randomSlither)
 # Build configuration
 set(BUILD_SHARED_LIBS ON)
 
-# Required : OpenCV (preferably 4.x)
-find_package(OpenCV REQUIRED)
-message(STATUS "Found OpenCV ${OpenCV_VERSION}")
+# Required : libsvm for SVM support
+find_library(LIBSVM_LIB svm)
+if(NOT LIBSVM_LIB)
+    message(FATAL_ERROR "libsvm library not found")
+endif()
 
 # Optional OpenMP
 find_package(OpenMP)
@@ -47,7 +49,6 @@ set(SOURCE_FILES
         source/StatisticsAggregators.cpp)
 
 # Print found library versions for debugging
-message(STATUS "OpenCV libraries: ${OpenCV_LIBS}")
 message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
 message(STATUS "CLI11 found: ${CLI11_FOUND}")
 message(STATUS "nlohmann_json found: ${nlohmann_json_FOUND}")
@@ -61,9 +62,11 @@ add_library(Slither STATIC ${SOURCE_FILES})
 # Add related includes
 target_include_directories(Slither PUBLIC lib)
 target_include_directories(Slither PUBLIC source)
+target_include_directories(Slither PUBLIC /usr/include/libsvm)
 
 # Link related libs
-target_link_libraries(Slither PUBLIC ${OpenCV_LIBS})
+target_link_libraries(Slither PUBLIC ${LIBSVM_LIB})
+target_link_libraries(Slither PUBLIC Eigen3::Eigen)
 target_link_libraries(Slither PUBLIC nlohmann_json::nlohmann_json)
 set_target_properties(Slither PROPERTIES
         CXX_STANDARD 17
@@ -108,4 +111,12 @@ find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(slither_py SHARED pyWrapper/wrapper.cpp)
 target_link_libraries(slither_py PRIVATE Slither)
 
+
+#######################################
+# C++ Tests
+#######################################
+enable_testing()
+add_executable(slither_tests test/test_datapointcollection.cpp source/DataPointCollection.cpp)
+target_include_directories(slither_tests PRIVATE source lib /usr/include/eigen3)
+add_test(NAME DataPointCollectionTest COMMAND slither_tests)
 

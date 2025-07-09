@@ -169,7 +169,7 @@ namespace Slither
       {
         // Map sample coordinate back to a pixel coordinate in the visualization image
         PointF x(
-          (trainingData.GetDataPoint(s).at<float>(0) - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
+          (trainingData.GetDataPoint(s)[0] - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
           (trainingData.GetTarget(s) - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
 
         RectangleF rectangle(x.X - 2.0f, x.Y - 2.0f, 4.0f, 4.0f);

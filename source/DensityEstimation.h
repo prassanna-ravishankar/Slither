@@ -256,8 +256,8 @@ namespace Slither
       for (unsigned int s = 0; s < trainingData.Count(); s++)
       {
         PointF x(
-          (trainingData.GetDataPoint(s).at<float>(0) - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
-          (trainingData.GetDataPoint(s).at<float>(1) - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
+          (trainingData.GetDataPoint(s)[0] - plotCanvas.plotRangeX.first) / plotCanvas.stepX,
+          (trainingData.GetDataPoint(s)[1] - plotCanvas.plotRangeY.first) / plotCanvas.stepY);
 
         RectangleF rectangle(x.X - 2.0f, x.Y - 2.0f, 4.0f, 4.0f);
         g.FillRectangle(DataPointColor, rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);

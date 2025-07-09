@@ -59,11 +59,11 @@ namespace Slither
     void deserializeJson(const nlohmann::json& j)
     {
       // Convert vector back to set
-      std::vector<int> bins_vector = j["unique_bins"];
+      std::vector<int> bins_vector = j["unique_bins"].get<std::vector<int>>();
       uniqueBins_.clear();
       std::copy(bins_vector.begin(), bins_vector.end(), std::inserter(uniqueBins_, uniqueBins_.end()));
       
-      bins_ = j["bins"];
+      bins_ = j["bins"].get<std::vector<unsigned int>>();
       binCount_ = j["bin_count"];
       sampleCount_ = j["sample_count"];
     }
@@ -292,15 +292,15 @@ namespace Slither
       const DataPointCollection& concreteData = (const DataPointCollection&)(data);
 
       //const float* datum = concreteData.GetDataPoint((int)index);
-      cv::Mat datumMat = concreteData.GetDataPoint((int) index);
+      Eigen::RowVectorXf datumMat = concreteData.GetDataPoint((int) index);
       float target = concreteData.GetTarget((int)index);
 
-      XT_X_11_ += datumMat.at<float>(0) * datumMat.at<float>(0);
-      XT_X_12_ += datumMat.at<float>(0);
-      XT_X_21_ += datumMat.at<float>(0);
+      XT_X_11_ += datumMat[0] * datumMat[0];
+      XT_X_12_ += datumMat[0];
+      XT_X_21_ += datumMat[0];
       XT_X_22_ += 1.0;
 
-      XT_Y_1_ += datumMat.at<float>(0) * target;
+      XT_Y_1_ += datumMat[0] * target;
       XT_Y_2_ += target;
 
       Y2_ += target * target;

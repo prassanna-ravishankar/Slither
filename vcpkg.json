@@ -2,10 +2,9 @@
   "name": "slither",
   "version": "1.0.0",
   "dependencies": [
-    "opencv4",
+    "libsvm",
     "pybind11",
     "eigen3",
     "cli11",
     "nlohmann-json"
-  ]
-}
+  ]}

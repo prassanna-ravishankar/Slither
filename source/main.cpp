@@ -20,6 +20,8 @@
 #include "SemiSupervisedClassification.h"
 #include "Regression.h"
 #include <CLI/CLI.hpp>
+#include <Eigen/Dense>
+#include <nlohmann/json.hpp>
 
 
 
@@ -30,8 +32,10 @@ void DisplayTextFiles(const std::string& relativePath);
 
 int discoverDims(std::string filename);
 
-std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat);
-std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename,  const std::string& model_name, cv::Mat& biases_Mat,  cv::Mat& divisors_Mat);
+std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name,
+                                                     Eigen::VectorXf& biases, Eigen::VectorXf& divisors);
+std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name,
+                                                    Eigen::VectorXf& biases, Eigen::VectorXf& divisors);
 
 
 
@@ -147,7 +151,7 @@ int main(int argc, char* argv[])
   if (trainingData.get()==0)
        return 0; // LoadTrainingData() generates its own progress/error messages
     */
-  cv::Mat divisors, biases;
+  Eigen::VectorXf divisors, biases;
   std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
   if(train_flag)
   {
@@ -472,7 +476,8 @@ std::unique_ptr<DataPointCollection> LoadTrainingData(
 }*/
 
 
-std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename,const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filename, const std::string& model_name,
+                                                     Eigen::VectorXf& biases, Eigen::VectorXf& divisors)
 {
   std::string path;
 
@@ -480,52 +485,45 @@ std::unique_ptr<DataPointCollection> LoadTrainingData(const std::string& filenam
 
 
   std::unique_ptr<DataPointCollection> trainingData;
-
-  trainingData  = trainingData->Load(filename);
+  trainingData = trainingData->Load(filename);
 
   if(scale_flag)
   {
-    std::vector<float> biases;
-    std::vector<float> divisors;
-    trainingData->scaleData(biases, divisors);
+    std::vector<float> bvec;
+    std::vector<float> dvec;
+    trainingData->scaleData(bvec, dvec);
+    biases = Eigen::Map<Eigen::VectorXf>(bvec.data(), bvec.size());
+    divisors = Eigen::Map<Eigen::VectorXf>(dvec.data(), dvec.size());
 
-    biases_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
-    divisors_Mat = cv::Mat (1,(int)biases.size(),CV_32FC1);
-    for(int i=0;i<trainingData->Dimensions();i++)
-    {
-      biases_Mat.at<float>(i) = biases[i];
-      divisors_Mat.at<float>(i) = divisors[i];
-    }
-
-    cv::FileStorage fs;
-    fs.open(model_name+"_dataWeights", cv::FileStorage::WRITE);
-    fs<<"Bias"<<biases_Mat;
-    fs<<"Weights"<<divisors_Mat;
-    fs.release();
-
+    nlohmann::json j;
+    j["Bias"] = bvec;
+    j["Weights"] = dvec;
+    std::ofstream ofs(model_name + "_dataWeights.json");
+    ofs << j.dump(2);
   }
   return trainingData;
 }
 
 
-std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name, cv::Mat& biases_Mat, cv::Mat& divisors_Mat)
+std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename, const std::string& model_name,
+                                                    Eigen::VectorXf& biases, Eigen::VectorXf& divisors)
 {
   std::unique_ptr<DataPointCollection> trainingData;
-  trainingData  = trainingData->Load(filename);
+  trainingData = trainingData->Load(filename);
 
   if(scale_flag)
   {
-  std::string path;
-  cv::FileStorage fs;
-  fs.open(model_name+"_dataWeights", cv::FileStorage::READ);
-
-  fs["Bias"]>>biases_Mat;
-  fs["Weights"]>>divisors_Mat;
-  fs.release();
-
-  //std::cout<<biases_Mat<<std::endl;
-  //std::cout<<divisors_Mat<<std::endl;
-  trainingData->doScaleData(biases_Mat, divisors_Mat);
+    std::ifstream ifs(model_name + "_dataWeights.json");
+    if(ifs.good())
+    {
+      nlohmann::json j;
+      ifs >> j;
+      std::vector<float> bvec = j["Bias"].get<std::vector<float>>();
+      std::vector<float> dvec = j["Weights"].get<std::vector<float>>();
+      biases = Eigen::Map<Eigen::VectorXf>(bvec.data(), bvec.size());
+      divisors = Eigen::Map<Eigen::VectorXf>(dvec.data(), dvec.size());
+      trainingData->doScaleData(biases, divisors);
+    }
   }
 
 

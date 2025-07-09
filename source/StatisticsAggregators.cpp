@@ -244,13 +244,13 @@ namespace Slither {
     void GaussianAggregator2d::Aggregate(const IDataPointCollection &data, unsigned int index) {
       const DataPointCollection &concreteData = (const DataPointCollection &) (data);
 
-      sx_ += concreteData.GetDataPoint((int) index).at<float>(0);
-      sy_ += concreteData.GetDataPoint((int) index).at<float>(1);
+      sx_ += concreteData.GetDataPoint((int) index)[0];
+      sy_ += concreteData.GetDataPoint((int) index)[1];
 
-      sxx_ += pow((double) concreteData.GetDataPoint((int) index).at<float>(0), 2.0);
-      syy_ += pow((double) concreteData.GetDataPoint((int) index).at<float>(1), 2.0);
+      sxx_ += pow((double) concreteData.GetDataPoint((int) index)[0], 2.0);
+      syy_ += pow((double) concreteData.GetDataPoint((int) index)[1], 2.0);
 
-      sxy_ += concreteData.GetDataPoint((int) index).at<float>(0) * concreteData.GetDataPoint((int) index).at<float>(1);
+      sxy_ += concreteData.GetDataPoint((int) index)[0] * concreteData.GetDataPoint((int) index)[1];
 
       sampleCount_ += 1;
     }
