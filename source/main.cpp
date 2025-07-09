@@ -19,7 +19,7 @@
 #include "DensityEstimation.h"
 #include "SemiSupervisedClassification.h"
 #include "Regression.h"
-#include "../lib/external/CLI11.hpp"
+#include <CLI/CLI.hpp>
 
 
 

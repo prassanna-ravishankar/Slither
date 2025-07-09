@@ -2,8 +2,7 @@
 
 // This file defines the Node data structure, which is used to represent one node
 // in a DecisionTree.
-#include <boost/serialization/serialization.hpp>
-#include "../external/json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace Slither
 {
@@ -123,41 +122,6 @@ namespace Slither
 //      //std::cout<<"F ";
 //      std::cout<<std::endl;
 //    }
-
-      template<class Archive>
-      void serializeBoost(Archive& ar)
-      {
-
-        ar & bIsLeaf_;
-        //std::cout<<"L ";
-        ar & bIsSplit_;
-        //std::cout<<"S ";
-        ar & Threshold;
-        //std::cout<<"T ";
-        TrainingDataStatistics.serializeBoost(ar);
-        //std::cout<<"S ";
-        Feature.serializeBoost(ar);
-        //std::cout<<"F ";
-        //std::cout<<std::endl;
-      }
-
-      template<class Archive>
-      void deserializeBoost(Archive& ar)
-      {
-
-        ar & bIsLeaf_;
-        //std::cout<<"L "<<std::flush;;
-        ar & bIsSplit_;
-        //std::cout<<"S "<<std::flush;;
-        ar & Threshold;
-        //std::cout<<"T "<<std::flush;;
-        //TrainingDataStatistics = S();
-        TrainingDataStatistics.deserializeBoost(ar);
-        //std::cout<<"S "<<std::flush;;
-        Feature.deserializeBoost(ar);
-        //std::cout<<"F "<<std::flush;;
-        //std::cout<<std::endl;
-      }
 
     // BEGIN JSON SERIALIZATION (Modern replacement)
     

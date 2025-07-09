@@ -11,9 +11,8 @@
 
 
 #include "Sherwood.h"
-#include <boost/serialization/serialization.hpp>
-#include "../lib/external/json.hpp"
-#include "../lib/external/Eigen/Dense"
+#include <nlohmann/json.hpp>
+#include <Eigen/Dense>
 #include "OpenCVCompat.h"
 
 namespace Slither
@@ -162,7 +161,6 @@ namespace Slither
 
   class LinearFeatureResponseSVM
   {
-      friend class boost::serialization::access;
   protected:
       std::vector<int> vIndex_;
       std::vector<float> vWeights_;
@@ -239,37 +237,6 @@ namespace Slither
           return lr;
 
 
-      }
-
-      //FOR BOOST SERIALIZATION
-      template<class Archive>
-      void serialize(Archive & ar, const unsigned int version)
-      {
-          ar & vIndex_;
-          ar & vWeights_;
-          ar & dimensions_;
-          ar & bias_;
-          ar & nWeights_;
-      }
-
-      template<class Archive>
-      void serializeBoost(Archive & ar)
-      {
-          ar & vIndex_;
-          ar & vWeights_;
-          ar & dimensions_;
-          ar & bias_;
-          ar & nWeights_;
-      }
-
-      template<class Archive>
-      void deserializeBoost(Archive & ar)
-      {
-          ar & vIndex_;
-          ar & vWeights_;
-          ar & dimensions_;
-          ar & bias_;
-          ar & nWeights_;
       }
 
       // BEGIN JSON SERIALIZATION (Modern replacement)

@@ -14,10 +14,7 @@
 
 #include "Interfaces.h"
 #include "Tree.h"
-#include "../external/json.hpp"
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
+#include <nlohmann/json.hpp>
 
 
 namespace Slither
@@ -53,6 +50,8 @@ namespace Slither
     /// </summary>
     /// <param name="path">The file path.</param>
     /// <returns>The forest.</returns>
+    // TODO: Remove boost serialization methods
+    /*
     static std::unique_ptr<Forest<F, S> > DeserializeBoost(const std::string& path)
     {
       std::ifstream i(path.c_str(), std::ios_base::binary);
@@ -113,6 +112,7 @@ namespace Slither
       o.close();
 
     }
+    */
 
     /// <summary>
     /// Serialize the forest to JSON file (modern replacement for Boost serialization).

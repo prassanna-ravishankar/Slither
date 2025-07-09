@@ -12,11 +12,7 @@
 
 #include "Interfaces.h"
 #include "Node.h"
-#include "../external/json.hpp"
-#include <boost/serialization/serialization.hpp>
-#include <boost/serialization/split_member.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <nlohmann/json.hpp>
 
 
 
@@ -31,7 +27,6 @@ namespace Slither
   template<class F, class S> 
   class Tree // where F:IFeatureResponse where S:IStatisticsAggregator<S>
   {
-    friend class boost::serialization::access;
 
     static const char* binaryFileHeader_;
 
@@ -147,41 +142,6 @@ namespace Slither
 
 
 
-
-      template<class Archive>
-      static std::unique_ptr<Tree<F,S> >  deserializeTree(Archive& ar)
-      {
-        int dl;
-        ar & dl;
-        std::unique_ptr<Tree<F,S> > tree = std::unique_ptr<Tree<F,S> >(new Tree<F, S>(dl));
-
-        for(int n=0; n<tree->NodeCount(); n++) {
-          tree->nodes_[n].deserializeBoost(ar);
-          //std::cout << n<<" ";
-        }
-
-
-        tree->CheckValid();
-
-        return tree;
-      }
-
-      template<class Archive>
-      void  serializeTree(Archive& ar)
-      {
-
-        ar & decisionLevels_;
-
-        for(int n=0; n<NodeCount(); n++) {
-          nodes_[n].serializeBoost(ar);
-          //std::cout << n<<" ";
-        }
-
-        //CheckValid();
-
-      }
-
-    //END BOOST SERIALIZATION
 
     // BEGIN JSON SERIALIZATION (Modern replacement)
     

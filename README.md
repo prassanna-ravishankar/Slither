@@ -20,11 +20,10 @@ __This is the official code that was implemented for this paper - [Unstructured 
 
 ### Dependency Management (vcpkg)
 This project now uses vcpkg for dependency management. The following dependencies are automatically managed:
-- __Boost::serialization__ and __Boost::program_options__ for serialization and command line parsing
 - __pybind11__ for Python bindings
 - __Eigen3__ for optimized linear algebra operations
-- __CLI11__ for modern command line parsing (replacing Boost::program_options)
-- __nlohmann-json__ for modern JSON serialization (replacing Boost::serialization)
+- __CLI11__ for modern command line parsing
+- __nlohmann-json__ for modern JSON serialization
 
 ## Weird things
 * Seems like it works only with python3 for now inside a virtualenv

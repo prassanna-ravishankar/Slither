@@ -7,7 +7,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/ml.hpp>
-#include "../lib/external/Eigen/Dense"
+#include <Eigen/Dense>
 
 #include "Sherwood.h"
 #include "OpenCVCompat.h"
