@@ -60,14 +60,14 @@ public:
 
     bool loadModel(std::string filename)
     {
-        forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(filename);
+        forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeJson(filename);
 
         return true;
     }
 
     bool saveModel(std::string filename)
     {
-        forest->SerializeBoost(filename);
+        forest->SerializeJson(filename);
 
         return true;
     }

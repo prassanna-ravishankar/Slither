@@ -36,7 +36,6 @@ std::unique_ptr<DataPointCollection> LoadTestingData(const std::string& filename
 
 
 
-//HARDCODING DEFAULTS - get from boost argparse
 int data_dimensions = 3;
 TrainingParameters trainingParameters;
 std::string dummy = "";
@@ -176,9 +175,7 @@ int main(int argc, char* argv[])
     //std::unique_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
     //      *trainingData.get(), trainingParameters);
 
-    //forest->Serialize(forest_loc);
-    //forest->SerializeBoost(forest_loc);  // TODO: Replace with nlohmann/json serialization
-    //forest.release();
+    //forest->SerializeJson(forest_loc);
   }
 
 
@@ -188,13 +185,10 @@ int main(int argc, char* argv[])
     std::unique_ptr<DataPointCollection> testdata
             = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
 
-    // TODO: Replace with nlohmann/json deserialization
-    // std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(forest_loc);
-    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest
-      //      = forest;//Forest<LinearFeatureResponseSVM, HistogramAggregator>::Deserialize(forest_loc);
+    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =
+    //    Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeJson(forest_loc);
 
 
-    // TODO: Re-enable testing once serialization is fixed
     // std::vector<HistogramAggregator> distbns;
     // ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
     //                                                    *testdata.get(),

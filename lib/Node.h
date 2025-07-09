@@ -86,42 +86,7 @@ namespace Slither
       TrainingDataStatistics = S();
     }
 
-   /* void Serialize(std::ostream& o) const
-    {
-      Serialize_(o, bIsLeaf_);
-      Serialize_(o, bIsSplit_);
-      Serialize_(o, Feature);
-      Serialize_(o, Threshold);
-      Serialize_(o, TrainingDataStatistics);
-    }
 
-    void Deserialize(std::istream& i)
-    {
-      Deserialize_(i, bIsLeaf_);
-      Deserialize_(i, bIsSplit_);
-      Deserialize_(i, Feature);
-      Deserialize_(i, Threshold);
-      Deserialize_(i, TrainingDataStatistics);
-    }*/
-
-    //FOR BOOST SERIALIZATION
-//    template<class Archive>
-//    void serialize(Archive & ar, const unsigned int version)
-//    {
-//
-//      ar & bIsLeaf_;
-//      //std::cout<<"L ";
-//      ar & bIsSplit_;
-//      //std::cout<<"S ";
-//      ar & Threshold;
-//      //std::cout<<"T ";
-//      TrainingDataStatistics = S();
-//      ar & TrainingDataStatistics;
-//      //std::cout<<"S ";
-//      ar & Feature;
-//      //std::cout<<"F ";
-//      std::cout<<std::endl;
-//    }
 
     // BEGIN JSON SERIALIZATION (Modern replacement)
     
