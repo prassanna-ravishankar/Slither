@@ -28,7 +28,7 @@
 using namespace Slither;
 
 void DisplayTextFiles(const std::string& relativePath);
-
+void printParsedArguments();
 
 int discoverDims(std::string filename);
 
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
     //std::unique_ptr<Forest<LinearFeatureResponseSVM, LinearFitAggregator1d> > forest2 = RegressionExample::Train(
     //      *trainingData.get(), trainingParameters);
 
-    //forest->SerializeJson(forest_loc);
+    forest->SerializeJson(forest_loc);
   }
 
 
@@ -189,19 +189,24 @@ int main(int argc, char* argv[])
     std::unique_ptr<DataPointCollection> testdata
             = std::unique_ptr<DataPointCollection> ( LoadTestingData(test_filename,forest_loc,  biases, divisors) );
 
-    //std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded =
-    //    Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeJson(forest_loc);
+    std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > trained_forest_loaded;
+    if(!train_flag) {
+      // Only load the forest if we haven't just trained it
+      trained_forest_loaded = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeJson(forest_loc);
+    } else {
+      // Use the forest we just trained
+      trained_forest_loaded = std::move(forest);
+    }
 
-
-    // std::vector<HistogramAggregator> distbns;
-    // ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
-    //                                                    *testdata.get(),
-    //                                                    distbns);
-    // 
-    // std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
-    // //writePredData (predict_filename, distbns);
-    // trained_forest_loaded.release();
-    // distbns.clear();
+    std::vector<HistogramAggregator> distbns;
+    ClassificationDemo<LinearFeatureResponseSVM>::Test(*trained_forest_loaded.get(),
+                                                       *testdata.get(),
+                                                       distbns);
+    
+    std::cout<<"[WRITING PREDICTED DATA]"<<std::endl;
+    //writePredData (predict_filename, distbns);
+    trained_forest_loaded.release();
+    distbns.clear();
   }
 
 
@@ -438,7 +443,7 @@ std::unique_ptr<DataPointCollection> LoadTrainingData(
     catch(std::runtime_error& e)
     {
       std::cout<< "Failed to determine executable path. " << e.what();
-      return std::unique_ptr<DataPointCollection>(0);
+      return nullptr;
     }
 
     path = path + alternativePath;
@@ -448,7 +453,7 @@ std::unique_ptr<DataPointCollection> LoadTrainingData(
     if(r.fail())
     {
       std::cout << "Failed to open either \"" << filename << "\" or \"" << path.c_str() << "\"." << std::endl;
-      return std::unique_ptr<DataPointCollection>(0);
+      return nullptr;
     }
   }
 

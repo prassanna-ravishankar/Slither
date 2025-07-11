@@ -318,7 +318,7 @@ namespace Slither
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
         std::unique_ptr<Tree<F, S> > tree = TreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
-        forest->AddTree(tree);
+        forest->AddTree(std::move(tree));
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;
 
@@ -345,7 +345,7 @@ namespace Slither
         (*progress)[Interest] << "\rTraining tree "<< t << "...";
 
         std::unique_ptr<Tree<F, S> > tree = TreeTrainer<F, S>::TrainTree(random, context, parameters, data, progress);
-        forest->AddTree(tree);
+        forest->AddTree(std::move(tree));
       }
       (*progress)[Interest] << "\rTrained " << parameters.NumberOfTrees << " trees.         " << std::endl;
 

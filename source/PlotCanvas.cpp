@@ -10,7 +10,7 @@ namespace Slither
   void Bitmap<PixelBgr>::Save(const std::string& path) const
   {
     encodeDib_BGR_8u (
-      &buffer_[0],
+      buffer_.get(),
       width_, 
       height_,
       width_*sizeof(PixelBgr),

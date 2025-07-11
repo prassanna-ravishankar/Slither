@@ -155,9 +155,15 @@ namespace Slither
       classificationContext.igType = trainingParameters.igType;
 
 
+#ifdef WITH_OPENMP
       std::unique_ptr<Forest<F, HistogramAggregator> > forest
         = ParallelForestTrainer<F, HistogramAggregator>::TrainForest (
         random, trainingParameters, classificationContext, trainingData );
+#else
+      std::unique_ptr<Forest<F, HistogramAggregator> > forest
+        = ForestTrainer<F, HistogramAggregator>::TrainForest (
+        random, trainingParameters, classificationContext, trainingData );
+#endif
 
       return forest;
     }

@@ -21,7 +21,7 @@ import os
 from sklearn import datasets, preprocessing
 
 # for the random forest library
-from slither_py import SlitherWrapper
+from slither_py import slither as SlitherWrapper
 
 LOAD_IF_EXISTS = True
 
@@ -83,6 +83,7 @@ else:
 
 # Testing a model - Always happens
 my_slither.loadData(X_test, Y_test)
-res_prob = my_slither.onlyTest()res_clf = np.argmax(res_prob, axis=1)
+res_prob = my_slither.onlyTest()
+res_clf = np.argmax(res_prob, axis=1)
 print("I got : " + str(np.sum(res_clf == Y_test)) + " correct out of : " + str(len(Y_test)))
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
 namespace Slither
 {
@@ -52,7 +53,7 @@ namespace Slither
   class Bitmap
   {
   private:
-    unsigned char* buffer_;
+    std::unique_ptr<unsigned char[]> buffer_;
 
     int width_, height_, stride_;
 
@@ -74,17 +75,15 @@ namespace Slither
 
       stride_ = Bitmap::computeStrideBytes(width_, 4); // pad rows to multiple of four bytes
 
-      buffer_=  new unsigned char[height * width * stride_];
+      buffer_ = std::make_unique<unsigned char[]>(height * width * stride_);
     }
 
-    ~Bitmap()
-    {
-      delete[] buffer_;
-    }
+    // Destructor is now automatic with unique_ptr - no manual cleanup needed
+    ~Bitmap() = default;
 
     unsigned char* GetBuffer()
     {
-      return &buffer_[0];
+      return buffer_.get();
     }
 
     int GetStride() const
@@ -104,7 +103,7 @@ namespace Slither
 
     void SetPixel(int u, int v, PixelBgr color)
     {
-      *(PixelBgr*)(&buffer_[v*width_*sizeof(PixelBgr) + u*sizeof(PixelBgr)]) = color;
+      *(PixelBgr*)(buffer_.get() + v*width_*sizeof(PixelBgr) + u*sizeof(PixelBgr)) = color;
     }
 
     void Save(const std::string& path) const;

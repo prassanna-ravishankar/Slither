@@ -10,6 +10,8 @@
 #include "Node.h"
 
 #include "ForestTrainer.h"
+#ifdef WITH_OPENMP
 #include "ParallelForestTrainer.h"
+#endif
 
 #include "Interfaces.h"

@@ -50,7 +50,7 @@ namespace Slither
 
     ProgressStream& operator << (std::ostream & (*arg)(std::ostream &))
     {
-      if(!verbosity_==Silent)
+      if(verbosity_!=Silent)
         output_ << arg;
       return *this;
     }

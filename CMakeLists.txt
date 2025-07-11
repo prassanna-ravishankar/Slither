@@ -18,10 +18,7 @@ project(randomSlither)
 set(BUILD_SHARED_LIBS ON)
 
 # Required : libsvm for SVM support
-find_library(LIBSVM_LIB svm)
-if(NOT LIBSVM_LIB)
-    message(FATAL_ERROR "libsvm library not found")
-endif()
+find_package(unofficial-libsvm CONFIG REQUIRED)
 
 # Optional OpenMP
 find_package(OpenMP)
@@ -62,10 +59,9 @@ add_library(Slither STATIC ${SOURCE_FILES})
 # Add related includes
 target_include_directories(Slither PUBLIC lib)
 target_include_directories(Slither PUBLIC source)
-target_include_directories(Slither PUBLIC /usr/include/libsvm)
 
 # Link related libs
-target_link_libraries(Slither PUBLIC ${LIBSVM_LIB})
+target_link_libraries(Slither PUBLIC unofficial::libsvm::libsvm)
 target_link_libraries(Slither PUBLIC Eigen3::Eigen)
 target_link_libraries(Slither PUBLIC nlohmann_json::nlohmann_json)
 set_target_properties(Slither PROPERTIES
@@ -74,19 +70,26 @@ set_target_properties(Slither PROPERTIES
         )
 
 # Adding definitions for OPENMP
-if(NOT TARGET OpenMP::OpenMP_CXX)
-    message("Linking OpenMP stuff with old school style")
-    find_package(Threads REQUIRED)
-    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
-    set_property(TARGET OpenMP::OpenMP_CXX
-            PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
-    # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
-    set_property(TARGET OpenMP::OpenMP_CXX
-            PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+if(OpenMP_FOUND)
+    if(NOT TARGET OpenMP::OpenMP_CXX)
+        message("Linking OpenMP stuff with old school style")
+        find_package(Threads REQUIRED)
+        add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+        set_property(TARGET OpenMP::OpenMP_CXX
+                PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+        # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
+        set_property(TARGET OpenMP::OpenMP_CXX
+                PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+    else()
+        message("Linking OpenMP stuff the new way")
+    endif()
+    target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
+    target_compile_definitions(Slither PUBLIC WITH_OPENMP)
 else()
-    message("Linking OpenMP stuff the new way")
+    message(WARNING "OpenMP not found. Building without OpenMP support.")
+    find_package(Threads REQUIRED)
+    target_link_libraries(Slither PUBLIC Threads::Threads)
 endif()
-target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
 
 
 #######################################
@@ -117,6 +120,8 @@ target_link_libraries(slither_py PRIVATE Slither)
 #######################################
 enable_testing()
 add_executable(slither_tests test/test_datapointcollection.cpp source/DataPointCollection.cpp)
+target_link_libraries(slither_tests PRIVATE Eigen3::Eigen nlohmann_json::nlohmann_json)
+target_include_directories(slither_tests PRIVATE lib source)
 target_include_directories(slither_tests PRIVATE source lib /usr/include/eigen3)
 add_test(NAME DataPointCollectionTest COMMAND slither_tests)
 
