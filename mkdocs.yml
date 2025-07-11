@@ -1,0 +1,107 @@
+site_name: Slither Random Forest
+site_description: A Random Forest library with SVM local experts for computer vision tasks
+site_author: Prassanna Ravishankar
+site_url: https://prassanna-ravishankar.github.io/Slither/
+
+# Repository
+repo_name: prassanna-ravishankar/Slither
+repo_url: https://github.com/prassanna-ravishankar/Slither
+edit_uri: edit/master/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 Prassanna Ravishankar
+
+# Configuration
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+# Plugins
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [python]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Examples: getting-started/examples.md
+  - User Guide:
+    - Overview: user-guide/overview.md
+    - Random Forest with SVM: user-guide/forest-svm.md
+    - Python API: user-guide/python-api.md
+    - C++ Library: user-guide/cpp-library.md
+    - Performance Tips: user-guide/performance.md
+  - API Reference:
+    - Python API: api/python.md
+    - C++ API: api/cpp.md
+  - Development:
+    - Building from Source: development/building.md
+    - Contributing: development/contributing.md
+    - Modernization: development/modernization.md
+    - Testing: development/testing.md
+  - About:
+    - Changelog: about/changelog.md
+    - License: about/license.md
+    - Research: about/research.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/prassanna-ravishankar/Slither
+  version:
+    provider: mike
