@@ -1,70 +1,87 @@
+"""
+Modern setup.py for Slither Random Forest library
+==================================================
+
+This setup.py works with pyproject.toml to build the C++ extension
+and Python package using modern Python packaging standards.
+"""
+
 import os
-import re
 import sys
-import platform
 import subprocess
+from pathlib import Path
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
+from pybind11 import get_cmake_dir
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup, find_packages
 
 
-class CMakeExtension(Extension):
-    def __init__(self, name, sources='', *args, **kw):
-        Extension.__init__(self, name, sources=[],  *args, **kw)
-        self.sourcedir = os.path.abspath(sources)
+# Define the extension module
+ext_modules = [
+    Pybind11Extension(
+        "slither_py",
+        sources=[
+            "pyWrapper/wrapper.cpp",
+            # Add all source files from the C++ library
+            "source/Classification.cpp",
+            "source/CommandLineParser.cpp", 
+            "source/CumulativeNormalDistribution.cpp",
+            "source/DataPointCollection.cpp",
+            "source/dibCodec.cpp",
+            "source/FeatureResponseFunctions.cpp",
+            "source/FloydWarshall.cpp",
+            "source/Graphics.cpp",
+            "source/Platform.cpp",
+            "source/PlotCanvas.cpp",
+            "source/StatisticsAggregators.cpp",
+        ],
+        include_dirs=[
+            "lib",
+            "source",
+            get_cmake_dir(),
+        ],
+        language="c++",
+        cxx_std=17,
+    ),
+]
 
 
 class CMakeBuild(build_ext):
-    def run(self):
-        try:
-            out = subprocess.check_output(['cmake', '--version'])
-        except OSError:
-            raise RuntimeError("CMake must be installed to build the following extensions: " +
-                               ", ".join(e.name for e in self.extensions))
-
-        if platform.system() == "Windows":
-            cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)', out.decode()).group(1))
-            if cmake_version < '3.1.0':
-                raise RuntimeError("CMake >= 3.1.0 is required on Windows")
-
-        for ext in self.extensions:
-            self.build_extension(ext)
-
+    """Custom build extension that uses CMake to build the C++ library."""
+    
     def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+        """Build the extension using CMake."""
+        # Create build directory
+        build_dir = Path(self.build_temp)
+        build_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Configure with CMake
+        cmake_args = [
+            f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={Path(self.build_lib).absolute()}",
+            f"-DPYTHON_EXECUTABLE={sys.executable}",
+            "-DCMAKE_BUILD_TYPE=Release",
+        ]
+        
+        # Add vcpkg toolchain if available
+        vcpkg_root = os.environ.get("VCPKG_ROOT")
+        if vcpkg_root:
+            cmake_args.append(f"-DCMAKE_TOOLCHAIN_FILE={vcpkg_root}/scripts/buildsystems/vcpkg.cmake")
+        
+        # Configure
+        subprocess.check_call([
+            "cmake", str(Path(__file__).parent.absolute()), *cmake_args
+        ], cwd=build_dir)
+        
+        # Build
+        subprocess.check_call([
+            "cmake", "--build", ".", "--target", "slither_py"
+        ], cwd=build_dir)
 
-        cfg = 'Debug' if self.debug else 'Release'
-        build_args = ['--config', cfg]
 
-        if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
-        else:
-            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j']
-
-        env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
-                                                              self.distribution.get_version())
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
-
-setup(
-    name='slither_py',
-    version='0.0.1',
-    author='Prass, The Nomadic Chef',
-    author_email='atemysemicolon@gmail.com',
-    description='Incremental python bindings for Slither',
-    long_description='',
-    install_requires=['numpy'],
-    ext_modules=[CMakeExtension('slither_py')],
-    cmdclass=dict(build_ext=CMakeBuild),
-    zip_safe=False,
-)
+# Use the modern setup with pyproject.toml configuration
+if __name__ == "__main__":
+    setup(
+        ext_modules=ext_modules,
+        cmdclass={"build_ext": CMakeBuild},
+        zip_safe=False,
+    )
