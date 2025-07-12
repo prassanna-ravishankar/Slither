@@ -82,21 +82,18 @@ nav:
   - User Guide:
     - Overview: user-guide/overview.md
     - Random Forest with SVM: user-guide/forest-svm.md
-    - Python API: user-guide/python-api.md
     - C++ Library: user-guide/cpp-library.md
     - Performance Tips: user-guide/performance.md
   - API Reference:
     - Python API: api/python.md
-    - C++ API: api/cpp.md
+    - C++ API (Legacy): api/cpp.md
+    - C++ API (Modern): api/cpp-modern.md
+  - Examples:
+    - Modern Usage: examples/modern-usage.md
   - Development:
     - Building from Source: development/building.md
     - Contributing: development/contributing.md
-    - Modernization: development/modernization.md
-    - Testing: development/testing.md
-  - About:
-    - Changelog: about/changelog.md
-    - License: about/license.md
-    - Research: about/research.md
+    - Architecture: development/architecture.md
 
 # Extra
 extra:

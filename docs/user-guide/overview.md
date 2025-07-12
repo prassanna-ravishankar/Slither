@@ -286,6 +286,5 @@ Slither implements concepts from several research areas:
 ## Next Steps
 
 - [Random Forest with SVM Details](forest-svm.md) - Deep dive into the algorithm
-- [Python API Guide](python-api.md) - Using the Python interface
 - [Performance Tips](performance.md) - Optimization strategies
 - [C++ Library](cpp-library.md) - Working with the C++ core

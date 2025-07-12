@@ -6,10 +6,10 @@ This guide covers different ways to install Slither Random Forest.
 
 ### System Requirements
 
-- **Operating System**: macOS, Linux (Windows support planned)
+- **Operating System**: macOS, Linux, Windows
 - **Python**: 3.8 or higher
 - **C++ Compiler**: C++17 compatible (GCC 7+, Clang 5+, MSVC 2019+)
-- **CMake**: 3.8 or higher
+- **CMake**: 3.16 or higher (modern CMake features required)
 
 ### Dependencies
 
