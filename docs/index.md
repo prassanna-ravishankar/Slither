@@ -37,22 +37,26 @@ Slither is a unique Random Forest implementation that uses **Support Vector Mach
 from slither import SlitherClassifier
 import numpy as np
 
-# Create classifier
+# Create classifier with standard parameters
 clf = SlitherClassifier(
-    n_estimators=50,
-    max_depth=10,
-    svm_c=0.5
+    n_estimators=20,
+    max_depth=8,
+    n_candidate_features='sqrt',
+    svm_c=0.5,
+    random_state=42,
+    n_jobs=-1
 )
 
 # Train on your data
 clf.fit(X_train, y_train)
 
 # Make predictions
-predictions = clf.predict(X_test)
-probabilities = clf.predict_proba(X_test)
+y_pred = clf.predict(X_test)
+y_proba = clf.predict_proba(X_test)
 
 # Evaluate
 accuracy = clf.score(X_test, y_test)
+print(f"Accuracy: {accuracy:.3f}")
 ```
 
 ## Why Slither?
@@ -88,13 +92,13 @@ Slither was originally developed for **road segmentation using hypercolumn featu
 === "Installation"
 
     ```bash
-    # Install from PyPI (coming soon)
-    pip install slither-rf
-    
-    # Or build from source
+    # Current installation (development)
     git clone https://github.com/prassanna-ravishankar/Slither.git
     cd Slither
     pip install -e .
+    
+    # Future PyPI installation (coming soon)
+    pip install slither-rf
     ```
 
 === "Quick Start"
@@ -104,36 +108,45 @@ Slither was originally developed for **road segmentation using hypercolumn featu
     from sklearn.datasets import make_classification
     
     # Create sample data
-    X, y = make_classification(n_samples=100, n_features=10)
+    X, y = make_classification(
+        n_samples=1000, n_features=20, n_classes=3, random_state=42
+    )
     
-    # Train classifier
-    clf = SlitherClassifier(n_estimators=10)
+    # Train classifier with standard parameters
+    clf = SlitherClassifier(
+        n_estimators=20, max_depth=8, random_state=42
+    )
     clf.fit(X, y)
     
     # Make predictions
-    print(f"Accuracy: {clf.score(X, y):.3f}")
+    accuracy = clf.score(X, y)
+    print(f"Accuracy: {accuracy:.3f}")
     ```
 
 === "Advanced Usage"
 
     ```python
-    # Configure for computer vision
+    # Configure for computer vision tasks
     clf = SlitherClassifier(
-        n_estimators=100,
-        max_depth=15,
-        n_candidate_features=50,
+        n_estimators=50,
+        max_depth=12,
+        n_candidate_features='sqrt',
         svm_c=0.5,
-        n_jobs=4,
+        n_jobs=-1,
+        random_state=42,
         verbose=True
     )
     
-    # Train and save model
+    # Train and save model using pickle
     clf.fit(X_train, y_train)
-    clf.save_model("my_forest.json")
+    
+    import pickle
+    with open('my_forest.pkl', 'wb') as f:
+        pickle.dump(clf, f)
     
     # Load and use later
-    clf_loaded = SlitherClassifier()
-    clf_loaded.load_model("my_forest.json")
+    with open('my_forest.pkl', 'rb') as f:
+        clf_loaded = pickle.load(f)
     ```
 
 ## Performance Characteristics

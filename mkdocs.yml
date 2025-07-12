@@ -94,6 +94,7 @@ nav:
     - Building from Source: development/building.md
     - Contributing: development/contributing.md
     - Architecture: development/architecture.md
+    - Documentation Style Guide: STYLE_GUIDE.md
 
 # Extra
 extra:

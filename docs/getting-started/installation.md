@@ -26,16 +26,26 @@ This guide covers different ways to install Slither Random Forest.
 
 ## Installation Methods
 
-### Method 1: PyPI (Recommended - Coming Soon)
+### Method 1: Source Installation (Current)
 
-!!! note "PyPI Release"
-    PyPI packages are in preparation. For now, please use the source installation.
+For development and current usage:
+
+```bash
+git clone https://github.com/prassanna-ravishankar/Slither.git
+cd Slither
+pip install -e .
+```
+
+### Method 2: PyPI Installation (Coming Soon)
+
+!!! note "Future Release"
+    PyPI packages are in preparation. This will be the primary installation method once available.
 
 ```bash
 pip install slither-rf
 ```
 
-### Method 2: Source Installation
+### Method 3: Development Installation
 
 #### Prerequisites
 

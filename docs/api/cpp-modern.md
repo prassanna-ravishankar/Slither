@@ -35,13 +35,13 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
     
-    // Configure training parameters
+    // Configure training parameters (matches Python defaults)
     TrainingParameters params;
-    params.NumberOfTrees = 20;
-    params.MaxDecisionLevels = 8;
-    params.NumberOfCandidateFeatures = 5;
-    params.NumberOfCandidateThresholds = 10;
-    params.Verbose = true;
+    params.NumberOfTrees = 20;                    // n_estimators=20
+    params.MaxDecisionLevels = 8;                 // max_depth=8
+    params.NumberOfCandidateFeatures = 0;        // 0 = sqrt(n_features)
+    params.NumberOfCandidateThresholds = 10;     // Standard value
+    params.Verbose = false;                      // Default to quiet
     
     // Prepare training data
     DataPointCollection trainingData;
@@ -75,9 +75,9 @@ int main() {
 
 // Configure for high-performance training
 TrainingParameters params;
-params.NumberOfTrees = 100;
-params.MaxDecisionLevels = 15;
-params.NumberOfCandidateFeatures = static_cast<int>(std::sqrt(n_features));
+params.NumberOfTrees = 50;                       // More trees for better performance
+params.MaxDecisionLevels = 12;                   // Deeper trees
+params.NumberOfCandidateFeatures = 0;           // 0 = sqrt(n_features)
 params.NumberOfCandidateThresholds = 20;
 params.Verbose = true;
 
