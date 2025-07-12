@@ -1,0 +1,98 @@
+[build-system]
+requires = [
+    "pybind11>=2.13.0",
+    "setuptools>=45",
+    "wheel",
+    "cmake>=3.8",
+    "ninja",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slither-rf"
+version = "2.0.0"
+description = "A Random Forest library with SVM local experts for computer vision tasks"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Prassanna Ravishankar", email = "prassanna.ravishankar@gmail.com"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["machine-learning", "random-forest", "svm", "computer-vision", "classification"]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.19.0",
+    "scikit-learn>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "black",
+    "isort",
+    "mypy",
+    "pre-commit",
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "scikit-learn>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/prassanna-ravishankar/Slither"
+Repository = "https://github.com/prassanna-ravishankar/Slither"
+Issues = "https://github.com/prassanna-ravishankar/Slither/issues"
+
+[tool.setuptools]
+packages = ["slither"]
+
+[tool.setuptools.package-dir]
+slither = "python/slither"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--cov=slither --cov-report=term-missing"

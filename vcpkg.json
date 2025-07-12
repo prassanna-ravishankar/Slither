@@ -1,0 +1,10 @@
+{
+  "name": "slither",
+  "version": "1.0.0",
+  "dependencies": [
+    "libsvm",
+    "pybind11",
+    "eigen3",
+    "cli11",
+    "nlohmann-json"
+  ]}

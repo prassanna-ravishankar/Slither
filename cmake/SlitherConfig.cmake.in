@@ -1,0 +1,15 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Find required dependencies
+find_dependency(unofficial-libsvm CONFIG REQUIRED)
+find_dependency(Eigen3 3.3 REQUIRED NO_MODULE)
+find_dependency(nlohmann_json CONFIG REQUIRED)
+
+# Optional dependencies
+find_dependency(OpenMP)
+
+include("${CMAKE_CURRENT_LIST_DIR}/SlitherTargets.cmake")
+
+check_required_components(Slither)

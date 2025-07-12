@@ -10,7 +10,7 @@ namespace py = pybind11;
 using namespace Slither;
 
 
-class slitherWrapper
+class SlitherWrapper
 {
     std::unique_ptr<Forest<LinearFeatureResponseSVM, HistogramAggregator> > forest;
     std::unique_ptr<DataPointCollection> data;
@@ -60,14 +60,14 @@ public:
 
     bool loadModel(std::string filename)
     {
-        forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeBoost(filename);
+        forest = Forest<LinearFeatureResponseSVM, HistogramAggregator>::DeserializeJson(filename);
 
         return true;
     }
 
     bool saveModel(std::string filename)
     {
-        forest->SerializeBoost(filename);
+        forest->SerializeJson(filename);
 
         return true;
     }
@@ -202,26 +202,26 @@ public:
 
 
 
-PYBIND11_MODULE(pySlither, m) {
+PYBIND11_MODULE(slither_py, m) {
     m.doc() = "slither -  a module to do awesome things";
 //    m.def("add", &add, "Simple function to add");
-    py::class_<slitherWrapper> slitherWrapObj(m, "slither");
+    py::class_<SlitherWrapper> slitherWrapObj(m, "slither");
     slitherWrapObj.def(py::init());
-    slitherWrapObj.def("add", &slitherWrapper::add);
-    slitherWrapObj.def("loadModel", &slitherWrapper::loadModel);
-    slitherWrapObj.def("saveModel", &slitherWrapper::saveModel);
-    slitherWrapObj.def("setDefaultParams", &slitherWrapper::setDefaultParams);
-    slitherWrapObj.def("setParams", &slitherWrapper::setParams);
-    slitherWrapObj.def("onlyTrain", &slitherWrapper::onlyTrain);
-    slitherWrapObj.def("onlyTest", &slitherWrapper::onlyTest);
-    slitherWrapObj.def("loadData", &slitherWrapper::loadData);
-    slitherWrapObj.def("modelExists", &slitherWrapper::modelExists);
-    slitherWrapObj.def("setThreads", &slitherWrapper::setThreads);
-    slitherWrapObj.def("setFeatureMask", &slitherWrapper::setFeatureMask);
-    slitherWrapObj.def("setMaxDecisionLevels", &slitherWrapper::setMaxDecisionLevels);
-    slitherWrapObj.def("setNumberOfCandidateFeatures",&slitherWrapper::setNumberOfCandidateFeatures);
-    slitherWrapObj.def("setNumberOfThresholds",&slitherWrapper::setNumberOfThresholds);
-    slitherWrapObj.def("setTrees",&slitherWrapper::setTrees);
-    slitherWrapObj.def("setQuiet",&slitherWrapper::setQuiet);
-    slitherWrapObj.def("setSVM_C",&slitherWrapper::setSVM_C);
+    slitherWrapObj.def("add", &SlitherWrapper::add);
+    slitherWrapObj.def("loadModel", &SlitherWrapper::loadModel);
+    slitherWrapObj.def("saveModel", &SlitherWrapper::saveModel);
+    slitherWrapObj.def("setDefaultParams", &SlitherWrapper::setDefaultParams);
+    slitherWrapObj.def("setParams", &SlitherWrapper::setParams);
+    slitherWrapObj.def("onlyTrain", &SlitherWrapper::onlyTrain);
+    slitherWrapObj.def("onlyTest", &SlitherWrapper::onlyTest);
+    slitherWrapObj.def("loadData", &SlitherWrapper::loadData);
+    slitherWrapObj.def("modelExists", &SlitherWrapper::modelExists);
+    slitherWrapObj.def("setThreads", &SlitherWrapper::setThreads);
+    slitherWrapObj.def("setFeatureMask", &SlitherWrapper::setFeatureMask);
+    slitherWrapObj.def("setMaxDecisionLevels", &SlitherWrapper::setMaxDecisionLevels);
+    slitherWrapObj.def("setNumberOfCandidateFeatures",&SlitherWrapper::setNumberOfCandidateFeatures);
+    slitherWrapObj.def("setNumberOfThresholds",&SlitherWrapper::setNumberOfThresholds);
+    slitherWrapObj.def("setTrees",&SlitherWrapper::setTrees);
+    slitherWrapObj.def("setQuiet",&SlitherWrapper::setQuiet);
+    slitherWrapObj.def("setSVM_C",&SlitherWrapper::setSVM_C);
 }
