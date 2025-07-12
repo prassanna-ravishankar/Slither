@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
+
+# Project definition
+project(Slither
+    VERSION 1.0.0
+    DESCRIPTION "Random Forest library with SVM local experts for computer vision"
+    LANGUAGES CXX)
 
 # Check if using vcpkg
 if(DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -6,122 +12,231 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE)
 else()
     message(WARNING "vcpkg toolchain not detected. Please ensure vcpkg is properly integrated.")
 endif()
+
+# Modern CMake settings
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(randomSlither)
-#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-#######################################
-# Dependencies for the main library
-#######################################
 # Build configuration
-set(BUILD_SHARED_LIBS ON)
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(SLITHER_BUILD_TESTS "Build tests" ON)
+option(SLITHER_BUILD_EXAMPLES "Build examples" ON)
+option(SLITHER_BUILD_BENCHMARKS "Build benchmarks" OFF)
 
-# Required : libsvm for SVM support
+#######################################
+# Dependencies
+#######################################
+
+# Required dependencies
 find_package(unofficial-libsvm CONFIG REQUIRED)
-
-# Optional OpenMP
-find_package(OpenMP)
-
-# Modern libraries for future modernization
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(CLI11 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 
-# For the library
-set(SOURCE_FILES
-        source/Classification.cpp
-        source/CommandLineParser.cpp
-        source/CumulativeNormalDistribution.cpp
-        source/DataPointCollection.cpp
-        #demo/source/DensityEstimation.cpp
-        source/dibCodec.cpp
-        source/FeatureResponseFunctions.cpp
-        source/FloydWarshall.cpp
-        source/Graphics.cpp
-        source/Platform.cpp
-        source/PlotCanvas.cpp
-        #demo/source/Regression.cpp
-        #demo/source/SemiSupervisedClassification.cpp
-        source/StatisticsAggregators.cpp)
+# Optional dependencies
+find_package(OpenMP)
+find_package(CLI11 CONFIG REQUIRED)
 
-# Print found library versions for debugging
+# For Python bindings
+find_package(pybind11 CONFIG QUIET)
+
+# Print found library versions
 message(STATUS "Eigen3 version: ${Eigen3_VERSION}")
 message(STATUS "CLI11 found: ${CLI11_FOUND}")
 message(STATUS "nlohmann_json found: ${nlohmann_json_FOUND}")
-
+message(STATUS "pybind11 found: ${pybind11_FOUND}")
 
 #######################################
-# Build the library
+# Library source files
 #######################################
-add_library(Slither STATIC ${SOURCE_FILES})
 
-# Add related includes
-target_include_directories(Slither PUBLIC lib)
-target_include_directories(Slither PUBLIC source)
+set(SLITHER_SOURCES
+    src/Classification.cpp
+    src/CommandLineParser.cpp
+    src/CumulativeNormalDistribution.cpp
+    src/DataPointCollection.cpp
+    src/DensityEstimation.cpp
+    src/FeatureResponseFunctions.cpp
+    src/FloydWarshall.cpp
+    src/Graphics.cpp
+    src/Platform.cpp
+    src/PlotCanvas.cpp
+    src/Regression.cpp
+    src/SemiSupervisedClassification.cpp
+    src/StatisticsAggregators.cpp
+)
 
-# Link related libs
-target_link_libraries(Slither PUBLIC unofficial::libsvm::libsvm)
-target_link_libraries(Slither PUBLIC Eigen3::Eigen)
-target_link_libraries(Slither PUBLIC nlohmann_json::nlohmann_json)
-set_target_properties(Slither PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED YES
-        )
+set(SLITHER_HEADERS
+    include/slither/Forest.h
+    include/slither/Tree.h
+    include/slither/Node.h
+    include/slither/ForestTrainer.h
+    include/slither/ParallelForestTrainer.h
+    include/slither/Interfaces.h
+    include/slither/Random.h
+    include/slither/Sherwood.h
+    include/slither/TrainingParameters.h
+    include/slither/ProgressStream.h
+    include/slither/Classification.h
+    include/slither/Regression.h
+    include/slither/DensityEstimation.h
+    include/slither/SemiSupervisedClassification.h
+    include/slither/FeatureResponseFunctions.h
+    include/slither/StatisticsAggregators.h
+    include/slither/DataPointCollection.h
+    include/slither/Graphics.h
+    include/slither/Platform.h
+)
 
-# Adding definitions for OPENMP
+#######################################
+# Main library
+#######################################
+
+add_library(Slither ${SLITHER_SOURCES} ${SLITHER_HEADERS})
+add_library(Slither::Slither ALIAS Slither)
+
+# Include directories
+target_include_directories(Slither
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+
+# Link libraries
+target_link_libraries(Slither
+    PUBLIC
+        unofficial::libsvm::libsvm
+        Eigen3::Eigen
+        nlohmann_json::nlohmann_json
+)
+
+# OpenMP support
 if(OpenMP_FOUND)
-    if(NOT TARGET OpenMP::OpenMP_CXX)
-        message("Linking OpenMP stuff with old school style")
-        find_package(Threads REQUIRED)
-        add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
-        set_property(TARGET OpenMP::OpenMP_CXX
-                PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
-        # Only works if the same flag is passed to the linker; use CMake 3.9+ otherwise (Intel, AppleClang)
-        set_property(TARGET OpenMP::OpenMP_CXX
-                PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
-    else()
-        message("Linking OpenMP stuff the new way")
-    endif()
     target_link_libraries(Slither PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(Slither PUBLIC WITH_OPENMP)
+    message(STATUS "OpenMP support enabled")
 else()
-    message(WARNING "OpenMP not found. Building without OpenMP support.")
+    message(STATUS "OpenMP not found. Building without parallel support.")
     find_package(Threads REQUIRED)
     target_link_libraries(Slither PUBLIC Threads::Threads)
 endif()
 
+# Compiler-specific options
+target_compile_features(Slither PUBLIC cxx_std_17)
+
+if(MSVC)
+    target_compile_options(Slither PRIVATE /W4)
+else()
+    target_compile_options(Slither PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 #######################################
-# Build the Standalone executable
+# Executable
 #######################################
-add_executable(slither_cpp source/main.cpp)
-# Linking and including
-target_link_libraries(slither_cpp PUBLIC Slither)
-target_link_libraries(slither_cpp PUBLIC CLI11::CLI11)
 
-set_target_properties(slither_cpp PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED YES
-        )
-
-
-#######################################
-# Build the Python Wrapper
-#######################################
-# First --> Python requirements
-find_package(pybind11 CONFIG REQUIRED)
-pybind11_add_module(slither_py SHARED pyWrapper/wrapper.cpp)
-target_link_libraries(slither_py PRIVATE Slither)
-
+if(SLITHER_BUILD_EXAMPLES)
+    add_executable(slither_cpp src/main.cpp)
+    target_link_libraries(slither_cpp 
+        PRIVATE 
+            Slither::Slither
+            CLI11::CLI11
+    )
+    
+    # Install executable
+    install(TARGETS slither_cpp
+        RUNTIME DESTINATION bin
+    )
+endif()
 
 #######################################
-# C++ Tests
+# Python bindings
 #######################################
-enable_testing()
-add_executable(slither_tests test/test_datapointcollection.cpp source/DataPointCollection.cpp)
-target_link_libraries(slither_tests PRIVATE Eigen3::Eigen nlohmann_json::nlohmann_json)
-target_include_directories(slither_tests PRIVATE lib source)
-target_include_directories(slither_tests PRIVATE source lib /usr/include/eigen3)
-add_test(NAME DataPointCollectionTest COMMAND slither_tests)
 
+if(pybind11_FOUND)
+    pybind11_add_module(slither_py pyWrapper/wrapper.cpp)
+    target_link_libraries(slither_py PRIVATE Slither::Slither)
+    
+    # Install Python module
+    install(TARGETS slither_py
+        LIBRARY DESTINATION python/slither
+    )
+endif()
+
+#######################################
+# Tests
+#######################################
+
+if(SLITHER_BUILD_TESTS)
+    enable_testing()
+    
+    add_executable(test_datapointcollection 
+        tests/test_datapointcollection.cpp
+    )
+    target_link_libraries(test_datapointcollection 
+        PRIVATE 
+            Slither::Slither
+    )
+    
+    add_test(NAME DataPointCollectionTest COMMAND test_datapointcollection)
+endif()
+
+#######################################
+# Benchmarks
+#######################################
+
+if(SLITHER_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
+
+#######################################
+# Installation
+#######################################
+
+# Install library
+install(TARGETS Slither
+    EXPORT SlitherTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
+
+# Install headers
+install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h"
+)
+
+# Generate and install CMake config files
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    SlitherConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(EXPORT SlitherTargets
+    FILE SlitherTargets.cmake
+    NAMESPACE Slither::
+    DESTINATION lib/cmake/Slither
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/SlitherConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/SlitherConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/Slither
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/SlitherConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/SlitherConfigVersion.cmake"
+    DESTINATION lib/cmake/Slither
+)
+
+# Export targets for build tree
+export(EXPORT SlitherTargets
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/SlitherTargets.cmake"
+    NAMESPACE Slither::
+)
