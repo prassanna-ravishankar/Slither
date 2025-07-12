@@ -10,42 +10,46 @@ Slither is a Random Forest library implementing local SVM experts at tree nodes,
 
 ### C++ Library and Executable
 ```bash
-mkdir slither_build
-cd slither_build
-cmake ../Slither
-make -j && make install
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build . --config Release
+cmake --install .
 ```
 
-### Python Library (automatically builds C++ library)
+### Python Library (using modern build system)
 ```bash
-python setup.py install
+pip install -e .
 ```
-Note: Python module links against libSlither in the build directory - don't delete the build folder after installation.
 
 ### Testing
 ```bash
-# Python tests (requires scikit-learn)
-python test/test_pyslither.py
+# Python tests
+python -m pytest tests/
 
-# C++ executable (self-explanatory arguments)
-./slither_cpp --help
+# C++ tests
+ctest
+
+# Run benchmarks
+cmake --build . --target benchmark_classification
+./benchmarks/benchmark_classification
 ```
 
 ## Architecture Overview
 
-### Core Library (`/lib/`)
+### Core Library Headers (`/include/slither/`)
 - **Sherwood.h**: Main decision forest framework header inspired by Microsoft's Sherwood
 - **Forest.h, Tree.h, Node.h**: Core data structures for random forest implementation
 - **ForestTrainer.h, ParallelForestTrainer.h**: Training implementations with OpenMP support
 - **Interfaces.h**: Abstract interfaces for extensibility
 - **TrainingParameters.h**: Configuration management
 
-### Implementation (`/source/`)
-- **Classification.cpp/h, Regression.cpp/h**: ML task implementations
-- **FeatureResponseFunctions.cpp/h**: SVM-based feature response functions at tree nodes
-- **StatisticsAggregators.cpp/h**: Node statistics aggregation
-- **DataPointCollection.cpp/h**: OpenCV-based data management
-- **main.cpp**: Command-line interface using Boost program_options
+### Implementation (`/src/`)
+- **Classification.cpp, Regression.cpp**: ML task implementations
+- **FeatureResponseFunctions.cpp**: SVM-based feature response functions at tree nodes
+- **StatisticsAggregators.cpp**: Node statistics aggregation
+- **DataPointCollection.cpp**: Data management
+- **main.cpp**: Command-line interface using CLI11
 
 ### Python Bindings (`/pyWrapper/`)
 - **wrapper.cpp**: pybind11-based Python interface exposing slitherWrapper class

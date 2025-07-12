@@ -9,9 +9,19 @@ bin/
 build/
 slither_build/
 vcpkg_test_sample/
+out/
 
 # vcpkg files
 vcpkg_installed/
+
+# CMake build files
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/Makefile
+**/CPackConfig.cmake
+**/CPackSourceConfig.cmake
+install_manifest.txt
 
 # Temporary files
 *.cpp~
@@ -26,6 +36,9 @@ __pycache__/
 
 # Test output
 test_output/
+
+# Documentation build
+site/
 
 # CMake files
 CMakeFiles/
