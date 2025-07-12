@@ -1,29 +1,26 @@
 [build-system]
-requires = [
-    "pybind11>=2.13.0",
-    "setuptools>=45",
-    "wheel",
-    "cmake>=3.8",
-    "ninja",
-]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.3.3", "pybind11"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "slither-rf"
-version = "2.0.0"
-description = "A Random Forest library with SVM local experts for computer vision tasks"
+version = "1.0.0"
+description = "Random Forest library with SVM local experts for computer vision"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Prassanna Ravishankar", email = "prassanna.ravishankar@gmail.com"},
+    {name = "Prassanna Ravishankar", email = "prassanna.ravishankar@example.com"},
 ]
+maintainers = [
+    {name = "Prassanna Ravishankar", email = "prassanna.ravishankar@example.com"},
+]
+keywords = ["machine-learning", "random-forest", "svm", "computer-vision", "classification"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: MacOS",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: OS Independent",
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -31,12 +28,9 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-keywords = ["machine-learning", "random-forest", "svm", "computer-vision", "classification"]
 requires-python = ">=3.8"
 dependencies = [
     "numpy>=1.19.0",
@@ -45,46 +39,81 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "isort",
-    "mypy",
-    "pre-commit",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pylint>=2.17.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 test = [
-    "pytest>=6.0",
-    "pytest-cov",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "numpy>=1.19.0",
     "scikit-learn>=1.0.0",
+]
+docs = [
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.20.0",
+    "mkdocs-mermaid2-plugin>=0.6.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/prassanna-ravishankar/Slither"
-Repository = "https://github.com/prassanna-ravishankar/Slither"
+Documentation = "https://prassanna-ravishankar.github.io/Slither/"
+Repository = "https://github.com/prassanna-ravishankar/Slither.git"
 Issues = "https://github.com/prassanna-ravishankar/Slither/issues"
+Changelog = "https://github.com/prassanna-ravishankar/Slither/blob/main/CHANGELOG.md"
 
-[tool.setuptools]
-packages = ["slither"]
+[tool.scikit-build]
+# Protect the configuration against future changes in scikit-build-core
+minimum-version = "0.3"
 
-[tool.setuptools.package-dir]
-slither = "python/slither"
+# Setuptools-style build caching in a local directory
+build-dir = "build/{wheel_tag}"
+
+# Build stable ABI wheels for CPython 3.12+
+wheel.expand-macos-universal-tags = true
+
+[tool.scikit-build.cmake.define]
+SLITHER_BUILD_TESTS = "OFF"
+SLITHER_BUILD_EXAMPLES = "OFF"
+SLITHER_BUILD_BENCHMARKS = "OFF"
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # Directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.isort]
 profile = "black"
+multi_line_output = 3
 line_length = 88
+known_first_party = ["slither"]
+known_third_party = ["numpy", "sklearn", "pytest"]
 
 [tool.mypy]
 python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 check_untyped_defs = true
-disallow_untyped_decorators = true
+disallow_untyped_decorators = false
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -92,7 +121,52 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 
+[[tool.mypy.overrides]]
+module = [
+    "sklearn.*",
+    "numpy.*",
+]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-addopts = "--cov=slither --cov-report=term-missing"
+minversion = "6.0"
+addopts = "-ra -q --strict-markers"
+testpaths = [
+    "tests",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["python/slither"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "setup.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

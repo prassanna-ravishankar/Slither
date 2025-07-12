@@ -2,10 +2,14 @@
 
 > A high-performance Random Forest library with SVM local experts for computer vision tasks
 
+[![CI](https://github.com/prassanna-ravishankar/Slither/workflows/C++%20Build%20and%20Test/badge.svg)](https://github.com/prassanna-ravishankar/Slither/actions/workflows/cpp-build.yml)
+[![Python CI](https://github.com/prassanna-ravishankar/Slither/workflows/Python%20Build%20and%20Test/badge.svg)](https://github.com/prassanna-ravishankar/Slither/actions/workflows/python-build.yml)
+[![Documentation](https://github.com/prassanna-ravishankar/Slither/workflows/Deploy%20Documentation/badge.svg)](https://prassanna-ravishankar.github.io/Slither/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![vcpkg](https://img.shields.io/badge/vcpkg-ready-green.svg)](https://vcpkg.io)
+[![Code Quality](https://github.com/prassanna-ravishankar/Slither/workflows/Code%20Quality/badge.svg)](https://github.com/prassanna-ravishankar/Slither/actions/workflows/code-quality.yml)
 
 ## 📖 Overview
 

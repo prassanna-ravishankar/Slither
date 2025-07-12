@@ -1,0 +1,91 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master, feat/modernisation ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  python-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black isort flake8 mypy pylint
+
+    - name: Check Python code formatting with Black
+      run: |
+        black --check --diff python/ tests/
+
+    - name: Check import sorting with isort
+      run: |
+        isort --check-only --diff python/ tests/
+
+    - name: Lint with flake8
+      run: |
+        flake8 python/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 python/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+    - name: Type check with mypy
+      run: |
+        mypy python/ --ignore-missing-imports
+
+    - name: Lint with pylint
+      run: |
+        pylint python/ --exit-zero
+
+  cpp-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-format cppcheck
+
+    - name: Check C++ code formatting
+      run: |
+        find include/ src/ -name "*.h" -o -name "*.cpp" | xargs clang-format --dry-run --Werror
+
+    - name: Static analysis with cppcheck
+      run: |
+        cppcheck --enable=all --error-exitcode=1 --inline-suppr \
+          --suppress=missingIncludeSystem \
+          --suppress=unusedFunction \
+          --suppress=unmatchedSuppression \
+          include/ src/
+
+  markdown-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Lint Markdown files
+      uses: DavidAnson/markdownlint-cli2-action@v15
+      with:
+        globs: '**/*.md'
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Bandit security scanner
+      uses: securecodewarrior/github-action-bandit@v1
+      with:
+        path: python/
+
+    - name: Run Safety check for Python dependencies
+      run: |
+        python -m pip install --upgrade pip safety
+        safety check --json || true

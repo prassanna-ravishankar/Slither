@@ -1,0 +1,79 @@
+name: C++ Build and Test
+
+on:
+  push:
+    branches: [ main, master, feat/modernisation ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            triplet: x64-linux
+          - os: macos-latest
+            triplet: x64-osx
+          - os: windows-latest
+            triplet: x64-windows
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '2024.03.25'
+
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build
+
+    - name: Install system dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install cmake ninja
+
+    - name: Setup MSVC (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+          -DSLITHER_BUILD_TESTS=ON \
+          -DSLITHER_BUILD_EXAMPLES=ON \
+          -DSLITHER_BUILD_BENCHMARKS=OFF
+
+    - name: Build
+      run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+    - name: Test
+      working-directory: build
+      run: ctest --output-on-failure --build-config ${{ env.BUILD_TYPE }}
+
+    - name: Upload build artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: slither-cpp-build
+        path: |
+          build/slither_cpp
+          build/test_datapointcollection
+        retention-days: 7
